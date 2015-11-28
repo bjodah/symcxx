@@ -5,6 +5,10 @@
 #include <functional>
 #include <vector>
 
+// The following macros are defined for convenience, beware
+#define SYM_BCAST(ptr) (*(BasicCont*)(ptr))
+#define SYM_GET(item) (*item)
+
 namespace sym{
     enum class Kind : int
     {
@@ -37,9 +41,6 @@ namespace sym{
     struct Basic;
     // using BasicCont = std::vector<std::reference_wrapper<Basic> >;
     using BasicCont = std::vector<Basic*>;
-
-#define SYM_BCAST(ptr) (*(BasicCont*)(ptr))
-#define SYM_GET(item) (*item)
 
     std::size_t calc_hash(BasicCont* data);
 
