@@ -19,8 +19,13 @@ TEST_CASE( "evalf of functions", "[sym::NameSpace]" ) {
     double x1 = 1;
     double x2 = 2;
     auto ns = sym::NameSpace(1);
-    auto exp_id = ns.exp(0);
-    REQUIRE (std::abs(ns.evalf(0, &x0) - std::exp(x0)) < 1e-15);
-    REQUIRE (std::abs(ns.evalf(0, &x1) - std::exp(x1)) < 1e-15);
-    REQUIRE (std::abs(ns.evalf(0, &x2) - std::exp(x2)) < 1e-15);
+    // auto exp_id = ns.exp({0});
+    std::vector<sym::idx_t> v{{0}};
+    auto exp_id = ns.exp(v);
+    std::cout << "x0" << std::endl;
+    REQUIRE (std::abs(ns.evalf(exp_id, &x0) - std::exp(x0)) < 1e-15);
+    std::cout << "x1" << std::endl;
+    REQUIRE (std::abs(ns.evalf(exp_id, &x1) - std::exp(x1)) < 1e-15);
+    std::cout << "x2" << std::endl;
+    REQUIRE (std::abs(ns.evalf(exp_id, &x2) - std::exp(x2)) < 1e-15);
 }

@@ -4,6 +4,9 @@
 #include <cmath>
 #include <functional>
 #include <vector>
+#if !defined(NDEBUG)
+#include <iostream>
+#endif
 
 // The following macros are defined for convenience, beware
 #define SYM_BCAST(ptr) (*(BasicCont*)(ptr))
@@ -65,8 +68,15 @@ namespace sym{
         }
         double evalf(double inp[]) const {
             double result;
+#if !defined(NDEBUG)
+            std::cout << "evalf, kind: " << static_cast<int>(kind) << std::endl;
+#endif
             switch(kind){
             case Kind::Symbol:
+#if !defined(NDEBUG)
+                std::cout << "inp[this->data.id=" << this->data.id << "] = " <<
+                          inp[this->data.id] << std::endl;
+#endif
                 result = inp[this->data.id]; break;
             case Kind::Float:
                 result = this->data.d; break;
@@ -101,7 +111,7 @@ namespace sym{
             case Kind::Tan:
                 result = std::tan(ELEM0.evalf(inp)); break;
             default:
-                throw std::runtime_error("Cannot run evalf for type");
+                throw std::runtime_error("Cannot run evalf for type.");
             }
             return result;
         }
@@ -284,6 +294,7 @@ namespace sym{
 #undef METH
 
         double evalf(idx_t id, double inp[]){
+            std::cout << "id: " << id << std::endl;
             return instances[id].evalf(inp);
         }
         // NameSpace(NameSpace const&) = delete;
