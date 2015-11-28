@@ -1,0 +1,3 @@
+tests/catch_sym
+tests/*.o
+
