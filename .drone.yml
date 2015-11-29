@@ -1,0 +1,6 @@
+image: bjodah/bjodahimg:latest
+git:
+    path: github.com/bjodah/pysym
+script:
+  - cd tests
+  - make
