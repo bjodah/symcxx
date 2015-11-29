@@ -8,8 +8,7 @@
 #endif
 
 // The following macros are defined for convenience, beware
-#define SYM_BCAST(ptr) (*(BasicCont*)(ptr))
-#define SYM_GET(item) (*item)
+#define SYM_BCAST(ptr) (*static_cast<const BasicCont *>(ptr))
 
 namespace sym{
     using hash_t = int; // std::size_t;
@@ -60,9 +59,7 @@ namespace sym{
 
 // #define ELEM0 (SYM_BCAST(this->data.b)[0].get())
 // #define ELEM1 (SYM_BCAST(this->data.b)[1].get())
-#define ELEM0 SYM_GET((SYM_BCAST(this->data.b)[0]))
-#define ELEM1 SYM_GET((SYM_BCAST(this->data.b)[1]))
-#define ELEM2 SYM_GET((SYM_BCAST(this->data.b)[2]))
+#define ELEM(id) SYM_BCAST(this->data.b)[id]
 
     struct Basic {
         const hash_t hash;
@@ -87,7 +84,7 @@ namespace sym{
 #if !defined(NDEBUG)
             std::cout << "evalf, kind=" << static_cast<int>(kind) << ", this=" << this << ", this->data.b=" << this->data.b << std::endl;
             if (static_cast<int>(kind) > static_cast<int>(Kind::Float))
-                std::cout << "   ELEM0.hash=" << ELEM0.hash << std::endl;
+                std::cout << "   ELEM(0)->hash=" << ELEM(0)->hash << std::endl;
 #endif
             switch(kind){
             case Kind::Symbol:
@@ -102,32 +99,32 @@ namespace sym{
                 result = this->data.i; break;
             case Kind::Add:
                 result = 0;
-                for (const auto& v : SYM_BCAST(this->data.b))
-                    result += SYM_GET(v).evalf(inp);
+                for (const auto basic_ptr : SYM_BCAST(this->data.b))
+                    result += basic_ptr->evalf(inp);
                 break;
             case Kind::Mul:
                 result = 1;
-                for (const auto& v: SYM_BCAST(this->data.b))
-                    result *= SYM_GET(v).evalf(inp);
+                for (const auto basic_ptr: SYM_BCAST(this->data.b))
+                    result *= basic_ptr->evalf(inp);
                 break;
             case Kind::Sqrt:
-                result = std::sqrt(ELEM0.evalf(inp)); break;
+                result = std::sqrt(ELEM(0)->evalf(inp)); break;
             case Kind::Pow:
-                result = std::pow(ELEM0.evalf(inp), ELEM1.evalf(inp)); break;
+                result = std::pow(ELEM(0)->evalf(inp), ELEM(1)->evalf(inp)); break;
             case Kind::Sub:
-                result = ELEM0.evalf(inp) - ELEM1.evalf(inp); break;
+                result = ELEM(0)->evalf(inp) - ELEM(1)->evalf(inp); break;
             case Kind::Div:
-                result = ELEM0.evalf(inp) / ELEM1.evalf(inp); break;
+                result = ELEM(0)->evalf(inp) / ELEM(1)->evalf(inp); break;
             case Kind::ITE:
-                result = (ELEM0.evalb(inp)) ? ELEM1.evalf(inp) : ELEM2.evalf(inp); break;
+                result = (ELEM(0)->evalb(inp)) ? ELEM(1)->evalf(inp) : ELEM(2)->evalf(inp); break;
             case Kind::Exp:
-                result = std::exp(ELEM0.evalf(inp)); break;
+                result = std::exp(ELEM(0)->evalf(inp)); break;
             case Kind::Sin:
-                result = std::sin(ELEM0.evalf(inp)); break;
+                result = std::sin(ELEM(0)->evalf(inp)); break;
             case Kind::Cos:
-                result = std::cos(ELEM0.evalf(inp)); break;
+                result = std::cos(ELEM(0)->evalf(inp)); break;
             case Kind::Tan:
-                result = std::tan(ELEM0.evalf(inp)); break;
+                result = std::tan(ELEM(0)->evalf(inp)); break;
             default:
                 throw std::runtime_error("Cannot run evalf for type.");
             }
@@ -136,17 +133,17 @@ namespace sym{
         bool evalb(const double inp[]) const {
             switch(kind){
             case Kind::Lt:
-                return ELEM0.evalf(inp) < ELEM1.evalf(inp);
+                return ELEM(0)->evalf(inp) < ELEM(1)->evalf(inp);
             case Kind::Le:
-                return ELEM0.evalf(inp) <= ELEM1.evalf(inp);
+                return ELEM(0)->evalf(inp) <= ELEM(1)->evalf(inp);
             case Kind::Eq:
-                return ELEM0.evalf(inp) == ELEM1.evalf(inp);
+                return ELEM(0)->evalf(inp) == ELEM(1)->evalf(inp);
             case Kind::Ne:
-                return ELEM0.evalf(inp) != ELEM1.evalf(inp);
+                return ELEM(0)->evalf(inp) != ELEM(1)->evalf(inp);
             case Kind::Ge:
-                return ELEM0.evalf(inp) >= ELEM1.evalf(inp);
+                return ELEM(0)->evalf(inp) >= ELEM(1)->evalf(inp);
             case Kind::Gt:
-                return ELEM0.evalf(inp) > ELEM1.evalf(inp);
+                return ELEM(0)->evalf(inp) > ELEM(1)->evalf(inp);
             default:
                 throw std::runtime_error("Cannot run evalb for type");
             }
@@ -179,9 +176,7 @@ namespace sym{
         }
     };
 
-#undef ELEM2
-#undef ELEM1
-#undef ELEM0
+#undef ELEM
 
     struct Composed : public Basic {
         Composed(const BasicCont * const args, const Kind kind) : Basic(calc_hash(args, kind), kind, static_cast<const void * const>(args)) {}

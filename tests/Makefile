@@ -1,7 +1,6 @@
-#CXX := g++
-CXX := clang++-3.7
-CXXFLAGS ?= -std=c++11 -g -Wall -I../include #-D_GLIBCXX_DEBUG
-# -ggdb
+CXX := g++
+#CXX := clang++-3.7
+CXXFLAGS ?= -std=c++11 -g -Wall -I../include -D_GLIBCXX_DEBUG -ggdb
 
 .PHONY: all
 
@@ -22,3 +21,6 @@ TESTFILES=catch_sym.o test_namespace.o test_basic.o sym.o
 
 catch_sym: $(TESTFILES)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
+
+debug_sym: debug_sym.cpp sym.o
+	$(CXX) $(CXXFLAGS) -o $@ $^

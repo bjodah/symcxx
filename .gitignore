@@ -1,3 +1,4 @@
 tests/catch_sym
 tests/*.o
 
+tests/debug_sym
