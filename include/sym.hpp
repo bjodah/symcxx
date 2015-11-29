@@ -68,11 +68,6 @@ namespace sym{
         Basic(const hash_t hash, const Kind kind, const data_t data) :
             hash(hash), kind(kind), data(data) {}
 
-//         Basic(hash_t hash, Kind kind) : hash(hash), kind(kind) {
-// #if !defined(NDEBUG)
-//             std::cout << "Basic(hash="<< hash <<",kind="<< static_cast<int>(kind) <<")" <<  std::endl;
-// #endif
-//         }
         // Basic(Basic const&) = delete;
         // Basic& operator=(Basic const&) = delete;
 
@@ -81,17 +76,8 @@ namespace sym{
         }
         double evalf(const double inp[]) const {
             double result;
-#if !defined(NDEBUG)
-            std::cout << "evalf, kind=" << static_cast<int>(kind) << ", this=" << this << ", this->data.b=" << this->data.b << std::endl;
-            if (static_cast<int>(kind) > static_cast<int>(Kind::Float))
-                std::cout << "   ELEM(0)->hash=" << ELEM(0)->hash << std::endl;
-#endif
             switch(kind){
             case Kind::Symbol:
-#if !defined(NDEBUG)
-                std::cout << "inp[this("<< this<<")->data.id=" << this->data.id << "] = " <<
-                          inp[this->data.id] << std::endl;
-#endif
                 result = inp[this->data.id]; break;
             case Kind::Float:
                 result = this->data.d; break;
@@ -295,8 +281,7 @@ namespace sym{
         METH(gt, Gt)
 #undef METH
 
-        double evalf(const idx_t id, const double inp[]){
-            std::cout << "ns.evalf(id: " << id << ", inp: ["<< inp[0]<<" ,...])"<< std::endl;
+        double evalf(const idx_t id, const double inp[]) const {
             return instances[id].evalf(inp);
         }
         // NameSpace(NameSpace const&) = delete;

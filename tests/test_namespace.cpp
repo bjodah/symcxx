@@ -21,23 +21,29 @@ TEST_CASE( "evalf", "[sym::NameSpace]" ) {
     double x3 = 3;
     auto ns = sym::NameSpace(1);
 
-    std::cout << "x0" << std::endl;
     REQUIRE (std::abs(ns.evalf(0, &x0) - x0) < 1e-15);
-    std::cout << "x1" << std::endl;
     REQUIRE (std::abs(ns.evalf(0, &x1) - x1) < 1e-15);
-    std::cout << "x2" << std::endl;
     REQUIRE (std::abs(ns.evalf(0, &x2) - x2) < 1e-15);
-    std::cout << "x3" << std::endl;
     REQUIRE (std::abs(ns.evalf(0, &x3) - x3) < 1e-15);
 
     std::vector<sym::idx_t> v{{0}};
     auto exp_id = ns.exp(v);
-    std::cout << "x0" << std::endl;
-    REQUIRE (std::abs(ns.evalf(exp_id, &x0) - std::exp(x0)) < 1e-15);
-    std::cout << "x1" << std::endl;
-    REQUIRE (std::abs(ns.evalf(exp_id, &x1) - std::exp(x1)) < 1e-15);
-    std::cout << "x2" << std::endl;
-    REQUIRE (std::abs(ns.evalf(exp_id, &x2) - std::exp(x2)) < 1e-15);
-    std::cout << "x3" << std::endl;
-    REQUIRE (std::abs(ns.evalf(exp_id, &x3) - std::exp(x3)) < 1e-15);
+    const double exp0 = ns.evalf(exp_id, &x0);
+    const double exp1 = ns.evalf(exp_id, &x1);
+    const double exp2 = ns.evalf(exp_id, &x2);
+    const double exp3 = ns.evalf(exp_id, &x3);
+    REQUIRE (std::abs(exp0 - std::exp(x0)) < 1e-15);
+    REQUIRE (std::abs(exp1 - std::exp(x1)) < 1e-15);
+    REQUIRE (std::abs(exp2 - std::exp(x2)) < 1e-15);
+    REQUIRE (std::abs(exp3 - std::exp(x3)) < 1e-15);
+
+    double x[5] = {-2, -1, 0, 1, 2};
+    double res[5];
+    auto sin_idx = ns.sin(v);
+    for (int i=0; i<5; ++i){
+        res[i] = ns.evalf(sin_idx, x+i);
+    }
+    for (int i=0; i<5; ++i){
+        REQUIRE (std::abs(res[i] - std::sin(x[i])) < 1e-15);
+    }
 }
