@@ -1,7 +1,8 @@
 #include "sym.hpp"
 
-std::size_t sym::calc_hash(BasicCont* data) {
-    std::size_t result = 0;
+sym::hash_t sym::calc_hash(BasicCont* data, Kind kind) {
+    const sym::hash_t most_significant = static_cast<sym::hash_t>(1) << (8*sizeof(sym::hash_t) - 1);
+    sym::hash_t result = most_significant >> static_cast<int>(kind);
     for (const auto& v : *data)
         result = result ^ SYM_GET(v).hash;
     return result;

@@ -13,6 +13,15 @@
 #define SYM_GET(item) (*item)
 
 namespace sym{
+    using hash_t = std::size_t;
+    using idx_t = int;
+    union data_t {
+        idx_t id;
+        int i;
+        double d;
+        void * b;
+    };
+
     enum class Kind : int
     {
         Symbol,
@@ -36,19 +45,12 @@ namespace sym{
         Ge,
         Gt
     };
-
-    using idx_t = int;
-    // using data_t = union { idx_t id; int i; double d; void * b;};
-    union data_t { idx_t id; int i; double d; void * b;};
+    static_assert(static_cast<int>(Kind::Gt) < (sizeof(hash_t)*8-1), "Too many Kinds for current hash.");
 
     struct Basic;
-    // using BasicCont = std::vector<std::reference_wrapper<Basic> >;
     using BasicCont = std::vector<Basic*>;
 
-    std::size_t calc_hash(BasicCont* data);
-
-
-
+    hash_t calc_hash(BasicCont* data, Kind kind);
     bool lt(data_t arg1, data_t arg2, Kind kind);
     bool eq(data_t arg1, data_t arg2, Kind kind);
 
@@ -59,9 +61,16 @@ namespace sym{
 #define ELEM2 SYM_GET((SYM_BCAST(this->data.b)[2]))
 
     struct Basic {
-        const std::size_t hash;
+        const hash_t hash;
         const Kind kind;
         data_t data;
+        Basic(hash_t hash, Kind kind) : hash(hash), kind(kind) {
+#if !defined(NDEBUG)
+            std::cout << "Basic(hash="<< hash <<",kind="<< static_cast<int>(kind) <<")" <<  std::endl;
+#endif
+        }
+        // Basic(Basic const&) = delete;
+        // Basic& operator=(Basic const&) = delete;
 
         bool is_atomic() const {
             return static_cast<int>(kind) <= static_cast<int>(Kind::Float);
@@ -69,12 +78,12 @@ namespace sym{
         double evalf(double inp[]) const {
             double result;
 #if !defined(NDEBUG)
-            std::cout << "evalf, kind: " << static_cast<int>(kind) << std::endl;
+            std::cout << "evalf, kind=" << static_cast<int>(kind) << ", this=" << this << ", this->data.b=" << this->data.b << std::endl;
 #endif
             switch(kind){
             case Kind::Symbol:
 #if !defined(NDEBUG)
-                std::cout << "inp[this->data.id=" << this->data.id << "] = " <<
+                std::cout << "inp[this("<< this<<")->data.id=" << this->data.id << "] = " <<
                           inp[this->data.id] << std::endl;
 #endif
                 result = inp[this->data.id]; break;
@@ -133,9 +142,6 @@ namespace sym{
                 throw std::runtime_error("Cannot run evalb for type");
             }
         }
-        Basic(std::size_t hash, Kind kind) : hash(hash), kind(kind) {}
-        // Basic(Basic const&) = delete;
-        // Basic& operator=(Basic const&) = delete;
 
         bool operator < (const Basic& other) const {
             if (kind != other.kind)
@@ -169,7 +175,7 @@ namespace sym{
 #undef ELEM0
 
     struct Composed : public Basic {
-        Composed(BasicCont* args, Kind kind) : Basic(calc_hash(args), kind) {
+        Composed(BasicCont* args, Kind kind) : Basic(calc_hash(args, kind), kind) {
             this->data.b = static_cast<void *>(args);
         }
     };
@@ -294,7 +300,7 @@ namespace sym{
 #undef METH
 
         double evalf(idx_t id, double inp[]){
-            std::cout << "id: " << id << std::endl;
+            std::cout << "ns.evalf(id: " << id << ", inp: ["<< inp[0]<<" ,...])"<< std::endl;
             return instances[id].evalf(inp);
         }
         // NameSpace(NameSpace const&) = delete;
