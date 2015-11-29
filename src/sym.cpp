@@ -1,6 +1,6 @@
 #include "sym.hpp"
 
-sym::hash_t sym::calc_hash(BasicCont* data, Kind kind) {
+sym::hash_t sym::calc_hash(const BasicCont * const data, const Kind kind) {
     const sym::hash_t most_significant = static_cast<sym::hash_t>(1) << (8*sizeof(sym::hash_t) - 1);
     sym::hash_t result = most_significant >> static_cast<int>(kind);
     for (const auto& v : *data)
@@ -8,7 +8,7 @@ sym::hash_t sym::calc_hash(BasicCont* data, Kind kind) {
     return result;
 };
 
-bool sym::lt(data_t arg1, data_t arg2, Kind kind){
+bool sym::lt(const data_t arg1, const data_t arg2, const Kind kind){
     switch(kind){
     case Kind::Symbol:
         return arg1.id < arg2.id;
@@ -33,7 +33,7 @@ bool sym::lt(data_t arg1, data_t arg2, Kind kind){
     }
     return false;
 }
-bool sym::eq(data_t arg1, data_t arg2, Kind kind){
+bool sym::eq(const data_t arg1, const data_t arg2, const Kind kind){
     switch(kind){
     case Kind::Symbol:
         return arg1.id == arg2.id;

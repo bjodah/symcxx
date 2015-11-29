@@ -1,5 +1,4 @@
-#ifndef SYM_HPP_K4U3Y2SQTBCBBL4FH37Z2ZEY2U
-#define SYM_HPP_K4U3Y2SQTBCBBL4FH37Z2ZEY2U
+#pragma once
 
 #include <cmath>
 #include <functional>
@@ -13,13 +12,17 @@
 #define SYM_GET(item) (*item)
 
 namespace sym{
-    using hash_t = std::size_t;
-    using idx_t = int;
+    using hash_t = int; // std::size_t;
+    using idx_t = std::size_t;
     union data_t {
         idx_t id;
         int i;
         double d;
-        void * b;
+        const void * const b;
+        data_t(idx_t id) : id(id) {}
+        data_t(int i) : i(i) {}
+        data_t(double d) : d(d) {}
+        data_t(const void * const b) : b(b) {}
     };
 
     enum class Kind : int
@@ -45,14 +48,15 @@ namespace sym{
         Ge,
         Gt
     };
-    static_assert(static_cast<int>(Kind::Gt) < (sizeof(hash_t)*8-1), "Too many Kinds for current hash.");
+    static_assert(static_cast<int>(Kind::Gt) < (sizeof(hash_t)*8-1),
+                  "Too many Kinds for current hash.");
 
     struct Basic;
-    using BasicCont = std::vector<Basic*>;
+    using BasicCont = std::vector<Basic *>;
 
-    hash_t calc_hash(BasicCont* data, Kind kind);
-    bool lt(data_t arg1, data_t arg2, Kind kind);
-    bool eq(data_t arg1, data_t arg2, Kind kind);
+    hash_t calc_hash(const BasicCont * const data, const Kind kind);
+    bool lt(const data_t arg1, const data_t arg2, const Kind kind);
+    bool eq(const data_t arg1, const data_t arg2, const Kind kind);
 
 // #define ELEM0 (SYM_BCAST(this->data.b)[0].get())
 // #define ELEM1 (SYM_BCAST(this->data.b)[1].get())
@@ -64,6 +68,9 @@ namespace sym{
         const hash_t hash;
         const Kind kind;
         const data_t data;
+        Basic(const hash_t hash, const Kind kind, const data_t data) :
+            hash(hash), kind(kind), data(data) {}
+
 //         Basic(hash_t hash, Kind kind) : hash(hash), kind(kind) {
 // #if !defined(NDEBUG)
 //             std::cout << "Basic(hash="<< hash <<",kind="<< static_cast<int>(kind) <<")" <<  std::endl;
@@ -75,10 +82,12 @@ namespace sym{
         bool is_atomic() const {
             return static_cast<int>(kind) <= static_cast<int>(Kind::Float);
         }
-        double evalf(double inp[]) const {
+        double evalf(const double inp[]) const {
             double result;
 #if !defined(NDEBUG)
             std::cout << "evalf, kind=" << static_cast<int>(kind) << ", this=" << this << ", this->data.b=" << this->data.b << std::endl;
+            if (static_cast<int>(kind) > static_cast<int>(Kind::Float))
+                std::cout << "   ELEM0.hash=" << ELEM0.hash << std::endl;
 #endif
             switch(kind){
             case Kind::Symbol:
@@ -124,7 +133,7 @@ namespace sym{
             }
             return result;
         }
-        bool evalb(double inp[]) const {
+        bool evalb(const double inp[]) const {
             switch(kind){
             case Kind::Lt:
                 return ELEM0.evalf(inp) < ELEM1.evalf(inp);
@@ -175,22 +184,22 @@ namespace sym{
 #undef ELEM0
 
     struct Composed : public Basic {
-        Composed(BasicCont* args, Kind kind) : Basic(calc_hash(args, kind), kind, static_cast<void *>(args)) {}
+        Composed(const BasicCont * const args, const Kind kind) : Basic(calc_hash(args, kind), kind, static_cast<const void * const>(args)) {}
     };
 
     struct Symbol : public Basic {
-        Symbol(idx_t data) : Basic(std::hash<idx_t>()(data), Kind::Symbol, data) {}
+        Symbol(const idx_t data) : Basic(std::hash<idx_t>()(data), Kind::Symbol, data) {}
     };
     struct Float : public Basic {
-        Float(double data) : Basic(std::hash<double>()(data), Kind::Float, data) {}
+        Float(const double data) : Basic(std::hash<double>()(data), Kind::Float, data) {}
     };
     struct Integer : public Basic {
-        Integer(int data) : Basic(std::hash<int>()(data), Kind::Integer, data) {}
+        Integer(const int data) : Basic(std::hash<int>()(data), Kind::Integer, data) {}
     };
 
     struct Unary : public Composed {
 #if !defined(NDEBUG)
-        Unary(BasicCont* args, Kind kind) : Composed(args, kind) {
+        Unary(const BasicCont * const args, const Kind kind) : Composed(args, kind) {
             if ((*args).size() != 1)
                 throw std::runtime_error("Unary takes one argument");
         }
@@ -198,7 +207,7 @@ namespace sym{
     };
     struct Binary : public Composed {
 #if !defined(NDEBUG)
-        Binary(BasicCont* args, Kind kind) : Composed(args, kind) {
+        Binary(const BasicCont * const args, const Kind kind) : Composed(args, kind) {
             if ((*args).size() != 1)
                 throw std::runtime_error("Binary takes two arguments");
         }
@@ -206,14 +215,14 @@ namespace sym{
     };
     struct Reduction : public Composed {
 #if !defined(NDEBUG)
-        Reduction(BasicCont* args, Kind kind) : Composed(args, kind) {
+        Reduction(const BasicCont * const args, const Kind kind) : Composed(args, kind) {
             if ((*args).size() == 0)
                 throw std::runtime_error("Reduction needs at least one argument");
         }
 #endif
     };
 
-#define DECLARE(Name, Base) struct Name : public Base { Name(BasicCont* args) : Base(args, Kind::Name) {} }
+#define DECLARE(Name, Base) struct Name : public Base { Name(const BasicCont * const args) : Base(args, Kind::Name) {} }
     DECLARE(Add, Reduction);
     DECLARE(Mul, Reduction);
     DECLARE(Sqrt, Unary);
@@ -233,7 +242,7 @@ namespace sym{
 #undef DECLARE
 
     struct ITE : public Composed {
-        ITE(BasicCont* args) : Composed(args, Kind::ITE)
+        ITE(const BasicCont * const args) : Composed(args, Kind::ITE)
 #if !defined(NDEBUG)
         {
             if ((*args).size() != 3)
@@ -256,11 +265,11 @@ namespace sym{
         std::vector<Basic> instances;
         std::vector<BasicCont> args_stack;
         const idx_t nsymbs;
-        NameSpace(int nsymbs) : nsymbs(nsymbs) {
+        NameSpace(idx_t nsymbs) : nsymbs(nsymbs) {
             for (idx_t idx=0; idx < nsymbs; ++idx)
                 instances.emplace_back(Symbol(idx));
         }
-        BasicCont * reg(std::vector<idx_t> objs) {
+        BasicCont * reg(const std::vector<idx_t>& objs) {
             BasicCont args;
             for (const auto& idx : objs){
                 args.push_back(&instances[idx]);
@@ -268,7 +277,7 @@ namespace sym{
             args_stack.push_back(args);
             return &args_stack.back();
         }
-#define METH(Name, Constr) idx_t Name(std::vector<idx_t> objs){ \
+#define METH(Name, Constr) idx_t Name(const std::vector<idx_t>& objs){ \
             instances.emplace_back(Constr(reg(objs))); \
             return instances.size() - 1; \
         }
@@ -291,7 +300,7 @@ namespace sym{
         METH(gt, Gt)
 #undef METH
 
-        double evalf(idx_t id, double inp[]){
+        double evalf(const idx_t id, const double inp[]){
             std::cout << "ns.evalf(id: " << id << ", inp: ["<< inp[0]<<" ,...])"<< std::endl;
             return instances[id].evalf(inp);
         }
@@ -300,4 +309,3 @@ namespace sym{
     };
 
 };
-#endif /* SYM_HPP_K4U3Y2SQTBCBBL4FH37Z2ZEY2U */
