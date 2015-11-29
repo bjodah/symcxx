@@ -63,12 +63,12 @@ namespace sym{
     struct Basic {
         const hash_t hash;
         const Kind kind;
-        data_t data;
-        Basic(hash_t hash, Kind kind) : hash(hash), kind(kind) {
-#if !defined(NDEBUG)
-            std::cout << "Basic(hash="<< hash <<",kind="<< static_cast<int>(kind) <<")" <<  std::endl;
-#endif
-        }
+        const data_t data;
+//         Basic(hash_t hash, Kind kind) : hash(hash), kind(kind) {
+// #if !defined(NDEBUG)
+//             std::cout << "Basic(hash="<< hash <<",kind="<< static_cast<int>(kind) <<")" <<  std::endl;
+// #endif
+//         }
         // Basic(Basic const&) = delete;
         // Basic& operator=(Basic const&) = delete;
 
@@ -175,25 +175,17 @@ namespace sym{
 #undef ELEM0
 
     struct Composed : public Basic {
-        Composed(BasicCont* args, Kind kind) : Basic(calc_hash(args, kind), kind) {
-            this->data.b = static_cast<void *>(args);
-        }
+        Composed(BasicCont* args, Kind kind) : Basic(calc_hash(args, kind), kind, static_cast<void *>(args)) {}
     };
 
     struct Symbol : public Basic {
-        Symbol(idx_t data) : Basic(std::hash<idx_t>()(data), Kind::Symbol) {
-            this->data.id = data;
-        }
+        Symbol(idx_t data) : Basic(std::hash<idx_t>()(data), Kind::Symbol, data) {}
     };
     struct Float : public Basic {
-        Float(double data) : Basic(std::hash<double>()(data), Kind::Float) {
-            this->data.d = data;
-        }
+        Float(double data) : Basic(std::hash<double>()(data), Kind::Float, data) {}
     };
     struct Integer : public Basic {
-        Integer(int data) : Basic(std::hash<int>()(data), Kind::Integer) {
-            this->data.i = data;
-        }
+        Integer(int data) : Basic(std::hash<int>()(data), Kind::Integer, data) {}
     };
 
     struct Unary : public Composed {
