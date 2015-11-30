@@ -1,11 +1,11 @@
 #include <cassert>
-#include "sym.hpp"
 #include <iostream>
+#include "symcxx/core.hpp"
 
 int main(){
     double x0 = 0;
-    auto ns = sym::NameSpace(1);
-    std::vector<sym::idx_t> v{{0}};
+    auto ns = symcxx::NameSpace(1);
+    std::vector<symcxx::idx_t> v{{0}};
     auto exp_id = ns.exp(v);
     const double res = ns.evalf(exp_id, &x0);
     assert (std::abs(res - std::exp(x0)) < 1e-15);

@@ -6,32 +6,32 @@ CXXFLAGS ?= -std=c++11 -g -Wall -Wextra -Werror -Wpadded -pedantic -I../include 
 
 .PHONY: test debug clean
 
-test: catch_sym
-	./catch_sym
+test: catch_symcxx
+	./catch_symcxx
 
-debug: debug_sym
-	valgrind ./debug_sym
+debug: debug_symcxx
+	valgrind ./debug_symcxx
 
 clean:
 	rm *.o
-	rm *_sym
+	rm *_symcxx
 
 
-sym.o: ../src/sym.cpp ../include/sym.hpp
+symcxx.o: ../src/symcxx.cpp ../include/symcxx/*.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-test_%.o: test_%.cpp ../include/sym.hpp
+test_%.o: test_%.cpp ../include/symcxx/*.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 
-TESTFILES=catch_sym.o test_namespace.o test_basic.o sym.o
+TESTFILES=catch_symcxx.o test_namespace.o test_basic.o symcxx.o
 
-catch_sym: $(TESTFILES)
+catch_symcxx: $(TESTFILES)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
 
-debug_sym: debug_sym.cpp sym.o
+debug_symcxx: debug_symcxx.cpp symcxx.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 

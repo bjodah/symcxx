@@ -1,7 +1,6 @@
-#include "sym.hpp"
+#include "symcxx/core.hpp"
 
-
-sym::idx_t sym::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
+symcxx::idx_t symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
 {
     const Basic& inst = instances[inst_id];
     const Basic& wrt = instances[wrt_id];

@@ -1,10 +1,10 @@
 #include "catch.hpp"
-#include "sym.hpp"
-#include "cmath"
+#include "symcxx/core.hpp"
+#include <cmath>
 
-TEST_CASE( "construct, mul, evalf", "[sym::NameSpace]" ) {
-    auto ns = sym::NameSpace(3);
-    std::vector<sym::idx_t> v{{0, 1, 2}};
+TEST_CASE( "construct, mul, evalf", "[symcxx::NameSpace]" ) {
+    auto ns = symcxx::NameSpace(3);
+    std::vector<symcxx::idx_t> v{{0, 1, 2}};
     auto mul_id = ns.mul(v);
     REQUIRE( mul_id == 3 );
 
@@ -14,19 +14,19 @@ TEST_CASE( "construct, mul, evalf", "[sym::NameSpace]" ) {
     REQUIRE (std::abs(result - 30) < 1e-15);
 }
 
-TEST_CASE( "evalf", "[sym::NameSpace]" ) {
+TEST_CASE( "evalf", "[symcxx::NameSpace]" ) {
     double x0 = 0;
     double x1 = 1;
     double x2 = 2;
     double x3 = 3;
-    auto ns = sym::NameSpace(1);
+    auto ns = symcxx::NameSpace(1);
 
     REQUIRE (std::abs(ns.evalf(0, &x0) - x0) < 1e-15);
     REQUIRE (std::abs(ns.evalf(0, &x1) - x1) < 1e-15);
     REQUIRE (std::abs(ns.evalf(0, &x2) - x2) < 1e-15);
     REQUIRE (std::abs(ns.evalf(0, &x3) - x3) < 1e-15);
 
-    std::vector<sym::idx_t> v{{0}};
+    std::vector<symcxx::idx_t> v{{0}};
     auto exp_id = ns.exp(v);
     const double exp0 = ns.evalf(exp_id, &x0);
     const double exp1 = ns.evalf(exp_id, &x1);
@@ -48,9 +48,9 @@ TEST_CASE( "evalf", "[sym::NameSpace]" ) {
     }
 }
 
-TEST_CASE( "diff_add", "[sym::NameSpace]" ) {
-    auto ns = sym::NameSpace(2);
-    std::vector<sym::idx_t> v {{ 0, 1, 1 }};
+TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
+    auto ns = symcxx::NameSpace(2);
+    std::vector<symcxx::idx_t> v {{ 0, 1, 1 }};
     auto expr_id = ns.add(v);
     const double x[2] = {3, 5};
     const double res = ns.evalf(expr_id, x);

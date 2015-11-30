@@ -1,5 +1,5 @@
 #include "catch.hpp"
-#include "sym.hpp"
+#include "symcxx/core.hpp"
 
 TEST_CASE( "homogenous ordering", "[sym::Symbol]" ) {
     auto s0 = sym::Symbol(0);
