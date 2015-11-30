@@ -47,3 +47,23 @@ TEST_CASE( "evalf", "[sym::NameSpace]" ) {
         REQUIRE (std::abs(res[i] - std::sin(x[i])) < 1e-15);
     }
 }
+
+TEST_CASE( "diff_add", "[sym::NameSpace]" ) {
+    auto ns = sym::NameSpace(2);
+    std::vector<sym::idx_t> v {{ 0, 1, 1 }};
+    auto expr_id = ns.add(v);
+    const double x[2] = {3, 5};
+    const double res = ns.evalf(expr_id, x);
+    const double ref = 3 + 5 + 5;
+    // REQUIRE (std::abs(res - ref) < 1e-15);
+
+    auto diff0_id = ns.diff(expr_id, 0);
+    const double res0 = ns.evalf(diff0_id, x);
+    const double ref0 = 1;
+    REQUIRE (std::abs(res0 - ref0) < 1e-15);
+
+    auto diff1_id = ns.diff(expr_id, 1);
+    const double res1 = ns.evalf(diff0_id, x);
+    const double ref1 = 2;
+    REQUIRE (std::abs(res1 - ref1) < 1e-15);
+}

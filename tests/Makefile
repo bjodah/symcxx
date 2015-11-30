@@ -1,11 +1,21 @@
 CXX := g++
 #CXX := clang++-3.7
-CXXFLAGS ?= -std=c++11 -g -Wall -I../include -D_GLIBCXX_DEBUG -ggdb
+CXXFLAGS ?= -std=c++11 -g -Wall -Wextra -Werror -Wpadded -pedantic -I../include -fno-omit-frame-pointer -O0 -ggdb
+#-D_GLIBCXX_DEBUG
+#-fsanitize=address 
 
-.PHONY: all
+.PHONY: test debug clean
 
-all: catch_sym
+test: catch_sym
 	./catch_sym
+
+debug: debug_sym
+	valgrind ./debug_sym
+
+clean:
+	rm *.o
+	rm *_sym
+
 
 sym.o: ../src/sym.cpp ../include/sym.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
@@ -24,3 +34,4 @@ catch_sym: $(TESTFILES)
 
 debug_sym: debug_sym.cpp sym.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
+
