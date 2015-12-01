@@ -1,9 +1,10 @@
 #include "catch.hpp"
 #include "symcxx/core.hpp"
 
-TEST_CASE( "homogenous ordering", "[sym::Symbol]" ) {
-    auto s0 = sym::Symbol(0);
-    auto s1 = sym::Symbol(1);
+TEST_CASE( "homogenous ordering", "[symcxx::Symbol]" ) {
+    auto ns = symcxx::NameSpace(2);
+    auto& s0 = ns.instances[0];
+    auto& s1 = ns.instances[1];
 
     REQUIRE( s0 < s1 );
     REQUIRE( not (s1 < s0) );
@@ -26,9 +27,11 @@ TEST_CASE( "homogenous ordering", "[sym::Symbol]" ) {
     REQUIRE( not (s0 > s1) );
 }
 
-TEST_CASE( "heterogeneous ordering", "[sym::Basic]" ) {
-    auto s = sym::Symbol(1);
-    auto i = sym::Integer(0);
+TEST_CASE( "heterogeneous ordering", "[symcxx::Basic]" ) {
+    auto ns = symcxx::NameSpace(1);
+    auto idx_i = ns.make_integer(0);
+    auto& s = ns.instances[0];
+    auto& i = ns.instances[idx_i];
 
     REQUIRE( s < i );
     REQUIRE( not (i < s) );
@@ -51,17 +54,26 @@ TEST_CASE( "heterogeneous ordering", "[sym::Basic]" ) {
     REQUIRE( not (s > i) );
 }
 
-TEST_CASE( "evalb", "[sym::Basic]" ) {
-    auto s = sym::Symbol(0);
-    auto i = sym::Integer(0);
-    sym::BasicPtrVec args {{ &s, &i }};
+TEST_CASE( "evalb", "[symcxx::Basic]" ) {
+    auto ns = symcxx::NameSpace(1);
+    auto idx_i = ns.make_integer(0);
+    auto& s = ns.instances[0];
+    auto& i = ns.instances[idx_i];
 
-    auto lt = sym::Lt(&args);
-    auto le = sym::Le(&args);
-    auto eq = sym::Eq(&args);
-    auto ne = sym::Ne(&args);
-    auto ge = sym::Ge(&args);
-    auto gt = sym::Gt(&args);
+    std::vector<symcxx::idx_t> v{{0, 1}};
+    auto idx_lt = ns.lt(v);
+    auto idx_le = ns.le(v);
+    auto idx_eq = ns.eq(v);
+    auto idx_ne = ns.ne(v);
+    auto idx_ge = ns.ge(v);
+    auto idx_gt = ns.gt(v);
+
+    auto lt = ns.instances[idx_lt];
+    auto le = ns.instances[idx_le];
+    auto eq = ns.instances[idx_eq];
+    auto ne = ns.instances[idx_ne];
+    auto ge = ns.instances[idx_ge];
+    auto gt = ns.instances[idx_gt];
 
     const double x1 = 1.0;
     const double xm1 = -1.0;

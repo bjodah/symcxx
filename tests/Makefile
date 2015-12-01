@@ -17,7 +17,10 @@ clean:
 	rm *_symcxx
 
 
-symcxx.o: ../src/symcxx.cpp ../include/symcxx/*.hpp
+basic.o: ../src/basic.cpp ../include/symcxx/*.hpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+namespace.o: ../src/namespace.cpp ../include/symcxx/*.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 test_%.o: test_%.cpp ../include/symcxx/*.hpp
@@ -27,11 +30,11 @@ test_%.o: test_%.cpp ../include/symcxx/*.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 
-TESTFILES=catch_symcxx.o test_namespace.o test_basic.o symcxx.o
+TESTFILES=catch_symcxx.o test_namespace.o test_basic.o basic.o namespace.o
 
 catch_symcxx: $(TESTFILES)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
 
-debug_symcxx: debug_symcxx.cpp symcxx.o
+debug_symcxx: debug_symcxx.cpp basic.o namespace.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
