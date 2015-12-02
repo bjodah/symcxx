@@ -78,6 +78,4 @@ namespace symcxx {
 #include "symcxx/types_nonatomic_binary.inc"
 #undef SYMCXX_TYPE
 
-
-
 }

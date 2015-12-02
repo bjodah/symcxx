@@ -26,8 +26,6 @@ namespace symcxx{
         data_t(const double d) : dble(d) {}
     };
     static_assert(sizeof(data_t) == 8, "8 bytes please");
-// #define GET_DATA(data, kind) ((kind == Kind::Integer) ? data.intgr :
-//                               ((kind == Kind::Float) ? data.dble : data.idx_pair.first))
 
     enum class Kind : int
     {
