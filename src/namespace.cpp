@@ -15,7 +15,7 @@ symcxx::NameSpace::idx(const Basic* basic_ptr) const {
 }
 
 symcxx::idx_t
-symcxx::NameSpace::reg(const std::vector<idx_t>& objs) {
+symcxx::NameSpace::reg_args(const std::vector<idx_t>& objs) {
     args_stack.push_back(objs);
     return args_stack.size() - 1;
 }
@@ -35,11 +35,13 @@ symcxx::NameSpace::has(const Basic& looking_for, idx_t * idx) const {
 
 symcxx::idx_t
 symcxx::NameSpace::make_integer(int i){
-    std::cout << "make_integer(" << i << ")" << std::endl;
     const auto instance = Integer(i, this);
     idx_t idx;
-    if (has(instance, &idx))
+    if (has(instance, &idx)){
+        std::cout << "make_integer(" << i << ") - old!" << std::endl;
         return idx;
+    }
+    std::cout << "make_integer(" << i << ") - new!" << std::endl;
     instances.push_back(instance);
     return instances.size() - 1;
 }
@@ -56,8 +58,16 @@ symcxx::NameSpace::make_float(double f){
 
 #define METH(Name, Constr) \
     symcxx::idx_t symcxx::NameSpace::Name(const std::vector<symcxx::idx_t>& objs){ \
-        instances.push_back(Constr(reg(objs), this));                              \
-        return instances.size() - 1;                                               \
+        const auto instance = Constr(reg_args(objs), this);             \
+        idx_t idx;                                                      \
+        if (has(instance, &idx)){                                       \
+            std::cout << SX(Name) "(...) - old!" << std::endl;          \
+            args_stack.pop_back();                                      \
+            return idx;                                                 \
+        }                                                               \
+        std::cout << SX(Name) "(...) - new!" << std::endl;              \
+        instances.push_back(instance);                                  \
+        return instances.size() - 1;                                    \
     }
 #define SYMCXX_TYPE(Cls, Parent, meth) METH(meth, Cls)
 #include "symcxx/types_composed.inc"

@@ -47,6 +47,7 @@ symcxx::Basic::evalf(const double inp[]) const {
     auto arg_evalb = [&](int argid) -> double { return ns->instances[args()[argid]].evalb(inp); };
     switch(kind){
     case Kind::Symbol:
+        std::cout << "data.id = " << data.id << std::endl;
         result = inp[data.id]; break;
     case Kind::Float:
         result = data.d; break;

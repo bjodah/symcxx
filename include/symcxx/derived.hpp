@@ -1,9 +1,6 @@
 namespace symcxx {
-    struct Composed : public Basic {
-        Composed(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
-            Basic(calc_hash(args_idx, kind, ns->args_stack, ns->instances), kind, args_idx, ns) {}
-    };
 
+    // Atomic:
     struct Symbol : public Basic {
         Symbol(const idx_t data, const NameSpace * const ns) : Basic(std::hash<idx_t>()(data), Kind::Symbol, data, ns) {}
     };
@@ -12,6 +9,12 @@ namespace symcxx {
     };
     struct Integer : public Basic {
         Integer(const int data,  const NameSpace * const ns) : Basic(std::hash<int>()(data), Kind::Integer, data, ns) {}
+    };
+
+    // Non-atomic:
+    struct Composed : public Basic {
+        Composed(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
+            Basic(calc_hash(args_idx, kind, ns->args_stack, ns->instances), kind, args_idx, ns) {}
     };
 
     struct Unary : public Composed {
@@ -59,9 +62,14 @@ namespace symcxx {
 #endif
     };
 
-#define DECLARE(Name, Base) struct Name : public Base {\
+#define S(x) #x
+#define SX(x) S(x)
+
+#define DECLARE(Name, Base) struct Name : public Base {     \
         Name(idx_t args_idx,  const NameSpace * const ns) : \
-            Base(args_idx, Kind::Name, ns) {} \
+            Base(args_idx, Kind::Name, ns) {                \
+            std::cout << "constructing " SX(Name) " with args_idx=" << args_idx << std::endl; \
+        }                                                   \
     };
 #define SYMCXX_TYPE(Cls, Parent, meth) DECLARE(Cls, Parent)
 #include "symcxx/types_composed.inc"

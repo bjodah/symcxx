@@ -52,6 +52,8 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     auto ns = symcxx::NameSpace(2);
     std::vector<symcxx::idx_t> v {{ 0, 1, 1 }};
     auto expr_id = ns.add(v);
+    auto expr_id2 = ns.add(v);
+    REQUIRE( expr_id == expr_id2 );
     const double x[2] = {3, 5};
     const double res = ns.evalf(expr_id, x);
     const double ref = 3 + 5 + 5;

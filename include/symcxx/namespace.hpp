@@ -10,7 +10,7 @@ namespace symcxx{
         const idx_t nsymbs;
         NameSpace(idx_t);
         idx_t idx(const Basic*) const;
-        idx_t reg(const std::vector<idx_t>&);
+        idx_t reg_args(const std::vector<idx_t>&);
         bool has(const Basic&, idx_t*) const;
         idx_t make_integer(int i);
         idx_t make_float(double f);

@@ -55,31 +55,40 @@ TEST_CASE( "heterogeneous ordering", "[symcxx::Basic]" ) {
 }
 
 TEST_CASE( "evalb", "[symcxx::Basic]" ) {
+    std::cout << "evalb" << std::endl;
     auto ns = symcxx::NameSpace(1);
     auto idx_i = ns.make_integer(0);
+    auto idx_i2 = ns.make_integer(0);
+    REQUIRE( idx_i == idx_i2 );
     auto& s = ns.instances[0];
+    REQUIRE( s.data.id == 0 );
     auto& i = ns.instances[idx_i];
 
-    std::vector<symcxx::idx_t> v{{0, 1}};
+    std::vector<symcxx::idx_t> v {{0, 1}};
     auto idx_lt = ns.lt(v);
+    REQUIRE( s.data.id == 0 );
     auto idx_le = ns.le(v);
     auto idx_eq = ns.eq(v);
     auto idx_ne = ns.ne(v);
     auto idx_ge = ns.ge(v);
     auto idx_gt = ns.gt(v);
 
-    auto lt = ns.instances[idx_lt];
-    auto le = ns.instances[idx_le];
-    auto eq = ns.instances[idx_eq];
-    auto ne = ns.instances[idx_ne];
-    auto ge = ns.instances[idx_ge];
-    auto gt = ns.instances[idx_gt];
+
+    auto& lt = ns.instances[idx_lt];
+    auto& le = ns.instances[idx_le];
+    auto& eq = ns.instances[idx_eq];
+    auto& ne = ns.instances[idx_ne];
+    auto& ge = ns.instances[idx_ge];
+    auto& gt = ns.instances[idx_gt];
 
     const double x1 = 1.0;
     const double xm1 = -1.0;
     const double x0 = 0.0;
+    std::cout << "before" << std::endl;
+    const double s_eval = s.evalf(&x1);
+    std::cout << "after" << std::endl;
 
-    REQUIRE( (s.evalf(&x1) - 1.0) == 0 );
+    REQUIRE( (s_eval - 1.0) == 0 );
 
     REQUIRE( not lt.evalb(&x1) );
     REQUIRE( not lt.evalb(&x0) );
