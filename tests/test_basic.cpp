@@ -5,7 +5,8 @@ TEST_CASE( "homogenous ordering", "[symcxx::Symbol]" ) {
     auto ns = symcxx::NameSpace(2);
     auto& s0 = ns.instances[0];
     auto& s1 = ns.instances[1];
-
+    REQUIRE( s0.data.idx_pair.first == 0 );
+    REQUIRE( s1.data.idx_pair.first == 1 );
     REQUIRE( s0 < s1 );
     REQUIRE( not (s1 < s0) );
 
@@ -60,18 +61,17 @@ TEST_CASE( "evalb", "[symcxx::Basic]" ) {
     auto idx_i = ns.make_integer(0);
     auto idx_i2 = ns.make_integer(0);
     REQUIRE( idx_i == idx_i2 );
-    auto& s = ns.instances[0];
-    REQUIRE( s.data.id == 0 );
-    auto& i = ns.instances[idx_i];
 
-    std::vector<symcxx::idx_t> v {{0, 1}};
-    auto idx_lt = ns.lt(v);
-    REQUIRE( s.data.id == 0 );
-    auto idx_le = ns.le(v);
-    auto idx_eq = ns.eq(v);
-    auto idx_ne = ns.ne(v);
-    auto idx_ge = ns.ge(v);
-    auto idx_gt = ns.gt(v);
+    auto idx_lt = ns.lt(0, 1);
+    auto idx_le = ns.le(0, 1);
+    auto idx_eq = ns.eq(0, 1);
+    auto idx_ne = ns.ne(0, 1);
+    auto idx_ge = ns.ge(0, 1);
+    auto idx_gt = ns.gt(0, 1);
+
+    auto& s = ns.instances[0];
+    REQUIRE( s.data.idx_pair.first == 0 );
+    auto& i = ns.instances[idx_i];
 
 
     auto& lt = ns.instances[idx_lt];
@@ -84,9 +84,7 @@ TEST_CASE( "evalb", "[symcxx::Basic]" ) {
     const double x1 = 1.0;
     const double xm1 = -1.0;
     const double x0 = 0.0;
-    std::cout << "before" << std::endl;
     const double s_eval = s.evalf(&x1);
-    std::cout << "after" << std::endl;
 
     REQUIRE( (s_eval - 1.0) == 0 );
 

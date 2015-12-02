@@ -1,8 +1,8 @@
 #include "symcxx/core.hpp"
 
 const std::vector<symcxx::idx_t>&
-symcxx::Basic::args() const {
-    return ns->args_stack[data.id];
+symcxx::Basic::args_from_stack() const {
+    return ns->args_stack[data.idx_pair.first];
 }
 bool
 symcxx::Basic::operator < (const Basic& other) const {
@@ -43,90 +43,95 @@ symcxx::Basic::is_atomic() const {
 double
 symcxx::Basic::evalf(const double inp[]) const {
     double result;
-    auto arg_evalf = [&](int argid) -> double { return ns->instances[args()[argid]].evalf(inp); };
-    auto arg_evalb = [&](int argid) -> double { return ns->instances[args()[argid]].evalb(inp); };
+    auto evalf_arg0 = [&]() -> double { return ns->instances[data.idx_pair.first].evalf(inp); };
+    auto evalf_arg1 = [&]() -> double { return ns->instances[data.idx_pair.second].evalf(inp); };
     switch(kind){
     case Kind::Symbol:
-        std::cout << "data.id = " << data.id << std::endl;
-        result = inp[data.id]; break;
+        result = inp[data.idx_pair.first]; break;
     case Kind::Float:
-        result = data.d; break;
+        result = data.dble; break;
     case Kind::Integer:
-        result = data.i; break;
+        result = data.intgr; break;
     case Kind::Add:
         result = 0;
-        for (const auto idx: args())
-            result += arg_evalf(idx);
+        for (const auto idx: args_from_stack())
+            result += ns->instances[idx].evalf(inp);
         break;
     case Kind::Mul:
         result = 1;
-        for (const auto idx: args())
-            result *= arg_evalf(idx);
+        for (const auto idx: args_from_stack())
+            result *= ns->instances[idx].evalf(inp);
         break;
-    case Kind::Sub:
-        result = arg_evalf(0) - arg_evalf(1); break;
-    case Kind::Div:
-        result = arg_evalf(0) / arg_evalf(1); break;
-    case Kind::Cos:
-        result = std::cos(arg_evalf(0)); break;
-    case Kind::Sin:
-        result = std::sin(arg_evalf(0)); break;
-    case Kind::Tan:
-        result = std::tan(arg_evalf(0)); break;
-    case Kind::Acos:
-        result = std::acos(arg_evalf(0)); break;
-    case Kind::Asin:
-        result = std::asin(arg_evalf(0)); break;
-    case Kind::Atan:
-        result = std::atan(arg_evalf(0)); break;
-    case Kind::Atan2:
-        result = std::atan2(arg_evalf(0), arg_evalf(1)); break;
-    case Kind::Cosh:
-        result = std::cosh(arg_evalf(0)); break;
-    case Kind::Sinh:
-        result = std::sinh(arg_evalf(0)); break;
-    case Kind::Tanh:
-        result = std::tanh(arg_evalf(0)); break;
-    case Kind::Acosh:
-        result = std::acosh(arg_evalf(0)); break;
-    case Kind::Asinh:
-        result = std::asinh(arg_evalf(0)); break;
-    case Kind::Atanh:
-        result = std::atanh(arg_evalf(0)); break;
-    case Kind::Exp:
-        result = std::exp(arg_evalf(0)); break;
-    case Kind::Log:
-        result = std::log(arg_evalf(0)); break;
-    case Kind::Log10:
-        result = std::exp(arg_evalf(0)); break;
-    case Kind::Exp2:
-        result = std::exp2(arg_evalf(0)); break;
-    case Kind::Expm1:
-        result = std::expm1(arg_evalf(0)); break;
-    case Kind::Log1p:
-        result = std::log1p(arg_evalf(0)); break;
-    case Kind::Log2:
-        result = std::log2(arg_evalf(0)); break;
-    case Kind::Logb:
-        result = std::logb(arg_evalf(0)); break;
-    case Kind::Pow:
-        result = std::pow(arg_evalf(0), arg_evalf(1)); break;
-    case Kind::Sqrt:
-        result = std::sqrt(arg_evalf(0)); break;
-    case Kind::Cbrt:
-        result = std::cbrt(arg_evalf(0)); break;
-    case Kind::Hypot:
-        result = std::hypot(arg_evalf(0), arg_evalf(1)); break;
-    case Kind::Erf:
-        result = std::erf(arg_evalf(0)); break;
-    case Kind::Erfc:
-        result = std::erfc(arg_evalf(0)); break;
-    case Kind::Tgamma:
-        result = std::tgamma(arg_evalf(0)); break;
-    case Kind::Lgamma:
-        result = std::lgamma(arg_evalf(0)); break;
     case Kind::ITE:
-        result = (arg_evalb(0)) ? arg_evalf(1) : arg_evalf(2); break;
+        result = (ns->instances[args_from_stack()[0]].evalb(inp)) ?
+            ns->instances[args_from_stack()[1]].evalf(inp) :
+            ns->instances[args_from_stack()[2]].evalf(inp); break;
+    case Kind::Sub:
+        result = evalf_arg0() - evalf_arg1(); break;
+    case Kind::Div:
+        result = evalf_arg0() / evalf_arg1(); break;
+    case Kind::Add2:
+        result = evalf_arg0() + evalf_arg1(); break;
+    case Kind::Mul2:
+        result = evalf_arg0() * evalf_arg1(); break;
+    case Kind::Cos:
+        result = std::cos(evalf_arg0()); break;
+    case Kind::Sin:
+        result = std::sin(evalf_arg0()); break;
+    case Kind::Tan:
+        result = std::tan(evalf_arg0()); break;
+    case Kind::Acos:
+        result = std::acos(evalf_arg0()); break;
+    case Kind::Asin:
+        result = std::asin(evalf_arg0()); break;
+    case Kind::Atan:
+        result = std::atan(evalf_arg0()); break;
+    case Kind::Atan2:
+        result = std::atan2(evalf_arg0(), evalf_arg1()); break;
+    case Kind::Cosh:
+        result = std::cosh(evalf_arg0()); break;
+    case Kind::Sinh:
+        result = std::sinh(evalf_arg0()); break;
+    case Kind::Tanh:
+        result = std::tanh(evalf_arg0()); break;
+    case Kind::Acosh:
+        result = std::acosh(evalf_arg0()); break;
+    case Kind::Asinh:
+        result = std::asinh(evalf_arg0()); break;
+    case Kind::Atanh:
+        result = std::atanh(evalf_arg0()); break;
+    case Kind::Exp:
+        result = std::exp(evalf_arg0()); break;
+    case Kind::Log:
+        result = std::log(evalf_arg0()); break;
+    case Kind::Log10:
+        result = std::exp(evalf_arg0()); break;
+    case Kind::Exp2:
+        result = std::exp2(evalf_arg0()); break;
+    case Kind::Expm1:
+        result = std::expm1(evalf_arg0()); break;
+    case Kind::Log1p:
+        result = std::log1p(evalf_arg0()); break;
+    case Kind::Log2:
+        result = std::log2(evalf_arg0()); break;
+    case Kind::Logb:
+        result = std::logb(evalf_arg0()); break;
+    case Kind::Pow:
+        result = std::pow(evalf_arg0(), evalf_arg1()); break;
+    case Kind::Sqrt:
+        result = std::sqrt(evalf_arg0()); break;
+    case Kind::Cbrt:
+        result = std::cbrt(evalf_arg0()); break;
+    case Kind::Hypot:
+        result = std::hypot(evalf_arg0(), evalf_arg1()); break;
+    case Kind::Erf:
+        result = std::erf(evalf_arg0()); break;
+    case Kind::Erfc:
+        result = std::erfc(evalf_arg0()); break;
+    case Kind::Tgamma:
+        result = std::tgamma(evalf_arg0()); break;
+    case Kind::Lgamma:
+        result = std::lgamma(evalf_arg0()); break;
     default:
         throw std::runtime_error("Cannot run evalf for type.");
     }
@@ -134,20 +139,21 @@ symcxx::Basic::evalf(const double inp[]) const {
 }
 bool
 symcxx::Basic::evalb(const double inp[]) const {
-    auto arg_evalf = [&](int argid) -> double { return ns->instances[args()[argid]].evalf(inp); };
+    auto evalf_arg0 = [&]() -> double { return ns->instances[data.idx_pair.first].evalf(inp); };
+    auto evalf_arg1 = [&]() -> double { return ns->instances[data.idx_pair.second].evalf(inp); };
     switch(kind){
     case Kind::Lt:
-        return (arg_evalf(0))  < (arg_evalf(1));
+        return evalf_arg0()  < evalf_arg1();
     case Kind::Le:
-        return (arg_evalf(0)) <= (arg_evalf(1));
+        return evalf_arg0() <= evalf_arg1();
     case Kind::Eq:
-        return (arg_evalf(0)) == (arg_evalf(1));
+        return evalf_arg0() == evalf_arg1();
     case Kind::Ne:
-        return (arg_evalf(0)) != (arg_evalf(1));
+        return evalf_arg0() != evalf_arg1();
     case Kind::Ge:
-        return (arg_evalf(0)) >= (arg_evalf(1));
+        return evalf_arg0() >= evalf_arg1();
     case Kind::Gt:
-        return (arg_evalf(0))  > (arg_evalf(1));
+        return evalf_arg0()  > evalf_arg1();
     default:
         throw std::runtime_error("Cannot run evalb for type");
     }

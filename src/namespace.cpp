@@ -55,31 +55,68 @@ symcxx::NameSpace::make_float(double f){
     instances.push_back(instance);
     return instances.size() - 1;
 }
-
-#define METH(Name, Constr) \
-    symcxx::idx_t symcxx::NameSpace::Name(const std::vector<symcxx::idx_t>& objs){ \
-        const auto instance = Constr(reg_args(objs), this);             \
+#define SYMCXX_TYPE(Cls, Parent, meth) \
+    symcxx::idx_t symcxx::NameSpace::meth(const std::vector<symcxx::idx_t>& objs){ \
+        const auto instance = Cls(reg_args(objs), this);                \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << SX(Name) "(...) - old!" << std::endl;          \
+            std::cout << SX(meth) "(...) - old!" << std::endl;          \
             args_stack.pop_back();                                      \
             return idx;                                                 \
         }                                                               \
-        std::cout << SX(Name) "(...) - new!" << std::endl;              \
+        std::cout << SX(meth) "(...) - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
-#define SYMCXX_TYPE(Cls, Parent, meth) METH(meth, Cls)
-#include "symcxx/types_composed.inc"
+#include "symcxx/types_nonatomic_args_stack.inc"
 #undef SYMCXX_TYPE
-#undef METH
+
+
+#define SYMCXX_TYPE(Cls, Parent, meth) \
+    symcxx::idx_t symcxx::NameSpace::meth(const symcxx::idx_t inst){ \
+        const auto instance = Cls(inst, this);                          \
+        idx_t idx;                                                      \
+        if (has(instance, &idx)){                                       \
+            std::cout << SX(meth) "(...) - old!" << std::endl;          \
+            return idx;                                                 \
+        }                                                               \
+        std::cout << SX(meth) "(...) - new!" << std::endl;              \
+        instances.push_back(instance);                                  \
+        return instances.size() - 1;                                    \
+    }
+#include "symcxx/types_nonatomic_unary.inc"
+#undef SYMCXX_TYPE
+
+#define SYMCXX_TYPE(Cls, Parent, meth) \
+    symcxx::idx_t symcxx::NameSpace::meth(const symcxx::idx_t inst0, const symcxx::idx_t inst1){  \
+        const auto instance = Cls(inst0, inst1, this);                  \
+        idx_t idx;                                                      \
+        if (has(instance, &idx)){                                       \
+            std::cout << SX(meth) "(...) - old!" << std::endl;          \
+            return idx;                                                 \
+        }                                                               \
+        std::cout << SX(meth) "(...) - new!" << std::endl;              \
+        instances.push_back(instance);                                  \
+        return instances.size() - 1;                                    \
+    }
+#include "symcxx/types_nonatomic_binary.inc"
+#undef SYMCXX_TYPE
 
 
 symcxx::idx_t
 symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& objs){
+    std::cout << "Creating kind=" << static_cast<int>(kind) << ", with objs[" << objs.size() << "]: ";
+    for (auto obj : objs)
+        std::cout << obj << ", ";
+    std::cout << std::endl;
     switch(kind){
     case Kind::Add:
-        return add(objs);
+        if (objs.size() == 1)
+            return objs[0];
+        else if (objs.size() == 2)
+            return add2(objs[0], objs[1]);
+        else
+            return add(objs);
     default:
         throw std::runtime_error("create does not support kind.");
     }
@@ -110,8 +147,7 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
     case Kind::Float:
         return make_float(0);
     case Kind::Add:
-        for (const auto idx : inst.args()){
-            std::cout << "idx=" << idx << std::endl;
+        for (const auto idx : inst.args_from_stack()){
             objs.push_back(diff(idx, wrt_id));
         }
         return create(Kind::Add, objs);

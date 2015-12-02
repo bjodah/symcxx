@@ -9,16 +9,25 @@
 #endif
 
 namespace symcxx{
-    using hash_t = int; //std::size_t;
-    using idx_t = std::size_t;
-    union data_t {
-        const idx_t id;
-        const int i; // change to int64_t
-        const double d;
-        data_t(const idx_t id) : id(id) {}
-        data_t(const int i) : i(i) {} // change to int64_t
-        data_t(const double d) : d(d) {}
+    using hash_t = int; // std::size_t;
+    using idx_t = unsigned int; // std::size_t;
+    struct idx_pair_t {
+        idx_t first;
+        idx_t second;
     };
+
+    union data_t {
+        const idx_pair_t idx_pair;
+        const int64_t intgr;
+        const double dble;
+        data_t(const idx_t id) : idx_pair({id, 0}) {}
+        data_t(const idx_pair_t pr) : idx_pair(pr) {}
+        data_t(const int64_t i) : intgr(i) {}
+        data_t(const double d) : dble(d) {}
+    };
+    static_assert(sizeof(data_t) == 8, "8 bytes please");
+// #define GET_DATA(data, kind) ((kind == Kind::Integer) ? data.intgr :
+//                               ((kind == Kind::Float) ? data.dble : data.idx_pair.first))
 
     enum class Kind : int
     {
@@ -31,14 +40,22 @@ namespace symcxx{
     struct Basic;
     struct NameSpace;
 #define SYMCXX_TYPE(Cls, Parent, meth) struct Cls;
-#include "symcxx/types_composed.inc"
+#include "symcxx/types_nonatomic.inc"
 #undef SYMCXX_TYPE
 
 
     using ArgStack_t = std::vector<std::vector<idx_t> >;
 
+    // Reduction
     hash_t calc_hash(const idx_t args_idx, const Kind kind,
-                     const ArgStack_t& args_stack, const std::vector<Basic>& instances);
+                     const std::vector<Basic>& instances, const ArgStack_t& args_stack);
+    // Unary
+    hash_t calc_hash(const idx_t inst_idx, const Kind kind,
+                     const std::vector<Basic>& instances);
+    // Binary
+    hash_t calc_hash(const idx_t inst_idx0, const idx_t inst_idx1, const Kind kind,
+                     const std::vector<Basic>& instances);
+
     bool lt(const data_t arg1, const data_t arg2, const Kind kind, const ArgStack_t&, const std::vector<Basic>&);
     bool eq(const data_t arg1, const data_t arg2, const Kind kind, const ArgStack_t&, const std::vector<Basic>&);
 }
@@ -48,7 +65,8 @@ namespace symcxx{
 #include "symcxx/derived.hpp"
 
 inline symcxx::hash_t symcxx::calc_hash(const idx_t args_idx, const Kind kind,
-                                  const ArgStack_t& args_stack, const std::vector<Basic>& instances) {
+                                        const std::vector<Basic>& instances,
+                                        const ArgStack_t& args_stack) {
     const symcxx::hash_t most_significant = static_cast<symcxx::hash_t>(1) << (8*sizeof(symcxx::hash_t) - 1);
     symcxx::hash_t result = most_significant >> static_cast<int>(kind);
     result = result ^ most_significant >> static_cast<int>(kind)/2;
@@ -57,20 +75,40 @@ inline symcxx::hash_t symcxx::calc_hash(const idx_t args_idx, const Kind kind,
     return result;
 }
 
+inline symcxx::hash_t symcxx::calc_hash(const idx_t inst_idx, const Kind kind,
+                                        const std::vector<Basic>& instances) {
+    const symcxx::hash_t most_significant = static_cast<symcxx::hash_t>(1) << (8*sizeof(symcxx::hash_t) - 1);
+    symcxx::hash_t result = most_significant >> static_cast<int>(kind);
+    result = result ^ most_significant >> static_cast<int>(kind)/2;
+    result = result ^ instances[inst_idx].hash;
+    return result;
+}
+
+inline symcxx::hash_t symcxx::calc_hash(const idx_t inst_idx0, const idx_t inst_idx1, const Kind kind,
+                                        const std::vector<Basic>& instances) {
+    const symcxx::hash_t most_significant = static_cast<symcxx::hash_t>(1) << (8*sizeof(symcxx::hash_t) - 1);
+    symcxx::hash_t result = most_significant >> static_cast<int>(kind);
+    result = result ^ most_significant >> static_cast<int>(kind)/2;
+    result = result ^ instances[inst_idx0].hash;
+    result = result ^ instances[inst_idx1].hash;
+    return result;
+}
+
+
 inline bool symcxx::lt(const data_t arg1, const data_t arg2, const Kind kind,
                        const ArgStack_t& args_stack, const std::vector<Basic>& instances){
     switch(kind){
     case Kind::Symbol:
-        return arg1.id < arg2.id;
+        return arg1.idx_pair.first < arg2.idx_pair.first;
     case Kind::Integer:
-        return arg1.i < arg2.i;
+        return arg1.intgr < arg2.intgr;
     case Kind::Float:
-        return arg1.d < arg2.d;
+        return arg1.dble < arg2.dble;
     default:
         break;
     }
-    auto& c1 = args_stack[arg1.id];
-    auto& c2 = args_stack[arg2.id];
+    auto& c1 = args_stack[arg1.idx_pair.first];
+    auto& c2 = args_stack[arg2.idx_pair.first];
     if (c1.size() != c2.size())
         return c1.size() < c2.size();
     for (std::size_t idx=0; idx < c1.size(); ++idx){
@@ -88,16 +126,16 @@ inline bool symcxx::eq(const data_t arg1, const data_t arg2, const Kind kind,
                        const ArgStack_t& args_stack, const std::vector<Basic>& instances){
     switch(kind){
     case Kind::Symbol:
-        return arg1.id == arg2.id;
+        return arg1.idx_pair.first == arg2.idx_pair.first;
     case Kind::Integer:
-        return arg1.i == arg2.i;
+        return arg1.intgr == arg2.intgr;
     case Kind::Float:
-        return arg1.d == arg2.d;
+        return arg1.dble == arg2.dble;
     default:
         break;
     }
-    auto& c1 = args_stack[arg1.id];
-    auto& c2 = args_stack[arg2.id];
+    auto& c1 = args_stack[arg1.idx_pair.first];
+    auto& c2 = args_stack[arg2.idx_pair.first];
     if (c1.size() != c2.size())
         return false;
     for (std::size_t idx=0; idx < c1.size(); ++idx){

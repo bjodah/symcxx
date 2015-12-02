@@ -8,37 +8,29 @@ namespace symcxx {
         Float(const double data, const NameSpace * const ns) : Basic(std::hash<double>()(data), Kind::Float, data, ns) {}
     };
     struct Integer : public Basic {
-        Integer(const int data,  const NameSpace * const ns) : Basic(std::hash<int>()(data), Kind::Integer, data, ns) {}
+        Integer(const int64_t data,  const NameSpace * const ns) : Basic(std::hash<int64_t>()(data), Kind::Integer, data, ns) {}
     };
 
     // Non-atomic:
-    struct Composed : public Basic {
-        Composed(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
-            Basic(calc_hash(args_idx, kind, ns->args_stack, ns->instances), kind, args_idx, ns) {}
+    struct Unary : public Basic {
+        Unary(idx_t inst_idx, const Kind kind, const NameSpace * const ns) :
+            Basic(calc_hash(inst_idx, kind, ns->instances), kind, inst_idx, ns) {}
+    };
+    struct Binary : public Basic {
+        Binary(const idx_t inst_idx0, const idx_t inst_idx1, const Kind kind, const NameSpace * const ns) :
+            Basic(calc_hash(inst_idx0, inst_idx1, kind, ns->instances), kind, idx_pair_t({inst_idx0, inst_idx1}), ns) {}
     };
 
-    struct Unary : public Composed {
-#if !defined(NDEBUG)
-        Unary(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
-            Composed(args_idx, kind, ns) {
-            if (ns->args_stack[args_idx].size() != 1)
-                throw std::runtime_error("Unary takes one argument");
-        }
-#endif
+    struct Composed : public Basic {
+        Composed(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
+            Basic(calc_hash(args_idx, kind, ns->instances, ns->args_stack), kind, args_idx, ns) {}
     };
-    struct Binary : public Composed {
-#if !defined(NDEBUG)
-        Binary(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
-            Composed(args_idx, kind, ns) {
-            if (ns->args_stack[args_idx].size() != 2)
-                throw std::runtime_error("Binary takes two arguments");
-        }
-#endif
-    };
+
     struct Reduction : public Composed {
 #if !defined(NDEBUG)
         Reduction(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
-            Composed(args_idx, kind, ns) {
+            Composed(args_idx, kind, ns)
+        {
             if (ns->args_stack[args_idx].size() == 0)
                 throw std::runtime_error("Reduction needs at least one argument");
         }
@@ -65,14 +57,27 @@ namespace symcxx {
 #define S(x) #x
 #define SX(x) S(x)
 
-#define DECLARE(Name, Base) struct Name : public Base {     \
-        Name(idx_t args_idx,  const NameSpace * const ns) : \
-            Base(args_idx, Kind::Name, ns) {                \
-            std::cout << "constructing " SX(Name) " with args_idx=" << args_idx << std::endl; \
-        }                                                   \
+#define SYMCXX_TYPE(Cls, Parent, meth)                                  \
+    struct Cls : public Parent {                                        \
+        Cls(idx_t idx,  const NameSpace * const ns) :                   \
+            Parent(idx, Kind::Cls, ns) {                                \
+            std::cout << "constructing " SX(Cls) " with idx=" << idx << std::endl; \
+        }                                                               \
     };
-#define SYMCXX_TYPE(Cls, Parent, meth) DECLARE(Cls, Parent)
-#include "symcxx/types_composed.inc"
+#include "symcxx/types_nonatomic_args_stack.inc"
+#include "symcxx/types_nonatomic_unary.inc"
 #undef SYMCXX_TYPE
-#undef DECLARE
+
+#define SYMCXX_TYPE(Cls, Parent, meth)                                  \
+    struct Cls : public Parent {                                        \
+        Cls(idx_t idx0, idx_t idx1, const NameSpace * const ns) :       \
+            Parent(idx0, idx1, Kind::Cls, ns) {                              \
+            std::cout << "constructing " SX(Cls) " with idx0=" << idx0 << ", idx1=" << idx1 << std::endl; \
+        }                                                               \
+    };
+#include "symcxx/types_nonatomic_binary.inc"
+#undef SYMCXX_TYPE
+
+
+
 }
