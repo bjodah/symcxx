@@ -4,7 +4,7 @@ symcxx::NameSpace::NameSpace(idx_t nsymbs) : nsymbs(nsymbs) {
     instances.reserve(2*nsymbs + n_pre_assigned_integers);
     for (idx_t idx=0; idx < nsymbs; ++idx)
         instances.push_back(Symbol(idx, this));
-    for (idx_t idx=0; idx<n_pre_assigned_integers; ++idx)
+    for (idx_t idx=0; idx < n_pre_assigned_integers; ++idx)
         make_integer(idx);
 #if !defined(NDEBUG)
     for (int i=0; i<static_cast<int>(Kind::Kind_Count); ++i)
@@ -61,7 +61,7 @@ symcxx::NameSpace::is_one(const idx_t idx) const {
 symcxx::idx_t
 symcxx::NameSpace::make_integer(int i){
     if (i >= 0 && static_cast<idx_t>(i) < n_pre_assigned_integers)
-        return nsymbs + i - 1;
+        return nsymbs + i;
     const auto instance = Integer(i, this);
     idx_t idx;
     if (has(instance, &idx)){
@@ -169,6 +169,7 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
         else
             return ite(args);
     default:
+        std::cout << "!create does not support kind:" << static_cast<int>(kind) << std::endl;
         throw std::runtime_error("create does not support kind.");
     }
 }
@@ -181,6 +182,7 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
 #endif
     auto are_sorted = [&] () -> bool { return instances[inst_idx0] < instances[inst_idx1]; };
     switch(kind){
+    case Kind::Add:
     case Kind::Add2:
         if (inst_idx0 == inst_idx1)
             return create(Kind::Mul2, make_integer(2), inst_idx0);
@@ -188,6 +190,7 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
             return add2(inst_idx0, inst_idx1);
         else
             return add2(inst_idx1, inst_idx0);
+    case Kind::Mul:
     case Kind::Mul2:
         if (inst_idx0 == inst_idx1)
             return create(Kind::Pow, inst_idx0, make_integer(2));
