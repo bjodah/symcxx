@@ -48,12 +48,13 @@ TEST_CASE( "evalf", "[symcxx::NameSpace]" ) {
 }
 
 TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
+    const double x[2] = {3, 5};
     auto ns = symcxx::NameSpace(2);
+
     std::vector<symcxx::idx_t> v {{ 0, 1, 1 }};
     auto expr_id = ns.add(v);
     auto expr_id2 = ns.add(v);
     REQUIRE( expr_id == expr_id2 );
-    const double x[2] = {3, 5};
     const double res = ns.evalf(expr_id, x);
     const double ref = 3 + 5 + 5;
     // REQUIRE (std::abs(res - ref) < 1e-15);
@@ -67,4 +68,13 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double res1 = ns.evalf(diff1_id, x);
     const double ref1 = 2;
     REQUIRE (std::abs(res1 - ref1) < 1e-15);
+
+    auto expr3_id = ns.add2(0, 1);
+    const double res3 = ns.evalf(expr3_id, x);
+    const double ref3 = 3 + 5;
+    REQUIRE( std::abs(res3 - ref3) < 1e-15 );
+    auto diff3_id = ns.diff(expr3_id, 0);
+    const double res3d = ns.evalf(diff3_id, x);
+    REQUIRE( std::abs(res3d - 1) < 1e-15 );
+
 }

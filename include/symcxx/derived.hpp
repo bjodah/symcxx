@@ -60,9 +60,7 @@ namespace symcxx {
 #define SYMCXX_TYPE(Cls, Parent, meth)                                  \
     struct Cls : public Parent {                                        \
         Cls(idx_t idx,  const NameSpace * const ns) :                   \
-            Parent(idx, Kind::Cls, ns) {                                \
-            std::cout << "constructing " SX(Cls) " with idx=" << idx << std::endl; \
-        }                                                               \
+            Parent(idx, Kind::Cls, ns) {}                               \
     };
 #include "symcxx/types_nonatomic_args_stack.inc"
 #include "symcxx/types_nonatomic_unary.inc"
@@ -71,9 +69,7 @@ namespace symcxx {
 #define SYMCXX_TYPE(Cls, Parent, meth)                                  \
     struct Cls : public Parent {                                        \
         Cls(idx_t idx0, idx_t idx1, const NameSpace * const ns) :       \
-            Parent(idx0, idx1, Kind::Cls, ns) {                              \
-            std::cout << "constructing " SX(Cls) " with idx0=" << idx0 << ", idx1=" << idx1 << std::endl; \
-        }                                                               \
+            Parent(idx0, idx1, Kind::Cls, ns) {}                        \
     };
 #include "symcxx/types_nonatomic_binary.inc"
 #undef SYMCXX_TYPE

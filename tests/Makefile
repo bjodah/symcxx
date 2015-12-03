@@ -1,8 +1,11 @@
 CXX := g++
 #CXX := clang++-3.7
-CXXFLAGS ?= -std=c++11 -g -Wall -Wextra -Werror -Wpadded -pedantic -I../include -fno-omit-frame-pointer -O0 -ggdb
-#-D_GLIBCXX_DEBUG
-#-fsanitize=address 
+CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -I../include -fno-omit-frame-pointer $(DEFINES)
+ifeq ($(RELEASE),1)
+  CXXFLAGS+=-DNDEBUG -O2
+else
+  CXXFLAGS+=-g -O0 -ggdb
+endif
 
 .PHONY: test debug clean
 

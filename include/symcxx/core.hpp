@@ -1,8 +1,9 @@
 #pragma once
 
+#include <algorithm>  // std::sort
 #include <cmath>
 #include <functional>
-#include <vector>
+#include <vector> // std::vector
 
 #if !defined(NDEBUG)
 #include <iostream>
