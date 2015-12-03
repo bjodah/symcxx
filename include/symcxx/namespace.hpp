@@ -9,8 +9,7 @@ namespace symcxx{
         std::vector<std::vector<idx_t> > args_stack;
         const idx_t nsymbs;
         const idx_t padding___ = {0};
-        const static idx_t zero = 0;
-        const static idx_t one = 1;
+        const static idx_t n_pre_assigned_integers = 3;
         NameSpace(idx_t);
         idx_t idx(const Basic*) const;
         idx_t reg_args(const std::vector<idx_t>&);

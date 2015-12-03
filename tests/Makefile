@@ -4,7 +4,8 @@ CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -I../include -fn
 ifeq ($(RELEASE),1)
   CXXFLAGS+=-DNDEBUG -O2
 else
-  CXXFLAGS+=-g -O0 -ggdb
+  CXXFLAGS+=-g -O0
+# -ggdb
 endif
 
 .PHONY: test debug clean

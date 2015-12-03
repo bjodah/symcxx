@@ -133,6 +133,9 @@ symcxx::Basic::evalf(const double inp[]) const {
     case Kind::Lgamma:
         result = std::lgamma(evalf_arg0()); break;
     default:
+#if !defined(NDEBUG)
+        std::cout << "Kind: " << static_cast<int>(kind) << std::endl;
+#endif
         throw std::runtime_error("Cannot run evalf for type.");
     }
     return result;

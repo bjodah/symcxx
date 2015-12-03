@@ -69,6 +69,12 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double ref1 = 2;
     REQUIRE (std::abs(res1 - ref1) < 1e-15);
 
+}
+
+TEST_CASE( "diff_add2", "[symcxx::NameSpace]" ) {
+    const double x[2] = {3, 5};
+    auto ns = symcxx::NameSpace(2);
+
     auto expr3_id = ns.add2(0, 1);
     const double res3 = ns.evalf(expr3_id, x);
     const double ref3 = 3 + 5;

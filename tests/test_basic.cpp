@@ -62,17 +62,17 @@ TEST_CASE( "evalb", "[symcxx::Basic]" ) {
     auto idx_i2 = ns.make_integer(0);
     REQUIRE( idx_i == idx_i2 );
 
-    auto idx_lt = ns.lt(0, 1);
-    auto idx_le = ns.le(0, 1);
-    auto idx_eq = ns.eq(0, 1);
-    auto idx_ne = ns.ne(0, 1);
-    auto idx_ge = ns.ge(0, 1);
-    auto idx_gt = ns.gt(0, 1);
+    auto idx_lt = ns.lt(0, idx_i);
+    auto idx_le = ns.le(0, idx_i);
+    auto idx_eq = ns.eq(0, idx_i);
+    auto idx_ne = ns.ne(0, idx_i);
+    auto idx_ge = ns.ge(0, idx_i);
+    auto idx_gt = ns.gt(0, idx_i);
 
     auto& s = ns.instances[0];
     REQUIRE( s.data.idx_pair.first == 0 );
     auto& i = ns.instances[idx_i];
-
+    REQUIRE( i.data.intgr == 0 );
 
     auto& lt = ns.instances[idx_lt];
     auto& le = ns.instances[idx_le];

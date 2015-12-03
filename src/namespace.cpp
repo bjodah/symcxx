@@ -1,8 +1,15 @@
 #include "symcxx/core.hpp"
 
 symcxx::NameSpace::NameSpace(idx_t nsymbs) : nsymbs(nsymbs) {
+    instances.reserve(2*nsymbs + n_pre_assigned_integers);
     for (idx_t idx=0; idx < nsymbs; ++idx)
         instances.push_back(Symbol(idx, this));
+    for (idx_t idx=0; idx<n_pre_assigned_integers; ++idx)
+        make_integer(idx);
+#if !defined(NDEBUG)
+    for (int i=0; i<static_cast<int>(Kind::Kind_Count); ++i)
+        std::cout << i << ": " << kind_names[i] << std::endl;
+#endif
 }
 
 symcxx::idx_t
@@ -53,6 +60,8 @@ symcxx::NameSpace::is_one(const idx_t idx) const {
 
 symcxx::idx_t
 symcxx::NameSpace::make_integer(int i){
+    if (i >= 0 && static_cast<idx_t>(i) < n_pre_assigned_integers)
+        return nsymbs + i - 1;
     const auto instance = Integer(i, this);
     idx_t idx;
     if (has(instance, &idx)){
@@ -83,11 +92,11 @@ symcxx::NameSpace::make_nan(){
         const auto instance = Cls(reg_args(objs), this);                \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << SX(meth) "(...) - old!" << std::endl;          \
+            std::cout << STRINGIFY(meth) "(...) - old!" << std::endl;          \
             args_stack.pop_back();                                      \
             return idx;                                                 \
         }                                                               \
-        std::cout << SX(meth) "(...) - new!" << std::endl;              \
+        std::cout << STRINGIFY(meth) "(...) - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -100,10 +109,10 @@ symcxx::NameSpace::make_nan(){
         const auto instance = Cls(inst, this);                          \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << SX(meth) "(...) - old!" << std::endl;          \
+            std::cout << STRINGIFY(meth) "(...) - old!" << std::endl;          \
             return idx;                                                 \
         }                                                               \
-        std::cout << SX(meth) "(...) - new!" << std::endl;              \
+        std::cout << STRINGIFY(meth) "(...) - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -115,10 +124,10 @@ symcxx::NameSpace::make_nan(){
         const auto instance = Cls(inst0, inst1, this);                  \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << SX(meth) "(...) - old!" << std::endl;          \
+            std::cout << STRINGIFY(meth) "(...) - old!" << std::endl;          \
             return idx;                                                 \
         }                                                               \
-        std::cout << SX(meth) "(...) - new!" << std::endl;              \
+        std::cout << STRINGIFY(meth) "(...) - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -172,11 +181,20 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
 #endif
     auto are_sorted = [&] () -> bool { return instances[inst_idx0] < instances[inst_idx1]; };
     switch(kind){
-    // case Kind::Add2:
-    //     if (inst_idx0 == inst_idx1)
-    //         return create(Kind::Mul2, integer(2), inst_idx0);
-    //     if (lt(...))....
-    //     return add2()...
+    case Kind::Add2:
+        if (inst_idx0 == inst_idx1)
+            return create(Kind::Mul2, make_integer(2), inst_idx0);
+        if (are_sorted())
+            return add2(inst_idx0, inst_idx1);
+        else
+            return add2(inst_idx1, inst_idx0);
+    case Kind::Mul2:
+        if (inst_idx0 == inst_idx1)
+            return create(Kind::Pow, inst_idx0, make_integer(2));
+        if (are_sorted())
+            return mul2(inst_idx0, inst_idx1);
+        else
+            return mul2(inst_idx1, inst_idx0);
     case Kind::Sub:
         if (inst_idx0 == inst_idx1)
             return make_integer(0);

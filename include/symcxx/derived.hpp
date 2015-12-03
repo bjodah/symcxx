@@ -54,9 +54,6 @@ namespace symcxx {
 #endif
     };
 
-#define S(x) #x
-#define SX(x) S(x)
-
 #define SYMCXX_TYPE(Cls, Parent, meth)                                  \
     struct Cls : public Parent {                                        \
         Cls(idx_t idx,  const NameSpace * const ns) :                   \
