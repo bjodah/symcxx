@@ -11,10 +11,10 @@ endif
 .PHONY: test debug clean
 
 test: catch_symcxx
-	./catch_symcxx
+	ulimit -Sv 13500; ./catch_symcxx
 
 debug: debug_symcxx
-	valgrind ./debug_symcxx
+	ulimit -Sv 512000; valgrind ./debug_symcxx
 
 clean:
 	rm *.o
@@ -37,10 +37,8 @@ test_%.o: test_%.cpp ../include/symcxx/*.hpp
 TESTFILES=catch_symcxx.o test_namespace.o test_basic.o basic.o namespace.o
 
 catch_symcxx: $(TESTFILES)
-	ulimit -Sv 64000  # tests may not use more than 64MB
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
 
 debug_symcxx: debug_symcxx.cpp basic.o namespace.o
-	ulimit -Sv 64000  # tests may not use more than 64MB
 	$(CXX) $(CXXFLAGS) -o $@ $^
 

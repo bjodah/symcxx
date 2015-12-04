@@ -6,7 +6,7 @@ TEST_CASE( "construct, mul, evalf", "[symcxx::NameSpace]" ) {
     auto ns = symcxx::NameSpace(3);
     std::vector<symcxx::idx_t> v{{0, 1, 2}};
     auto mul_id = ns.mul(v);
-    REQUIRE( mul_id == 3 );
+    REQUIRE( mul_id == 3 + symcxx::NameSpace::n_pre_assigned_integers );
 
     double data[3] = {2.0, 3.0, 5.0};
     double result = ns.evalf(mul_id, data);
@@ -57,9 +57,13 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     REQUIRE( expr_id == expr_id2 );
     const double res = ns.evalf(expr_id, x);
     const double ref = 3 + 5 + 5;
-    // REQUIRE (std::abs(res - ref) < 1e-15);
+    REQUIRE (std::abs(res - ref) < 1e-15);
 
+    std::cout << std::endl << std::endl << std::endl;
+    std::cout << "About to diff:" << std::endl << std::endl;
     auto diff0_id = ns.diff(expr_id, 0);
+    std::cout << std::endl << std::endl << std::endl;
+    std::cout << "About to evalf:" << std::endl << std::endl;
     const double res0 = ns.evalf(diff0_id, x);
     const double ref0 = 1;
     REQUIRE (std::abs(res0 - ref0) < 1e-15);
