@@ -124,6 +124,18 @@ inline bool symcxx::lt(const data_t arg1, const data_t arg2, const Kind kind,
         return arg1.intgr < arg2.intgr;
     case Kind::Float:
         return arg1.dble < arg2.dble;
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_unary.inc"
+#undef SYMCXX_TYPE
+        return instances[arg1.idx_pair.first] < instances[arg2.idx_pair.first];
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_binary.inc"
+#undef SYMCXX_TYPE
+        if (instances[arg1.idx_pair.first] < instances[arg2.idx_pair.first])
+            return true;
+        return instances[arg1.idx_pair.second] < instances[arg2.idx_pair.second];
     default:
         break;
     }
@@ -144,6 +156,9 @@ inline bool symcxx::lt(const data_t arg1, const data_t arg2, const Kind kind,
 
 inline bool symcxx::eq(const data_t arg1, const data_t arg2, const Kind kind,
                        const ArgStack_t& args_stack, const std::vector<Basic>& instances){
+#if !defined(NDEBUG)
+    std::cout << "eq(...)" << std::endl;
+#endif
     switch(kind){
     case Kind::Symbol:
         return arg1.idx_pair.first == arg2.idx_pair.first;
@@ -151,6 +166,17 @@ inline bool symcxx::eq(const data_t arg1, const data_t arg2, const Kind kind,
         return arg1.intgr == arg2.intgr;
     case Kind::Float:
         return arg1.dble == arg2.dble;
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_unary.inc"
+#undef SYMCXX_TYPE
+        return arg1.idx_pair.first == arg2.idx_pair.first;
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_binary.inc"
+#undef SYMCXX_TYPE
+        return ((arg1.idx_pair.first == arg2.idx_pair.first) &&
+                (arg1.idx_pair.second == arg2.idx_pair.second));
     default:
         break;
     }

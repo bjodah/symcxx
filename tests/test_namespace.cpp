@@ -47,6 +47,16 @@ TEST_CASE( "evalf", "[symcxx::NameSpace]" ) {
     }
 }
 
+TEST_CASE( "create", "[symcxx::NameSpace]" ) {
+    auto ns = symcxx::NameSpace(0);
+    auto two_id = ns.make_integer(2);
+    auto two_plus_two_id = ns.create(symcxx::Kind::Add, two_id, two_id);
+    REQUIRE (ns.instances[two_plus_two_id].kind == symcxx::Kind::Pow );
+    REQUIRE (ns.instances[two_plus_two_id].data.idx_pair.first == two_id );
+    REQUIRE (ns.instances[two_plus_two_id].data.idx_pair.second == two_id );
+}
+
+
 TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double x[2] = {3, 5};
     auto ns = symcxx::NameSpace(2);
@@ -59,11 +69,7 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double ref = 3 + 5 + 5;
     REQUIRE (std::abs(res - ref) < 1e-15);
 
-    std::cout << std::endl << std::endl << std::endl;
-    std::cout << "About to diff:" << std::endl << std::endl;
     auto diff0_id = ns.diff(expr_id, 0);
-    std::cout << std::endl << std::endl << std::endl;
-    std::cout << "About to evalf:" << std::endl << std::endl;
     const double res0 = ns.evalf(diff0_id, x);
     const double ref0 = 1;
     REQUIRE (std::abs(res0 - ref0) < 1e-15);
@@ -83,8 +89,13 @@ TEST_CASE( "diff_add2", "[symcxx::NameSpace]" ) {
     const double res3 = ns.evalf(expr3_id, x);
     const double ref3 = 3 + 5;
     REQUIRE( std::abs(res3 - ref3) < 1e-15 );
+
+    std::cout << std::endl << std::endl << std::endl;
+    std::cout << "About to diff:" << std::endl << std::endl;
     auto diff3_id = ns.diff(expr3_id, 0);
+
+    std::cout << std::endl << std::endl << std::endl;
+    std::cout << "About to evalf:" << std::endl << std::endl;
     const double res3d = ns.evalf(diff3_id, x);
     REQUIRE( std::abs(res3d - 1) < 1e-15 );
-
 }

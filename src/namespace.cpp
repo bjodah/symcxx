@@ -31,13 +31,22 @@ symcxx::NameSpace::reg_args(const std::vector<idx_t>& objs) {
 bool
 symcxx::NameSpace::has(const Basic& looking_for, idx_t * idx) const {
     idx_t idx_ = 0;
+#if !defined(NDEBUG)
+    std::cout << "has(looking_for.hash=" << looking_for.hash << ")";
+#endif
     for (const auto& inst : instances){
         if (looking_for == inst){
             *idx = idx_;
+#if !defined(NDEBUG)
+            std::cout << " -> true";
+#endif
             return true;
         }
         ++idx_;
     }
+#if !defined(NDEBUG)
+    std::cout << " -> false";
+#endif
     return false;
 }
 
@@ -88,16 +97,16 @@ symcxx::NameSpace::make_nan(){
     return make_float(std::nan(""));
 }
 
-#define SYMCXX_TYPE(Cls, Parent, meth) \
-    symcxx::idx_t symcxx::NameSpace::meth(const std::vector<symcxx::idx_t>& args){ \
-        const auto instance = Cls(reg_args(args), this);                \
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    symcxx::idx_t symcxx::NameSpace::METH_(const std::vector<symcxx::idx_t>& args){ \
+        const auto instance = CLS_(reg_args(args), this);                \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << STRINGIFY(meth) "("<< args <<") - old!" << std::endl; \
+            std::cout << STRINGIFY(METH_) "("<< args <<") - old!" << std::endl; \
             args_stack.pop_back();                                      \
             return idx;                                                 \
         }                                                               \
-        std::cout << STRINGIFY(meth) "("<< args <<") - new!" << std::endl;              \
+        std::cout << STRINGIFY(METH_) "("<< args <<") - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -105,30 +114,30 @@ symcxx::NameSpace::make_nan(){
 #undef SYMCXX_TYPE
 
 
-#define SYMCXX_TYPE(Cls, Parent, meth) \
-    symcxx::idx_t symcxx::NameSpace::meth(const symcxx::idx_t inst){ \
-        const auto instance = Cls(inst, this);                          \
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    symcxx::idx_t symcxx::NameSpace::METH_(const symcxx::idx_t inst){ \
+        const auto instance = CLS_(inst, this);                          \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << STRINGIFY(meth) "("<< inst <<") - old!" << std::endl;          \
+            std::cout << STRINGIFY(METH_) "("<< inst <<") - old!" << std::endl;          \
             return idx;                                                 \
         }                                                               \
-        std::cout << STRINGIFY(meth) "("<< inst <<") - new!" << std::endl;   \
+        std::cout << STRINGIFY(METH_) "("<< inst <<") - new!" << std::endl;   \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
 #include "symcxx/types_nonatomic_unary.inc"
 #undef SYMCXX_TYPE
 
-#define SYMCXX_TYPE(Cls, Parent, meth) \
-    symcxx::idx_t symcxx::NameSpace::meth(const symcxx::idx_t inst0, const symcxx::idx_t inst1){  \
-        const auto instance = Cls(inst0, inst1, this);                  \
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    symcxx::idx_t symcxx::NameSpace::METH_(const symcxx::idx_t inst0, const symcxx::idx_t inst1){  \
+        const auto instance = CLS_(inst0, inst1, this);                  \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << STRINGIFY(meth) "("<< inst0 <<", "<< inst1 <<") - old!" << std::endl;          \
+            std::cout << STRINGIFY(METH_) "("<< inst0 <<", "<< inst1 <<") - old!" << std::endl;          \
             return idx;                                                 \
         }                                                               \
-        std::cout << STRINGIFY(meth) "("<< inst0 <<", "<< inst1 <<") - new!" << std::endl;              \
+        std::cout << STRINGIFY(METH_) "("<< inst0 <<", "<< inst1 <<") - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -137,7 +146,7 @@ symcxx::NameSpace::make_nan(){
 
 symcxx::idx_t
 symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
-    std::cout << "Creating kind=" << kind_names[static_cast<int>(kind)] << ", with args[" << args.size() << "]: ";
+    std::cout << "Creating(args-vec) kind=" << kind_names[static_cast<int>(kind)] << ", with args[" << args.size() << "]: ";
     for (auto obj : args)
         std::cout << obj << ", ";
     std::cout << std::endl;
@@ -178,10 +187,19 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
 symcxx::idx_t
 symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t inst_idx1){
 #ifndef NDEBUG
-    std::cout << "Creating kind=" << kind_names[static_cast<int>(kind)] << ", with inst_idx0=" << inst_idx0 <<
+    std::cout << "Creating(binary) kind=" << kind_names[static_cast<int>(kind)] << ", with inst_idx0=" << inst_idx0 <<
         ", inst_idx1=" << inst_idx1 << std::endl;
 #endif
-    auto are_sorted = [&] () -> bool { return instances[inst_idx0] < instances[inst_idx1]; };
+    auto are_sorted = [&] () -> bool {
+#ifndef NDEBUG
+        std::cout << "are_sorted()";
+#endif
+        bool result = instances[inst_idx0] < instances[inst_idx1];
+#ifndef NDEBUG
+        std::cout << " -> " << result << std::endl;
+#endif
+        return result;
+    };
     switch(kind){
     case Kind::Add:
     case Kind::Add2:
@@ -272,9 +290,9 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
 }
 
 std::vector<symcxx::idx_t>
-symcxx::NameSpace::collect(const Kind kind, const std::vector<idx_t>& sorted_args) const {
+symcxx::NameSpace::collect(const Kind collect_to_kind, const std::vector<idx_t>& sorted_args) const {
 #if !defined(NDEBUG)
-    std::cout << "collect(kind=" << kind_names[static_cast<int>(kind)] << ", sorted_args="<< sorted_args<<")";
+    std::cout << "collect(collect_to_kind=" << kind_names[static_cast<int>(collect_to_kind)] << ", sorted_args="<< sorted_args<<")";
 #endif
     const idx_t nargs = sorted_args.size();
     if (nargs <= 1)
@@ -283,13 +301,13 @@ symcxx::NameSpace::collect(const Kind kind, const std::vector<idx_t>& sorted_arg
     idx_t count = 1;
     std::vector<idx_t> new_args;
     bool is_last;
-    auto add = [&] (idx_t arg, idx_t cnt) -> void {
-        if (cnt == 1)
-            new_args.push_back(arg);
-        else
-            new_args.push_back(create(kind, make_integer(cnt), arg));
+    auto add = [&] (idx_t arg_, idx_t cnt_) -> void {
+        if (cnt_ == 1)
+            new_args.push_back(arg_);
+        else if (cnt_ > 1)
+            new_args.push_back(create(collect_to_kind, make_integer(cnt_), arg_));
     };
-    for (idx_t idx=0; idx<nargs-1; ++idx){
+    for (idx_t idx=1; idx<nargs; ++idx){
         const auto arg = sorted_args[idx];
         is_last = (idx == (nargs - 1));
         if (arg == prev){
