@@ -1,13 +1,13 @@
 #include "symcxx/core.hpp"
 
-symcxx::NameSpace::NameSpace(idx_t nsymbs) : nsymbs(nsymbs) {
-    instances.reserve(2*nsymbs + n_pre_assigned_integers);
-    for (idx_t idx=0; idx < nsymbs; ++idx)
+symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_symbs(n_pre_symbs) {
+    instances.reserve(2*n_pre_symbs + n_pre_intgrs);
+    for (idx_t idx=0; idx < n_pre_symbs; ++idx)
         instances.push_back(Symbol(idx, this));
-    for (idx_t idx=0; idx < n_pre_assigned_integers; ++idx)
+    for (idx_t idx=0; idx < n_pre_intgrs; ++idx)
         instances.push_back(Integer(idx, this));
 #if !defined(NDEBUG)
-    std::cout << "n_pre_assigned_integers=" << n_pre_assigned_integers << std::endl;
+    std::cout << "n_pre_intgrs=" << n_pre_intgrs << std::endl;
     for (int i=0; i<static_cast<int>(Kind::Kind_Count); ++i)
         std::cout << i << ": " << kind_names[i] << std::endl;
 #endif
@@ -69,9 +69,32 @@ symcxx::NameSpace::is_one(const idx_t idx) const {
 }
 
 symcxx::idx_t
+symcxx::NameSpace::make_symbol(idx_t symb_idx){
+    if (symb_idx < n_pre_symbs)
+        return symb_idx;
+    const auto instance = Symbol(symb_idx, this);
+    idx_t idx;
+    if (has(instance, &idx)){
+#if !defined(NDEBUG)
+        std::cout << "make_symbol(" << symb_idx << ") - old!" << std::endl;
+#endif
+        throw std::runtime_error("Something fishy about that call..");
+        return idx;
+    }
+#if !defined(NDEBUG)
+    std::cout << "make_symbol(" << idx << ") - new!" << std::endl;
+#endif
+    if (symb_idx != n_symbs)
+        throw std::runtime_error("Something fishy about skipping symbols..");
+    n_symbs++;
+    instances.push_back(instance);
+    return instances.size() - 1;
+}
+
+symcxx::idx_t
 symcxx::NameSpace::make_integer(int i){
-    if (i >= 0 && static_cast<idx_t>(i) < n_pre_assigned_integers)
-        return nsymbs + i;
+    if (i >= 0 && static_cast<idx_t>(i) < n_pre_intgrs)
+        return n_pre_symbs + i;
     const auto instance = Integer(i, this);
     idx_t idx;
     if (has(instance, &idx)){

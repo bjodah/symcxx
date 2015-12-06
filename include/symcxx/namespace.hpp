@@ -7,15 +7,17 @@ namespace symcxx{
         // there until the NameSpace instance is deleted.
         std::vector<Basic> instances;
         std::vector<std::vector<idx_t> > args_stack;
-        const idx_t nsymbs;
-        const idx_t padding___ = {0};
-        const static idx_t n_pre_assigned_integers = 3;
+        const idx_t n_pre_symbs = 3;
+        idx_t n_symbs;
+        // idx_t __padding {0};
+        const static idx_t n_pre_intgrs = 3;
         NameSpace(idx_t);
         idx_t idx(const Basic*) const;
         idx_t reg_args(const std::vector<idx_t>&);
         bool has(const Basic&, idx_t*) const;
         bool is_zero(const idx_t) const;
         bool is_one(const idx_t) const;
+        idx_t make_symbol(idx_t i);
         idx_t make_integer(int i);
         idx_t make_float(double f);
         idx_t make_nan();
