@@ -263,6 +263,11 @@ symcxx::NameSpace::evalf(const idx_t id, const double inp[]) const {
     return instances[id].evalf(inp);
 }
 
+bool
+symcxx::NameSpace::evalb(const idx_t id, const double inp[]) const {
+    return instances[id].evalb(inp);
+}
+
 symcxx::idx_t
 symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
 {
@@ -298,7 +303,7 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
 }
 
 std::vector<symcxx::idx_t>
-symcxx::NameSpace::collect(const Kind collect_to_kind, const std::vector<idx_t>& sorted_args) const {
+symcxx::NameSpace::collect(const Kind collect_to_kind, const std::vector<idx_t>& sorted_args) {
 #if !defined(NDEBUG)
     std::cout << "collect(collect_to_kind=" << kind_names[static_cast<int>(collect_to_kind)] << ", sorted_args="<< sorted_args<<")";
 #endif
@@ -378,7 +383,7 @@ std::vector<symcxx::idx_t>
 symcxx::NameSpace::merge_drop_sort_collect(const std::vector<idx_t>& args,
                                            const Kind collect_to,
                                            const std::vector<idx_t>& drop,
-                                           const Kind merge_kind) const {
+                                           const Kind merge_kind) {
 #if !defined(NDEBUG)
     std::cout << "merge_drop_sort_collect(args=" << args << ", collect_to=" << kind_names[static_cast<int>(collect_to)] <<
         ", drop=" << drop << ", merge_kind=" << kind_names[static_cast<int>(merge_kind)] << ")";

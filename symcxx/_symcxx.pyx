@@ -24,6 +24,9 @@ cdef class NameSpace:
     def make_nan(self):
         return self.thisptr.make_nan()
 
+    def evalb(self, idx_t idx, double [::1] inp):
+        return self.thisptr.evalb(idx, &inp[0])
+
     def evalf(self, idx_t idx, double [::1] inp):
         return self.thisptr.evalf(idx, &inp[0])
 
@@ -46,3 +49,22 @@ cdef class NameSpace:
 
     def sub(self, idx0, idx1):
         return self.thisptr.sub(idx0, idx1)
+
+    # Relational
+    def lt(self, idx0, idx1):
+        return self.thisptr.lt(idx0, idx1)
+
+    def le(self, idx0, idx1):
+        return self.thisptr.le(idx0, idx1)
+
+    def eq(self, idx0, idx1):
+        return self.thisptr.eq(idx0, idx1)
+
+    def ne(self, idx0, idx1):
+        return self.thisptr.ne(idx0, idx1)
+
+    def ge(self, idx0, idx1):
+        return self.thisptr.ge(idx0, idx1)
+
+    def gt(self, idx0, idx1):
+        return self.thisptr.gt(idx0, idx1)

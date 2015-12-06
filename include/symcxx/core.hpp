@@ -50,12 +50,12 @@ namespace symcxx{
 #define STRINGIFY0(x) #x
 #define STRINGIFY(x) STRINGIFY0(x)
 
-    const static std::array<std::string, static_cast<int>(Kind::Kind_Count)+1> kind_names {
+    const static std::array<std::string, static_cast<int>(Kind::Kind_Count)+1> kind_names {{
 #define SYMCXX_TYPE(Cls, Parent, meth) "\"" STRINGIFY(Cls) "\"",
 #include "symcxx/types.inc"
 #undef SYMCXX_TYPE
         "Kind_Count"
-            };
+            }};
 
     struct Basic;
     struct NameSpace;

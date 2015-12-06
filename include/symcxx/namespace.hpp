@@ -35,16 +35,17 @@ namespace symcxx{
         idx_t create(const Kind, const std::vector<idx_t>&);
         idx_t create(const Kind, const idx_t, const idx_t);
         double evalf(const idx_t id, const double inp[]) const;
+        bool evalb(const idx_t id, const double inp[]) const;
         idx_t diff(const idx_t inst_id, const idx_t wrt_id);
 
         // NameSpace(NameSpace const&) = delete;
         // NameSpace& operator=(NameSpace const&) = delete;
 
     private:
-        std::vector<idx_t> collect(const Kind, const std::vector<idx_t>&) const;
+        std::vector<idx_t> collect(const Kind, const std::vector<idx_t>&);
         std::vector<idx_t> merge(const Kind, const std::vector<idx_t>&) const;
         std::vector<idx_t> sort_args(const std::vector<idx_t>&) const;
         std::vector<idx_t> merge_drop_sort_collect(const std::vector<idx_t>&, const Kind,
-                                                   const std::vector<idx_t>&, const Kind) const;
+                                                   const std::vector<idx_t>&, const Kind);
     };
 }
