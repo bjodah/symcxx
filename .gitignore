@@ -6,4 +6,5 @@ build/
 symcxx/_symcxx.so
 symcxx/_symcxx.c
 symcxx/_symcxx.cpp
-**.pyccython_debug/
+cython_debug/
+**.pyc

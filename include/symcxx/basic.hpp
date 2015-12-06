@@ -27,7 +27,9 @@ namespace symcxx{
         bool evalb(const double inp[]) const;
     };
 
-    static_assert(sizeof(Basic) == 8+4+4+8, "24-bytes please (64-bit system)");
+    static_assert((sizeof(Basic) == 8+4+4+8) || 
+                  (sizeof(Basic) == 8+4+4+4),
+                  "24-bytes (64-bit system) or 20-bytes (32-bit system)");
     // 8, 2, 2, 4 ? by using data_t/short/short/x32 ?
     // that would give us twice as many objects per L1 cache line. (4 vs. 2)
 }
