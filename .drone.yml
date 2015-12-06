@@ -3,3 +3,6 @@ build:
   commands:
     - cd tests
     - make
+    - make -B CXX=clang-3.7
+    - make -B RELEASE=1
+    - make -B CXX=clang-3.7 RELEASE=1

@@ -6,7 +6,7 @@
 #include <functional>
 #include <vector>  // std::vector
 
-#if !defined(NDEBUG)
+// #if !defined(NDEBUG)
 #include <iostream>
 #include <iterator>
 template <typename T>
@@ -18,7 +18,7 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
   }
   return out;
 }
-#endif
+//#endif
 
 namespace symcxx{
     using hash_t = int; // std::size_t;

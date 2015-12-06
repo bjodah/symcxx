@@ -147,7 +147,9 @@ bool
 symcxx::Basic::evalb(const double inp[]) const {
     auto evalf_arg0 = [&]() -> double { return ns->instances[data.idx_pair.first].evalf(inp); };
     auto evalf_arg1 = [&]() -> double { return ns->instances[data.idx_pair.second].evalf(inp); };
+#if !defined(NDEBUG)
     std::cout << "evalb, " << data.idx_pair.first << ", " << data.idx_pair.second << std::endl;
+#endif
     switch(kind){
     case Kind::Lt:
         return evalf_arg0()  < evalf_arg1();

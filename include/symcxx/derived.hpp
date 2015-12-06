@@ -27,21 +27,21 @@ namespace symcxx {
     };
 
     struct Reduction : public Composed {
-#if !defined(NDEBUG)
         Reduction(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
             Composed(args_idx, kind, ns)
         {
+#if !defined(NDEBUG)
             if (ns->args_stack[args_idx].size() == 0)
                 throw std::runtime_error("Reduction needs at least one argument");
-        }
 #endif
+        }
     };
 
     struct Ternary : public Composed {
-#if !defined(NDEBUG)
         Ternary(idx_t args_idx, const Kind kind, const NameSpace * const ns) :
             Composed(args_idx, kind, ns)
         {
+#if !defined(NDEBUG)
             if (ns->args_stack[args_idx].size() != 3)
                 throw std::runtime_error("ITE needs three arguments");
             if (ns->instances[ns->args_stack[args_idx][0]].kind < Kind::Lt)
@@ -50,8 +50,8 @@ namespace symcxx {
                 throw std::runtime_error("ITE arg1 cannot be a Relational");
             if (ns->instances[ns->args_stack[args_idx][2]].kind >= Kind::Lt)
                 throw std::runtime_error("ITE arg2 cannot be a Relational");
-        }
 #endif
+        }
     };
 
 #define SYMCXX_TYPE(Cls, Parent, meth)                                  \

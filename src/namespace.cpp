@@ -75,10 +75,14 @@ symcxx::NameSpace::make_integer(int i){
     const auto instance = Integer(i, this);
     idx_t idx;
     if (has(instance, &idx)){
+#if !defined(NDEBUG)
         std::cout << "make_integer(" << i << ") - old!" << std::endl;
+#endif
         return idx;
     }
+#if !defined(NDEBUG)
     std::cout << "make_integer(" << i << ") - new!" << std::endl;
+#endif
     instances.push_back(instance);
     return instances.size() - 1;
 }
@@ -146,10 +150,12 @@ symcxx::NameSpace::make_nan(){
 
 symcxx::idx_t
 symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
+#if !defined(NDEBUG)
     std::cout << "Creating(args-vec) kind=" << kind_names[static_cast<int>(kind)] << ", with args[" << args.size() << "]: ";
     for (auto obj : args)
         std::cout << obj << ", ";
     std::cout << std::endl;
+#endif
     const auto zero = make_integer(0);
     const auto one = make_integer(1);
     switch(kind){
@@ -179,7 +185,9 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
         else
             return ite(args);
     default:
+#if !defined(NDEBUG)
         std::cout << "!create does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;
+#endif
         throw std::runtime_error("create does not support kind.");
     }
 }
