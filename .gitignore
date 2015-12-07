@@ -8,3 +8,4 @@ symcxx/_symcxx.c
 symcxx/_symcxx.cpp
 cython_debug/
 **.pyc
+symcxx/_symcxx.pyx
