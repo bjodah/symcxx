@@ -9,6 +9,9 @@
 # ${_message_for_rendered}
 
 from libcpp cimport bool
+from libcpp.vector cimport vector
+from libcpp.string cimport string
+
 ctypedef unsigned int idx_t
 
 import numpy as np
@@ -21,6 +24,7 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         idx_t make_integer(int)
         idx_t make_float(double)
         idx_t make_nan()
+        string print_ast(const idx_t, vector[string]&)
 
         bool evalb(idx_t, const double *)
         double evalf(idx_t, const double *)
@@ -48,6 +52,9 @@ class _IndexedObject(object):
             return True
         else:
             return False
+
+    def __str__(self):
+        return self.ns.print_ast(self.idx)
 
     def __add__(self, other):
         other = _implicit_conversion(self.ns, other)
@@ -88,11 +95,12 @@ class _IndexedObject(object):
         return self.ns.evalf(self.idx, inp)
 
     def diff(self, wrt):
-        return self.ns.diff(self.idx, wrt.idx)
+        return _IndexedObject(self.ns.diff(self.idx, wrt.idx), self.ns)
 
 
 def _implicit_conversion(ns, other):
     if isinstance(other, _IndexedObject):  # or look for 'ns' and 'idx'?
+        assert other.ns == ns
         return other
     elif isinstance(other, int):
         return _IndexedObject(ns.make_integer(other), ns)
@@ -126,6 +134,9 @@ cdef class PyNameSpace:
     def make_nan(self):
         return self.thisptr.make_nan()
 
+    def print_ast(self, idx):
+        return self.thisptr.print_ast(idx, self.symbol_names)
+
     def evalb(self, idx_t idx, double [::1] inp):
         return self.thisptr.evalb(idx, &inp[0])
 
@@ -142,7 +153,7 @@ cdef class PyNameSpace:
 
     def ${meth}(self, obj):
         obj = _implicit_conversion(self, obj)
-        return _IndexedObject(self._${Cls}(obj), self)
+        return _IndexedObject(self._${Cls}(obj.idx), self)
 %endfor
 
     # Binary:
@@ -152,7 +163,7 @@ cdef class PyNameSpace:
     def ${meth}(self, obj0, obj1):
         obj0 = _implicit_conversion(self, obj0)
         obj1 = _implicit_conversion(self, obj1)
-        return _IndexedObject(self._${Cls}(obj0, obj1), self)
+        return _IndexedObject(self._${Cls}(obj0.idx, obj1.idx), self)
 %endfor
 
     def Number(self, val):

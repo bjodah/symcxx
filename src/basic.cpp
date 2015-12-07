@@ -38,6 +38,40 @@ bool
 symcxx::Basic::operator > (const Basic& other) const {
     return not (*this < other) and not (*this == other);
 }
+
+std::string
+symcxx::Basic::print(const std::vector<std::string>& symbol_names) const {
+    std::ostringstream os;
+    os << kind_names[static_cast<int>(kind)] + "(";
+    switch(kind){
+    case Kind::Symbol:
+        if (symbol_names.size() == 0)
+            os << data.idx_pair.first;
+        else
+            os << symbol_names[data.idx_pair.first];
+        break;
+    case Kind::Integer:
+        os << data.intgr; break;
+    case Kind::Float:
+        os << data.dble; break;
+// #define SYMCXX_TYPE(CLS_, PARENT_, METH_)
+//     case Kind::CLS_:
+// #include "symcxx/types_nonatomic_unary.inc"
+//         os << data.idx_pair.first; break;
+// #include "symcxx/types_nonatomic_binary.inc"
+//         os << data.idx_pair.first << ", " << data.idx_pair.second; break;
+// #include "symcxx/types_nonatomic_args_stack.inc"
+// #undef SYMCXX_TYPE
+//         os << ns->args_stack[data.idx_pair.first]; break;
+//     case Kind::Kind_Count:
+//         break;
+    default:
+        throw std::runtime_error("Not implemented");
+    }
+    os << ")";
+    return os.str();
+}
+
 bool
 symcxx::Basic::is_atomic() const {
     return static_cast<int>(kind) <= static_cast<int>(Kind::Float);

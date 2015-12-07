@@ -21,6 +21,7 @@ namespace symcxx{
         idx_t make_integer(int i);
         idx_t make_float(double f);
         idx_t make_nan();
+        std::string print_ast(const idx_t, const std::vector<std::string>&) const;
 
 #define SYMCXX_TYPE(Cls, Parent, meth) idx_t meth(const std::vector<idx_t>&);
 #include "symcxx/types_nonatomic_args_stack.inc"

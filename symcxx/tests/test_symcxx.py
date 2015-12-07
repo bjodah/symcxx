@@ -58,4 +58,14 @@ def test_division():
 def test_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')
-    assert ((3*x).diff(x) == ns.Number(3)) is True
+    expr = (3*x)
+    deriv = expr.diff(x)
+    ref = ns.Number(3)
+    print(deriv, deriv.idx)
+    print(ref, ref.idx)
+    assert (deriv == ref) is True
+
+def test_str():
+    ns = NameSpace(0)
+    x = ns.Symbol('x')
+    assert str(3*x) == 'Mul2(x, 3)'

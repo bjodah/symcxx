@@ -22,12 +22,14 @@ namespace symcxx{
         bool operator >= (const Basic& other) const;
         bool operator > (const Basic& other) const;
 
+        std::string print(const std::vector<std::string>&) const;
+
         bool is_atomic() const;
         double evalf(const double inp[]) const;
         bool evalb(const double inp[]) const;
     };
 
-    static_assert((sizeof(Basic) == 8+4+4+8) || 
+    static_assert((sizeof(Basic) == 8+4+4+8) ||
                   (sizeof(Basic) == 8+4+4+4),
                   "24-bytes (64-bit system) or 20-bytes (32-bit system)");
     // 8, 2, 2, 4 ? by using data_t/short/short/x32 ?

@@ -124,6 +124,41 @@ symcxx::NameSpace::make_nan(){
     return make_float(std::nan(""));
 }
 
+std::string
+symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& symbol_names) const {
+    const auto& inst = instances[idx];
+    std::ostringstream os;
+    bool first = true;
+    switch(inst.kind){
+    case Kind::Symbol:
+    case Kind::Integer:
+    case Kind::Float:
+        os << inst.print(symbol_names);
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_unary.inc"
+        os << print_ast(inst.data.idx_pair.first, symbol_names); break;
+#include "symcxx/types_nonatomic_binary.inc"
+        os << print_ast(inst.data.idx_pair.first, symbol_names) << ", " <<
+            print_ast(inst.data.idx_pair.second, symbol_names); break;
+#include "symcxx/types_nonatomic_args_stack.inc"
+#undef SYMCXX_TYPE
+        for (auto i : args_stack[inst.data.idx_pair.first]){
+            if (first)
+                first = false;
+            else
+                os << ", ";
+            os << print_ast(i, symbol_names);
+        }
+        break;
+    case Kind::Kind_Count:
+        break;
+    }
+    os << ")";
+    return os.str();
+}
+
+
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     symcxx::idx_t symcxx::NameSpace::METH_(const std::vector<symcxx::idx_t>& args){ \
         const auto instance = CLS_(reg_args(args), this);                \
