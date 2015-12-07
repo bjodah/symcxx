@@ -14,16 +14,40 @@ SYMCXX_RELEASE_VERSION = os.environ.get('SYMCXX_RELEASE_VERSION', '')  # v*
 # Cythonize .pyx file if it exists (not in source distribution)
 ext_modules = []
 
+def _read(lines, macro='SYMCXX_TYPE'):
+    for l in lines:
+        if not l.startswith(macro + '('):
+            continue
+        l = l.split('//')[0]  # strip comments marked with // (misses /* */)
+        l = ')'.join(l.split(macro + '(')[1].split(')')[:-1])
+        yield tuple([_.strip() for _ in l.split(',')])
+
 if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
         '--help-commands', 'egg_info', 'clean', '--version'):
-    USE_CYTHON = os.path.exists('symcxx/_symcxx.pyx')
+    pyx_path = 'symcxx/_symcxx.pyx'
+    template_path = pyx_path + '.mako_template'
+    USE_CYTHON = os.path.exists(template_path)
     ext = '.pyx' if USE_CYTHON else '.c'
     ext_modules = [Extension(
         'symcxx._symcxx',
         ['symcxx/_symcxx'+ext]
     )]
     if USE_CYTHON:
+        from mako.template import Template
+        from mako.exceptions import text_error_template
         from Cython.Build import cythonize
+        stub = 'types_nonatomic_'
+        path_stub = './include/symcxx/' + stub
+        subsd = {stub+k: list(_read(open(path_stub+k+'.inc').readlines()))
+                 for k in ('unary', 'binary')}
+        subsd['_message_for_rendered'] = 'THIS IS A GENERATED FILE DO NOT EDIT'
+        try:
+            rendered_pyx = Template(open(template_path, 'rt').read()).render(**subsd)
+        except:
+            print(text_error_template().render_unicode())
+            raise
+        else:
+            open(pyx_path, 'wt').write(rendered_pyx)
         ext_modules = cythonize(ext_modules,
                                 include_path=['./include'],
                                 gdb_debug=True)

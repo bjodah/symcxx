@@ -320,6 +320,17 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
         return create(Kind::Add,
                       diff(inst.data.idx_pair.first, wrt_id),
                       diff(inst.data.idx_pair.second, wrt_id));
+    case Kind::Mul2:
+        return create(Kind::Add,
+                      create(Kind::Mul,
+                             diff(inst.data.idx_pair.first, wrt_id),
+                             inst.data.idx_pair.second
+                             ),
+                      create(Kind::Mul,
+                             inst.data.idx_pair.first,
+                             diff(inst.data.idx_pair.second, wrt_id)
+                             )
+                      );
     default:
         throw std::runtime_error("diff does not support kind.");
     }

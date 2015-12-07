@@ -20,12 +20,12 @@ def test_NameSpace_relational():
     ns = NameSpace(2)
     x = ns.Symbol('x')
     y = ns.Symbol('y')
-    lt = ns.Lt(x, y)
-    le = ns.Le(x, y)
-    eq = ns.Eq(x, y)
-    ne = ns.Ne(x, y)
-    ge = ns.Ge(x, y)
-    gt = ns.Gt(x, y)
+    lt = ns.lt(x, y)
+    le = ns.le(x, y)
+    eq = ns.eq(x, y)
+    ne = ns.ne(x, y)
+    ge = ns.ge(x, y)
+    gt = ns.gt(x, y)
     assert lt.evalb(np.array([3., 5.])) is True
     assert lt.evalb(np.array([5., 5.])) is False
     assert le.evalb(np.array([3., 5.])) is True
@@ -40,7 +40,7 @@ def test_NameSpace_relational():
 
 def test_division():
     ns = NameSpace(2)
-    assert ns.symbols == []
+    assert ns.symbol_names == []
 
     x, y = map(ns.Symbol, 'x y'.split())
     zero_over_x_1 = 0/x

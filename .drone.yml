@@ -6,3 +6,7 @@ build:
     - make -B CXX=clang-3.7
     - make -B RELEASE=1
     - make -B CXX=clang-3.7 RELEASE=1
+    - python-2.7 setup.py build_ext -i
+    - PYTHONPATH=$(pwd) py.test-2.7
+    - python-3.4 setup.py build_ext -i
+    - PYTHONPATH=$(pwd) py.test-3.4
