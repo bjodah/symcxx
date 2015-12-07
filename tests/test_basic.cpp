@@ -111,3 +111,31 @@ TEST_CASE( "evalb", "[symcxx::Basic]" ) {
     REQUIRE( gt.evalb(&x1) );
 
 }
+
+
+TEST_CASE( "add_ordering", "[symcxx::Basic]" ) {
+    auto ns = symcxx::NameSpace(1);
+    auto idx_i = ns.make_integer(0);
+    auto& s = ns.instances[0];
+    auto& i = ns.instances[idx_i];
+
+    REQUIRE( s < i );
+    REQUIRE( not (i < s) );
+
+    REQUIRE( s <= i );
+    REQUIRE( not (i <= s) );
+    REQUIRE( i <= i );
+
+    REQUIRE( i == i );
+    REQUIRE( not (s == i) );
+
+    REQUIRE( s != i );
+    REQUIRE( not (i != i) );
+
+    REQUIRE( i >= s );
+    REQUIRE( not (s >= i) );
+    REQUIRE( i >= i );
+
+    REQUIRE( i > s );
+    REQUIRE( not (s > i) );
+}

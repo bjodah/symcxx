@@ -117,6 +117,7 @@ inline symcxx::hash_t symcxx::calc_hash(const idx_t inst_idx0, const idx_t inst_
 }
 
 
+// compare objects of same kind:
 inline bool symcxx::lt(const data_t arg1, const data_t arg2, const Kind kind,
                        const ArgStack_t& args_stack, const std::vector<Basic>& instances){
     switch(kind){
@@ -135,9 +136,10 @@ inline bool symcxx::lt(const data_t arg1, const data_t arg2, const Kind kind,
     case Kind::CLS_:
 #include "symcxx/types_nonatomic_binary.inc"
 #undef SYMCXX_TYPE
-        if (instances[arg1.idx_pair.first] < instances[arg2.idx_pair.first])
-            return true;
-        return instances[arg1.idx_pair.second] < instances[arg2.idx_pair.second];
+        if (instances[arg1.idx_pair.first] == instances[arg2.idx_pair.first]){
+            return instances[arg1.idx_pair.second] < instances[arg2.idx_pair.second];
+        }
+        return instances[arg1.idx_pair.first] < instances[arg2.idx_pair.first];
     default:
         break;
     }
@@ -150,7 +152,7 @@ inline bool symcxx::lt(const data_t arg1, const data_t arg2, const Kind kind,
         const auto& e2 = instances[c2[idx]];
         if (e1.kind != e2.kind)
             return e1.kind < e2.kind;
-        if (!(e1 == e2))
+        if (e1 != e2)
             return e1 < e2;
     }
     return false;

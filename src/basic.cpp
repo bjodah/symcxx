@@ -12,9 +12,6 @@ symcxx::Basic::operator < (const Basic& other) const {
 }
 bool
 symcxx::Basic::operator == (const Basic& other) const {
-#if !defined(NDEBUG)
-    std::cout << "Basic::operator ==" << std::endl;
-#endif
     if (kind != other.kind)
         return false;
     if (hash != other.hash)
