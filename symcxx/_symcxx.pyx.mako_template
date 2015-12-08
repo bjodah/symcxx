@@ -1,0 +1,188 @@
+# -*- coding: utf-8 -*-
+# distutils: language = c++
+# distutils: extra_compile_args = -std=c++11 -I./include
+
+<%doc>
+# This is a templated source file.
+# Render template using Mako (Python templating engine)
+</%doc>
+# ${_message_for_rendered}
+
+from libcpp cimport bool
+from libcpp.vector cimport vector
+from libcpp.string cimport string
+
+ctypedef unsigned int idx_t
+
+import sys
+import numpy as np
+
+cdef extern from "symcxx/core.hpp" namespace "symcxx":
+    cdef cppclass NameSpace:
+        idx_t n_symbs
+        NameSpace(idx_t)
+        idx_t make_symbol(idx_t)
+        idx_t make_integer(int)
+        idx_t make_float(double)
+        idx_t make_nan()
+        string print_ast(const idx_t, vector[string]&)
+
+        bool evalb(idx_t, const double *)
+        double evalf(idx_t, const double *)
+        idx_t diff(const idx_t, const idx_t)
+
+%for Cls, Parent, meth in types_nonatomic_unary:
+        idx_t ${meth}(idx_t)
+%endfor
+
+%for Cls, Parent, meth in types_nonatomic_binary:
+        idx_t ${meth}(idx_t, idx_t)
+%endfor
+
+
+class _IndexedObject(object):
+
+    def __init__(self, idx, namespace, **kwargs):
+        self.idx = idx
+        self.ns = namespace
+        self.__dict__.update(kwargs)
+
+    def __eq__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        if self.idx == other.idx and self.ns == other.ns:
+            return True
+        else:
+            return False
+
+    def __str__(self):
+        return self.ns.print_ast(self.idx).decode('utf-8')
+
+    def __add__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Add2(self.idx, other.idx), self.ns)
+
+    def __radd__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Add2(other.idx, self.idx), self.ns)
+
+    def __sub__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Sub(self.idx, other.idx), self.ns)
+
+    def __rsub__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Sub(other.idx, self.idx), self.ns)
+
+    def __mul__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Mul2(self.idx, other.idx), self.ns)
+
+    def __rmul__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Mul2(other.idx, self.idx), self.ns)
+
+    def __truediv__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Div(self.idx, other.idx), self.ns)
+
+    def __rtruediv__(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return _IndexedObject(self.ns._Div(other.idx, self.idx), self.ns)
+
+    def evalb(self, inp):
+        return self.ns.evalb(self.idx, inp)
+
+    def evalf(self, inp):
+        return self.ns.evalf(self.idx, inp)
+
+    def diff(self, wrt):
+        return _IndexedObject(self.ns.diff(self.idx, wrt.idx), self.ns)
+
+
+def _implicit_conversion(ns, other):
+    if isinstance(other, _IndexedObject):  # or look for 'ns' and 'idx'?
+        assert other.ns == ns
+        return other
+    elif isinstance(other, int):
+        return _IndexedObject(ns.make_integer(other), ns)
+    elif isinstance(other, float):
+        return _IndexedObject(ns.make_float(other), ns)
+    else:
+        raise NotImplementedError
+
+
+cdef class PyNameSpace:
+    cdef NameSpace *thisptr
+    cdef readonly vector[string] symbol_names
+
+    def __cinit__(self, idx_t n):
+        self.thisptr = new NameSpace(n)
+
+    def __dealloc__(self):
+        del self.thisptr
+
+    property n_symbs:
+        def __get__(self):
+            return self.thisptr.n_symbs
+
+    def make_symbol(self, symb_idx):
+        return self.thisptr.make_symbol(symb_idx)
+
+    def make_integer(self, intgr):
+        return self.thisptr.make_integer(intgr)
+
+    def make_nan(self):
+        return self.thisptr.make_nan()
+
+    def print_ast(self, idx):
+        return self.thisptr.print_ast(idx, self.symbol_names)
+
+    def evalb(self, idx_t idx, double [::1] inp):
+        return self.thisptr.evalb(idx, &inp[0])
+
+    def evalf(self, idx_t idx, double [::1] inp):
+        return self.thisptr.evalf(idx, &inp[0])
+
+    def diff(self, idx0, idx1):
+        return self.thisptr.diff(idx0, idx1)
+
+    # Unary:
+%for Cls, Parent, meth in types_nonatomic_unary:
+    def _${Cls}(self, idx):
+        return self.thisptr.${meth}(idx)
+
+    def ${meth}(self, obj):
+        obj = _implicit_conversion(self, obj)
+        return _IndexedObject(self._${Cls}(obj.idx), self)
+%endfor
+
+    # Binary:
+%for Cls, Parent, meth in types_nonatomic_binary:
+    def _${Cls}(self, idx0, idx1):
+        return self.thisptr.${meth}(idx0, idx1)
+    def ${meth}(self, obj0, obj1):
+        obj0 = _implicit_conversion(self, obj0)
+        obj1 = _implicit_conversion(self, obj1)
+        return _IndexedObject(self._${Cls}(obj0.idx, obj1.idx), self)
+%endfor
+
+    def Number(self, val):
+        if isinstance(val, int):
+            return _IndexedObject(self.make_integer(val), self)
+        else:
+            return _IndexedObject(self.make_float(val), self)
+
+    def Symbol(self, name):
+        symb_idx = self.make_symbol(self.symbol_names.size())
+        self.symbol_names.push_back(name if sys.version_info[0] == 2
+                                    else bytes(name, encoding='utf-8'))
+        return _IndexedObject(symb_idx, self)
+
+    def symarray(self, prefix, shape, real=True):
+        if real is not True:
+            raise NotImplementedError
+        arr = np.empty(shape, dtype=object)
+        for index in np.ndindex(shape):
+            arr[index] = self.Symbol('%s_%s' % (
+                prefix, '_'.join(map(str, index))))
+        return arr

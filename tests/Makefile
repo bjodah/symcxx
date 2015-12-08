@@ -1,26 +1,44 @@
 CXX := g++
 #CXX := clang++-3.7
-CXXFLAGS ?= -std=c++11 -g -Wall -I../include -D_GLIBCXX_DEBUG -ggdb
+CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -I../include -fno-omit-frame-pointer $(DEFINES)
+ifeq ($(RELEASE),1)
+  CXXFLAGS+=-DNDEBUG -O2
+else
+  CXXFLAGS+=-g -O0
+# -ggdb
+endif
 
-.PHONY: all
+.PHONY: test debug clean
 
-all: catch_sym
-	./catch_sym
+test: catch_symcxx
+	ulimit -Sv 13500; ./catch_symcxx
 
-sym.o: ../src/sym.cpp ../include/sym.hpp
+debug: debug_symcxx
+	ulimit -Sv 512000; valgrind ./debug_symcxx
+
+clean:
+	rm *.o
+	rm *_symcxx
+
+
+basic.o: ../src/basic.cpp ../include/symcxx/*.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
-test_%.o: test_%.cpp ../include/sym.hpp
+namespace.o: ../src/namespace.cpp ../include/symcxx/*.hpp
+	$(CXX) $(CXXFLAGS) -c -o $@ $<
+
+test_%.o: test_%.cpp ../include/symcxx/*.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $<
 
 %.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 
-TESTFILES=catch_sym.o test_namespace.o test_basic.o sym.o
+TESTFILES=catch_symcxx.o test_namespace.o test_basic.o basic.o namespace.o
 
-catch_sym: $(TESTFILES)
+catch_symcxx: $(TESTFILES)
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
 
-debug_sym: debug_sym.cpp sym.o
+debug_symcxx: debug_symcxx.cpp basic.o namespace.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
+

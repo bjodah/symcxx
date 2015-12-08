@@ -1,6 +1,13 @@
-image: bjodah/bjodahimg:latest
-git:
-    path: github.com/bjodah/pysym
-script:
-  - cd tests
-  - make
+build:
+  image: bjodah/bjodahimg:latest
+  commands:
+    - cd tests
+    - make
+    - make -B CXX=clang++-3.7
+    - make -B RELEASE=1
+    - make -B CXX=clang++-3.7 RELEASE=1
+    - cd -
+    - python2.7 setup.py build_ext -i
+    - PYTHONPATH=$(pwd) py.test-2.7
+    - python3.4 setup.py build_ext -i
+    - PYTHONPATH=$(pwd) py.test-3.4
