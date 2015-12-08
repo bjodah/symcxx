@@ -38,14 +38,14 @@ symcxx::NameSpace::has(const Basic& looking_for, idx_t * idx) const {
         if (looking_for == inst){
             *idx = idx_;
 #if !defined(NDEBUG)
-            std::cout << " -> true";
+            std::cout << " -> true" << std::endl;
 #endif
             return true;
         }
         ++idx_;
     }
 #if !defined(NDEBUG)
-    std::cout << " -> false";
+    std::cout << " -> false" << std::endl;
 #endif
     return false;
 }
@@ -234,6 +234,8 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
     case Kind::Mul:
         if (args.size() == 0)
             throw std::runtime_error("create Mul from length 0 vector of arguments");
+        if (std::find(args.begin(), args.end(), zero) != args.end())
+            return zero; // we found a zero among the factors
         new_args = merge_drop_sort_collect(args, Kind::Pow, {one}, Kind::Mul);
         if (new_args.size() == 1)
             return new_args[0];
@@ -455,10 +457,13 @@ symcxx::NameSpace::merge_drop_sort_collect(const std::vector<idx_t>& args,
 #endif
     std::vector<idx_t> new_args;
     for (const auto arg : merge(merge_kind, sort_args(args))){
-        for (const auto drp : drop)
+        for (const auto drp : drop){
+            std::cout << "Comparing arg, drp: " << arg << ", " << drp << std::endl;
             if (arg == drp)
-                continue;
+                goto break_twice;
+        }
         new_args.push_back(arg);
+    break_twice: ;
     }
     new_args = collect(collect_to, sort_args(new_args));
 #if !defined(NDEBUG)

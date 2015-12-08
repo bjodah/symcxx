@@ -3,7 +3,7 @@ tests/debug_symcxx
 tests/catch_symcxx
 .cache/
 build/
-symcxx/_symcxx.so
+symcxx/_symcxx*.so
 symcxx/_symcxx.c
 symcxx/_symcxx.cpp
 cython_debug/
