@@ -285,6 +285,10 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
         if (inst_idx0 == inst_idx1)
             return make_integer(0);
         else
+            if (is_zero(inst_idx0))
+                return neg(inst_idx1);
+            if (is_zero(inst_idx1))
+                return inst_idx0;
             if (are_sorted())
                 return sub(inst_idx0, inst_idx1);
             else
@@ -330,6 +334,8 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
     const Basic& inst = instances[inst_id];
     const Basic& wrt = instances[wrt_id];
     std::vector<idx_t> args;
+    std::vector<idx_t> inner_args;
+    const std::vector<idx_t>& args_from_stack = inst.args_from_stack();
 #if !defined(NDEBUG)
     std::cout << "Diff on inst=" << inst_id << "(kind=" << kind_names[static_cast<int>(inst.kind)] << ")";
     std::cout << ", wrt to " << wrt_id << std::endl; // << ", idx=" << idx(&inst) << ", wrt=" << idx(&wrt) << std::endl;
@@ -345,10 +351,26 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
     case Kind::Float:
         return make_float(0);
     case Kind::Add:
-        for (const auto idx : inst.args_from_stack()){
+        for (const auto idx : args_from_stack){
             args.push_back(diff(idx, wrt_id));
         }
         return create(Kind::Add, args);
+    case Kind::Mul:
+        for (const auto idx : args_from_stack){
+            inner_args = {{}};
+            for (idx_t inner_idx=0; inner_idx < args_from_stack.size(); ++inner_idx){
+                if (inner_idx == idx)
+                    inner_args.push_back(diff(args_from_stack[inner_idx], wrt_id));
+                else
+                    inner_args.push_back(args_from_stack[inner_idx]);
+            }
+            args.push_back(create(Kind::Mul, inner_args));
+        }
+        return create(Kind::Add, args);
+    case Kind::Sub:
+        return create(Kind::Sub,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      diff(inst.data.idx_pair.second, wrt_id));
     case Kind::Add2:
         return create(Kind::Add,
                       diff(inst.data.idx_pair.first, wrt_id),
@@ -364,7 +386,24 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                              diff(inst.data.idx_pair.second, wrt_id)
                              )
                       );
+    case Kind::Div:
+        return create(Kind::Div,
+                      create(Kind::Sub,
+                             create(Kind::Mul,
+                                    diff(inst.data.idx_pair.first, wrt_id),
+                                    inst.data.idx_pair.second
+                                    ),
+                             create(Kind::Mul,
+                                    inst.data.idx_pair.first,
+                                    diff(inst.data.idx_pair.second, wrt_id)
+                                    )
+                             ),
+                      create(Kind::Pow,
+                             inst.data.idx_pair.second,
+                             make_integer(2))
+                      );
     default:
+        std::cout << "Unsupported kind: " << kind_names[static_cast<int>(inst.kind)] << std::endl;
         throw std::runtime_error("diff does not support kind.");
     }
 }

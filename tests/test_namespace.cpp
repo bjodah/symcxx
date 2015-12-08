@@ -122,3 +122,28 @@ TEST_CASE( "diff_mul2", "[symcxx::NameSpace]" ) {
     auto dexpr_id = ns.diff(expr_id, x0_id);
     REQUIRE( dexpr_id == intgr3 );
 }
+
+TEST_CASE( "diff_div", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3.14};
+    auto ns = symcxx::NameSpace(1);
+    symcxx::idx_t x0_id = 0;
+
+    auto mul_id = ns.mul2(ns.make_integer(3), x0_id);
+    auto add_id = ns.add2(mul_id, ns.make_integer(1));
+    auto sub_id = ns.sub(x0_id, ns.make_integer(2));
+    auto div_id = ns.div(add_id, sub_id);
+
+    const double ref_div = (3*3.14 + 1) / (3.14 - 2);
+    const double res_div = ns.evalf(div_id, x);
+    REQUIRE( std::abs(res_div - ref_div) < 1e-15 );
+
+    std::cout << "\n\nAbout to diff!\n\n";
+    auto div_diff_id = ns.diff(div_id, x0_id);
+    std::cout << "\n\nDiff done!\n\n";
+    for (symcxx::idx_t i=0; i<ns.instances.size(); ++i)
+        std::cout << i << ": " << ns.print_ast(i, {"x"}) << std::endl;
+
+    const double ref_div_diff = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)*(3.14 - 2));
+    const double res_div_diff = ns.evalf(div_diff_id, x);
+    REQUIRE( std::abs(res_div_diff - ref_div_diff) < 1e-15 );
+}

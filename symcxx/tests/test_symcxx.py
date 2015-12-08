@@ -69,3 +69,11 @@ def test_str():
     ns = NameSpace(0)
     x = ns.Symbol('x')
     assert str(3*x) == 'Mul2(Integer(3), Symbol(x))'
+
+def test_Div_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = (3*x + 1) / (x - 2)
+    deriv = expr.diff(x)
+    ref = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)**2)
+    assert abs(deriv.evalf(np.array([3.14])) - ref) < 1e-15
