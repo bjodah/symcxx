@@ -133,16 +133,19 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
     case Kind::Symbol:
     case Kind::Integer:
     case Kind::Float:
-        os << inst.print(symbol_names);
+        os << inst.print(symbol_names); break;
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:
 #include "symcxx/types_nonatomic_unary.inc"
-        os << print_ast(inst.data.idx_pair.first, symbol_names); break;
+        os << kind_names[static_cast<int>(inst.kind)] + "(" <<
+            print_ast(inst.data.idx_pair.first, symbol_names) << ")"; break;
 #include "symcxx/types_nonatomic_binary.inc"
-        os << print_ast(inst.data.idx_pair.first, symbol_names) << ", " <<
-            print_ast(inst.data.idx_pair.second, symbol_names); break;
+        os << kind_names[static_cast<int>(inst.kind)] + "(" <<
+            print_ast(inst.data.idx_pair.first, symbol_names) << ", " <<
+            print_ast(inst.data.idx_pair.second, symbol_names) << ")"; break;
 #include "symcxx/types_nonatomic_args_stack.inc"
 #undef SYMCXX_TYPE
+        os << kind_names[static_cast<int>(inst.kind)] + "(";
         for (auto i : args_stack[inst.data.idx_pair.first]){
             if (first)
                 first = false;
@@ -150,11 +153,11 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
                 os << ", ";
             os << print_ast(i, symbol_names);
         }
+        os << ")";
         break;
     case Kind::Kind_Count:
         break;
     }
-    os << ")";
     return os.str();
 }
 
@@ -216,25 +219,28 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
 #endif
     const auto zero = make_integer(0);
     const auto one = make_integer(1);
+    std::vector<idx_t> new_args;
     switch(kind){
     case Kind::Add:
         if (args.size() == 0)
             throw std::runtime_error("create Add from length 0 vector of arguments");
-        else if (args.size() == 1)
-            return args[0];
-        else if (args.size() == 2)
-            return add2(args[0], args[1]);
+        new_args = merge_drop_sort_collect(args, Kind::Mul, {zero, mul({zero})}, Kind::Add);
+        if (new_args.size() == 1)
+            return new_args[0];
+        else if (new_args.size() == 2)
+            return add2(new_args[0], new_args[1]);
         else
-            return add(merge_drop_sort_collect(args, Kind::Mul, {zero, mul({zero})}, Kind::Add));
+            return add(new_args);
     case Kind::Mul:
         if (args.size() == 0)
             throw std::runtime_error("create Mul from length 0 vector of arguments");
-        else if (args.size() == 1)
-            return args[0];
-        else if (args.size() == 2)
-            return mul2(args[0], args[1]);
+        new_args = merge_drop_sort_collect(args, Kind::Pow, {one}, Kind::Mul);
+        if (new_args.size() == 1)
+            return new_args[0];
+        else if (new_args.size() == 2)
+            return mul2(new_args[0], new_args[1]);
         else
-            return mul(merge_drop_sort_collect(args, Kind::Pow, {one}, Kind::Mul));
+            return mul(new_args);
     case Kind::ITE:
         if (args.size() != 3)
             throw std::runtime_error("create ITE from vector of length != 3");
@@ -269,20 +275,10 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
     switch(kind){
     case Kind::Add:
     case Kind::Add2:
-        if (inst_idx0 == inst_idx1)
-            return create(Kind::Mul2, make_integer(2), inst_idx0);
-        if (are_sorted())
-            return add2(inst_idx0, inst_idx1);
-        else
-            return add2(inst_idx1, inst_idx0);
+        return create(Kind::Add, std::vector<idx_t>{{inst_idx1, inst_idx0}});
     case Kind::Mul:
     case Kind::Mul2:
-        if (inst_idx0 == inst_idx1)
-            return create(Kind::Pow, inst_idx0, make_integer(2));
-        if (are_sorted())
-            return mul2(inst_idx0, inst_idx1);
-        else
-            return mul2(inst_idx1, inst_idx0);
+        return create(Kind::Mul, std::vector<idx_t>{{inst_idx1, inst_idx0}});
     case Kind::Sub:
         if (inst_idx0 == inst_idx1)
             return make_integer(0);

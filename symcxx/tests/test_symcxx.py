@@ -68,4 +68,4 @@ def test_diff0():
 def test_str():
     ns = NameSpace(0)
     x = ns.Symbol('x')
-    assert str(3*x) == 'Mul2(x, 3)'
+    assert str(3*x) == 'Mul2(Integer(3), Symbol(x))'
