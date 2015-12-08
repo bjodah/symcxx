@@ -51,17 +51,6 @@ symcxx::Basic::print(const std::vector<std::string>& symbol_names) const {
         os << data.intgr; break;
     case Kind::Float:
         os << data.dble; break;
-// #define SYMCXX_TYPE(CLS_, PARENT_, METH_)
-//     case Kind::CLS_:
-// #include "symcxx/types_nonatomic_unary.inc"
-//         os << data.idx_pair.first; break;
-// #include "symcxx/types_nonatomic_binary.inc"
-//         os << data.idx_pair.first << ", " << data.idx_pair.second; break;
-// #include "symcxx/types_nonatomic_args_stack.inc"
-// #undef SYMCXX_TYPE
-//         os << ns->args_stack[data.idx_pair.first]; break;
-//     case Kind::Kind_Count:
-//         break;
     default:
         throw std::runtime_error("Not implemented");
     }
@@ -108,64 +97,16 @@ symcxx::Basic::evalf(const double inp[]) const {
         result = evalf_arg0() + evalf_arg1(); break;
     case Kind::Mul2:
         result = evalf_arg0() * evalf_arg1(); break;
-    case Kind::Cos:
-        result = std::cos(evalf_arg0()); break;
-    case Kind::Sin:
-        result = std::sin(evalf_arg0()); break;
-    case Kind::Tan:
-        result = std::tan(evalf_arg0()); break;
-    case Kind::Acos:
-        result = std::acos(evalf_arg0()); break;
-    case Kind::Asin:
-        result = std::asin(evalf_arg0()); break;
-    case Kind::Atan:
-        result = std::atan(evalf_arg0()); break;
-    case Kind::Atan2:
-        result = std::atan2(evalf_arg0(), evalf_arg1()); break;
-    case Kind::Cosh:
-        result = std::cosh(evalf_arg0()); break;
-    case Kind::Sinh:
-        result = std::sinh(evalf_arg0()); break;
-    case Kind::Tanh:
-        result = std::tanh(evalf_arg0()); break;
-    case Kind::Acosh:
-        result = std::acosh(evalf_arg0()); break;
-    case Kind::Asinh:
-        result = std::asinh(evalf_arg0()); break;
-    case Kind::Atanh:
-        result = std::atanh(evalf_arg0()); break;
-    case Kind::Exp:
-        result = std::exp(evalf_arg0()); break;
-    case Kind::Log:
-        result = std::log(evalf_arg0()); break;
-    case Kind::Log10:
-        result = std::exp(evalf_arg0()); break;
-    case Kind::Exp2:
-        result = std::exp2(evalf_arg0()); break;
-    case Kind::Expm1:
-        result = std::expm1(evalf_arg0()); break;
-    case Kind::Log1p:
-        result = std::log1p(evalf_arg0()); break;
-    case Kind::Log2:
-        result = std::log2(evalf_arg0()); break;
-    case Kind::Logb:
-        result = std::logb(evalf_arg0()); break;
-    case Kind::Pow:
-        result = std::pow(evalf_arg0(), evalf_arg1()); break;
-    case Kind::Sqrt:
-        result = std::sqrt(evalf_arg0()); break;
-    case Kind::Cbrt:
-        result = std::cbrt(evalf_arg0()); break;
-    case Kind::Hypot:
-        result = std::hypot(evalf_arg0(), evalf_arg1()); break;
-    case Kind::Erf:
-        result = std::erf(evalf_arg0()); break;
-    case Kind::Erfc:
-        result = std::erfc(evalf_arg0()); break;
-    case Kind::Tgamma:
-        result = std::tgamma(evalf_arg0()); break;
-    case Kind::Lgamma:
-        result = std::lgamma(evalf_arg0()); break;
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_: \
+        result = std::METH_(evalf_arg0()); break;
+#include "symcxx/types_nonatomic_unary.inc"
+#undef SYMCXX_TYPE
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_: \
+        result = std::METH_(evalf_arg0(), evalf_arg1()); break;
+#include "symcxx/types_nonatomic_binary_math_h.inc"
+#undef SYMCXX_TYPE
     default:
 #if !defined(NDEBUG)
         std::cout << "Kind: " << static_cast<int>(kind) << std::endl;

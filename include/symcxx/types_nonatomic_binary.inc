@@ -1,8 +1,6 @@
 SYMCXX_TYPE(Sub    , Binary   , sub    )
 SYMCXX_TYPE(Div    , Binary   , div    )
-SYMCXX_TYPE(Atan2  , Binary   , atan2  )
-SYMCXX_TYPE(Pow    , Binary   , pow    )
-SYMCXX_TYPE(Hypot  , Binary   , hypot  )
+#include "symcxx/types_nonatomic_binary_math_h.inc"
 SYMCXX_TYPE(Add2   , Binary   , add2   )
 SYMCXX_TYPE(Mul2   , Binary   , mul2   )
 SYMCXX_TYPE(Lt     , Binary   , lt     ) // All after (incl.) Lt are relational
