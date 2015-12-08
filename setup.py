@@ -14,8 +14,13 @@ SYMCXX_RELEASE_VERSION = os.environ.get('SYMCXX_RELEASE_VERSION', '')  # v*
 # Cythonize .pyx file if it exists (not in source distribution)
 ext_modules = []
 
-def _read(lines, macro='SYMCXX_TYPE'):
-    for l in lines:
+def _read(path, macro='SYMCXX_TYPE', inc_dir='./'):
+    for l in open(inc_dir + path, 'rt'):
+        if l.startswith('#include'):
+            inner_path = l.split('#include')[1]
+            inner_path = inner_path.strip().strip('<').strip('>').strip('"')
+            for inner_l in _read(inner_path, macro, inc_dir):
+                yield inner_l
         if not l.startswith(macro + '('):
             continue
         l = l.split('//')[0]  # strip comments marked with // (misses /* */)
@@ -37,8 +42,8 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
         from mako.exceptions import text_error_template
         from Cython.Build import cythonize
         stub = 'types_nonatomic_'
-        path_stub = './include/symcxx/' + stub
-        subsd = {stub+k: list(_read(open(path_stub+k+'.inc').readlines()))
+        path_stub = 'symcxx/' + stub
+        subsd = {stub+k: list(_read(path_stub+k+'.inc', inc_dir='./include/'))
                  for k in ('unary', 'binary')}
         subsd['_message_for_rendered'] = 'THIS IS A GENERATED FILE DO NOT EDIT'
         try:

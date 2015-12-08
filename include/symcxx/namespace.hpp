@@ -10,14 +10,16 @@ namespace symcxx{
         const idx_t n_pre_symbs = 3;
         idx_t n_symbs;
         // idx_t __padding {0};
-        const static idx_t n_pre_intgrs = 3;
-        NameSpace(idx_t);
-        idx_t idx(const Basic*) const;
+        const static idx_t n_pre_intgrs = 5;
+        NameSpace(idx_t=0);
+        // idx_t idx(const Basic*) const;
         idx_t reg_args(const std::vector<idx_t>&);
         bool has(const Basic&, idx_t*) const;
         bool is_zero(const idx_t) const;
         bool is_one(const idx_t) const;
         idx_t make_symbol(idx_t i);
+        idx_t make_symbol();
+        std::vector<idx_t> make_symbols(idx_t n);
         idx_t make_integer(int i);
         idx_t make_float(double f);
         idx_t make_nan();
@@ -51,4 +53,6 @@ namespace symcxx{
         std::vector<idx_t> merge_drop_sort_collect(const std::vector<idx_t>&, const Kind,
                                                    const std::vector<idx_t>&, const Kind);
     };
+
 }
+static_assert(symcxx::NameSpace::n_pre_intgrs >= 3, "We need 0, 1 to be zero and one"); // see is_zero, is_one

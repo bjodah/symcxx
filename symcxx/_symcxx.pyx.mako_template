@@ -25,11 +25,11 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         idx_t make_integer(int)
         idx_t make_float(double)
         idx_t make_nan()
-        string print_ast(const idx_t, vector[string]&)
+        string print_ast(const idx_t, vector[string]&) except +
 
-        bool evalb(idx_t, const double *)
-        double evalf(idx_t, const double *)
-        idx_t diff(const idx_t, const idx_t)
+        bool evalb(idx_t, const double *) except +
+        double evalf(idx_t, const double *) except +
+        idx_t diff(const idx_t, const idx_t) except +
 
 %for Cls, Parent, meth in types_nonatomic_unary:
         idx_t ${meth}(idx_t)

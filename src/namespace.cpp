@@ -1,11 +1,13 @@
 #include "symcxx/core.hpp"
 
 symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_symbs(n_pre_symbs) {
-    instances.reserve(2*n_pre_symbs + n_pre_intgrs);
+    instances.reserve(n_pre_intgrs + 2*n_pre_symbs);  // arbitrary
+    for (idx_t idx=0; idx < (n_pre_intgrs+1)/2; ++idx)  //
+        instances.push_back(Integer(idx, this));
+    for (idx_t idx=1; idx < n_pre_intgrs/2; ++idx)
+        instances.push_back(Integer(-idx, this));
     for (idx_t idx=0; idx < n_pre_symbs; ++idx)
         instances.push_back(Symbol(idx, this));
-    for (idx_t idx=0; idx < n_pre_intgrs; ++idx)
-        instances.push_back(Integer(idx, this));
 #if !defined(NDEBUG)
     std::cout << "n_pre_intgrs=" << n_pre_intgrs << std::endl;
     for (int i=0; i<static_cast<int>(Kind::Kind_Count); ++i)
@@ -13,14 +15,14 @@ symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_sy
 #endif
 }
 
-symcxx::idx_t
-symcxx::NameSpace::idx(const Basic* basic_ptr) const {
-    const auto begin = &instances[0];
-    const auto end = begin + instances.capacity();
-    if ((basic_ptr < begin) || (basic_ptr > end))
-        throw std::runtime_error("Instance not in namespace.");
-    return (basic_ptr - begin);
-}
+// symcxx::idx_t
+// symcxx::NameSpace::idx(const Basic* basic_ptr) const {
+//     const auto begin = &instances[0];
+//     const auto end = begin + instances.capacity();
+//     if ((basic_ptr < begin) || (basic_ptr > end))
+//         throw std::runtime_error("Instance not in namespace.");
+//     return (basic_ptr - begin);
+// }
 
 symcxx::idx_t
 symcxx::NameSpace::reg_args(const std::vector<idx_t>& objs) {
@@ -52,6 +54,8 @@ symcxx::NameSpace::has(const Basic& looking_for, idx_t * idx) const {
 
 bool
 symcxx::NameSpace::is_zero(const idx_t idx) const {
+    if (idx == 0)
+        return true;
     if ((instances[idx].kind == Kind::Float && instances[idx].data.dble == 0) ||
         (instances[idx].kind == Kind::Integer && instances[idx].data.intgr == 0))
         return true;
@@ -61,6 +65,8 @@ symcxx::NameSpace::is_zero(const idx_t idx) const {
 
 bool
 symcxx::NameSpace::is_one(const idx_t idx) const {
+    if (idx == 1)
+        return true;
     if ((instances[idx].kind == Kind::Float && instances[idx].data.dble == 1) ||
         (instances[idx].kind == Kind::Integer && instances[idx].data.intgr == 1))
         return true;
@@ -71,7 +77,7 @@ symcxx::NameSpace::is_one(const idx_t idx) const {
 symcxx::idx_t
 symcxx::NameSpace::make_symbol(idx_t symb_idx){
     if (symb_idx < n_pre_symbs)
-        return symb_idx;
+        return n_pre_intgrs + symb_idx;
     const auto instance = Symbol(symb_idx, this);
     idx_t idx;
     if (has(instance, &idx)){
@@ -92,9 +98,25 @@ symcxx::NameSpace::make_symbol(idx_t symb_idx){
 }
 
 symcxx::idx_t
+symcxx::NameSpace::make_symbol(){
+    return make_symbol(n_symbs);
+}
+
+std::vector<symcxx::idx_t>
+symcxx::NameSpace::make_symbols(symcxx::idx_t n){
+    std::vector<symcxx::idx_t> args;
+    const auto cur_n_symbs = n_symbs;
+    for (idx_t i=cur_n_symbs; i<cur_n_symbs+n; ++i)
+        args.push_back(make_symbol(i));
+    return args;
+}
+
+symcxx::idx_t
 symcxx::NameSpace::make_integer(int i){
-    if (i >= 0 && static_cast<idx_t>(i) < n_pre_intgrs)
-        return n_pre_symbs + i;
+    if (i >= 0 && static_cast<idx_t>(i) < (n_pre_intgrs+1)/2)
+        return i;
+    if (i < 0 && static_cast<idx_t>(i) >= -n_pre_intgrs/2)
+        return (n_pre_intgrs-1)/2 - i;
     const auto instance = Integer(i, this);
     idx_t idx;
     if (has(instance, &idx)){
