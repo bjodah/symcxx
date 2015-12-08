@@ -4,8 +4,8 @@ symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_sy
     instances.reserve(n_pre_intgrs + 2*n_pre_symbs);  // arbitrary
     for (idx_t idx=0; idx < (n_pre_intgrs+1)/2; ++idx)  //
         instances.push_back(Integer(idx, this));
-    for (idx_t idx=1; idx < n_pre_intgrs/2; ++idx)
-        instances.push_back(Integer(-idx, this));
+    for (idx_t idx=0; idx < n_pre_intgrs/2; ++idx)
+        instances.push_back(Integer(-static_cast<int64_t>(n_pre_intgrs/2 - idx), this));
     for (idx_t idx=0; idx < n_pre_symbs; ++idx)
         instances.push_back(Symbol(idx, this));
 #if !defined(NDEBUG)
@@ -56,23 +56,37 @@ bool
 symcxx::NameSpace::is_zero(const idx_t idx) const {
     if (idx == 0)
         return true;
-    if ((instances[idx].kind == Kind::Float && instances[idx].data.dble == 0) ||
-        (instances[idx].kind == Kind::Integer && instances[idx].data.intgr == 0))
+    if ((instances[idx].kind == Kind::Float && instances[idx].data.dble == 0))
+        return true;
+    else
+        return false;
+}
+
+
+bool
+symcxx::NameSpace::is_one(const idx_t idx) const {
+    if (idx == 1)
+        return true;
+    if ((instances[idx].kind == Kind::Float && instances[idx].data.dble == 1))
         return true;
     else
         return false;
 }
 
 bool
-symcxx::NameSpace::is_one(const idx_t idx) const {
-    if (idx == 1)
+symcxx::NameSpace::apparently_negative(const idx_t idx) const {
+    if (idx > n_pre_intgrs/2 && idx < n_pre_intgrs)
         return true;
-    if ((instances[idx].kind == Kind::Float && instances[idx].data.dble == 1) ||
-        (instances[idx].kind == Kind::Integer && instances[idx].data.intgr == 1))
-        return true;
-    else
+    switch(instances[idx].kind){
+    case Kind::Neg:
+        return true;  // this does not guarantee it's negative but will flatten tree.
+    case Kind::Float:
+        return instances[idx].data.dble < 0;
+    default:
         return false;
+    }
 }
+
 
 symcxx::idx_t
 symcxx::NameSpace::make_symbol(idx_t symb_idx){
@@ -115,8 +129,8 @@ symcxx::idx_t
 symcxx::NameSpace::make_integer(int i){
     if (i >= 0 && static_cast<idx_t>(i) < (n_pre_intgrs+1)/2)
         return i;
-    if (i < 0 && static_cast<idx_t>(i) >= -n_pre_intgrs/2)
-        return (n_pre_intgrs-1)/2 - i;
+    if (i < 0 && static_cast<idx_t>(-i) < n_pre_intgrs/2)
+        return n_pre_intgrs + i;
     const auto instance = Integer(i, this);
     idx_t idx;
     if (has(instance, &idx)){
@@ -281,6 +295,46 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
 }
 
 symcxx::idx_t
+symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
+#ifndef NDEBUG
+    std::cout << "Creating(unary) kind=" << kind_names[static_cast<int>(kind)] << ", with inst_idx=" << inst_idx << std::endl;
+#endif
+    switch(kind){
+    case Kind::Exp:
+        if (is_zero(inst_idx))
+            return make_integer(1);
+        return exp(inst_idx);
+    case Kind::Sin:
+        if (is_zero(inst_idx))
+            return make_integer(0);
+        return sin(inst_idx);
+    case Kind::Cos:
+        if (is_zero(inst_idx))
+            return make_integer(1);
+        return cos(inst_idx);
+    case Kind::Neg:
+        switch(instances[inst_idx].kind){
+        case Kind::Integer:
+            return make_integer(-instances[inst_idx].data.intgr);
+        case Kind::Float:
+            return make_float(-instances[inst_idx].data.dble);
+        case Kind::Neg:
+            return instances[inst_idx].data.idx_pair.first;
+        case Kind::Sub:
+            return sub(instances[inst_idx].data.idx_pair.second,
+                       instances[inst_idx].data.idx_pair.first);
+        default:
+            return neg(inst_idx);
+        }
+    default:
+#if !defined(NDEBUG)
+        std::cout << "!create does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;
+#endif
+        throw std::runtime_error("create does not support kind.");
+    }
+}
+
+symcxx::idx_t
 symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t inst_idx1){
 #ifndef NDEBUG
     std::cout << "Creating(binary) kind=" << kind_names[static_cast<int>(kind)] << ", with inst_idx0=" << inst_idx0 <<
@@ -311,10 +365,9 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
                 return neg(inst_idx1);
             if (is_zero(inst_idx1))
                 return inst_idx0;
-            if (are_sorted())
-                return sub(inst_idx0, inst_idx1);
-            else
-                return sub(inst_idx1, inst_idx0);
+            if (apparently_negative(inst_idx1))
+                return create(Kind::Add, inst_idx0, create(Kind::Neg, inst_idx1));
+            return sub(inst_idx0, inst_idx1);
     case Kind::Div:
         if (is_zero(inst_idx1))
             return make_nan();
@@ -322,7 +375,10 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
             if (is_zero(inst_idx0))
                 return make_integer(0);
             else
-                return sub(inst_idx0, inst_idx1);
+                if (is_one(inst_idx1))
+                    return inst_idx0;
+                else
+                    return div(inst_idx0, inst_idx1);
     case Kind::Pow:
         if (is_zero(inst_idx1))
             return make_integer(1);
@@ -334,6 +390,10 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
             return pow(inst_idx0, inst_idx1);
     case Kind::Atan2:
     case Kind::Hypot:
+        if (are_sorted())
+            return hypot(inst_idx0, inst_idx1);
+        else
+            return hypot(inst_idx1, inst_idx0);
     default:
         throw std::runtime_error("create does not support kind.");
     }

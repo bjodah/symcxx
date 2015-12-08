@@ -124,7 +124,22 @@ TEST_CASE( "diff_mul2", "[symcxx::NameSpace]" ) {
     REQUIRE( dexpr_id == intgr3 );
 }
 
-TEST_CASE( "diff_div", "[symcxx::NameSpace]" ) {
+TEST_CASE( "diff_div0", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3.14};
+    auto ns = symcxx::NameSpace();
+    symcxx::idx_t x0_id = ns.make_symbol(0);
+    symcxx::idx_t zero_id = ns.make_integer(0);
+    symcxx::idx_t one_id = ns.make_integer(1);
+
+    auto div_id0 = ns.create(symcxx::Kind::Div, zero_id, x0_id);
+    REQUIRE( div_id0 == zero_id );
+
+    auto div_id1 = ns.create(symcxx::Kind::Div, x0_id, one_id);
+    REQUIRE( div_id1 == x0_id );
+}
+
+
+TEST_CASE( "diff_div1", "[symcxx::NameSpace]" ) {
     const double x[1] = {3.14};
     auto ns = symcxx::NameSpace();
     symcxx::idx_t x0_id = ns.make_symbol(0);
