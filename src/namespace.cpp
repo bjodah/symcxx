@@ -1,11 +1,15 @@
 #include "symcxx/core.hpp"
 
 symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_symbs(n_pre_symbs) {
-    instances.reserve(n_pre_intgrs + 2*n_pre_symbs);  // arbitrary
+    instances.reserve(n_pre_intgrs + 2 + 2*n_pre_symbs);  // arbitrary
     for (idx_t idx=0; idx < (n_pre_intgrs+1)/2; ++idx)  //
         instances.push_back(Integer(idx, this));
     for (idx_t idx=0; idx < n_pre_intgrs/2; ++idx)
         instances.push_back(Integer(-static_cast<int64_t>(n_pre_intgrs/2 - idx), this));
+    make_float(3.1415926535897932385); // pi
+    make_float(-3.1415926535897932385); // -pi
+    make_float(2.7182818284590452354); // exp(1)
+    make_float(-2.7182818284590452354); // -exp(1)
     for (idx_t idx=0; idx < n_pre_symbs; ++idx)
         instances.push_back(Symbol(idx, this));
 #if !defined(NDEBUG)
@@ -91,7 +95,7 @@ symcxx::NameSpace::apparently_negative(const idx_t idx) const {
 symcxx::idx_t
 symcxx::NameSpace::make_symbol(idx_t symb_idx){
     if (symb_idx < n_pre_symbs)
-        return n_pre_intgrs + symb_idx;
+        return n_pre_intgrs + n_special + symb_idx;
     const auto instance = Symbol(symb_idx, this);
     idx_t idx;
     if (has(instance, &idx)){
@@ -303,20 +307,51 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
     case Kind::Exp:
         if (is_zero(inst_idx))
             return make_integer(1);
+        if (instances[inst_idx].kind == Kind::Log)
+            return instances[inst_idx].data.idx_pair.first;
         return exp(inst_idx);
     case Kind::Sin:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
             return make_integer(0);
         return sin(inst_idx);
     case Kind::Cos:
         if (is_zero(inst_idx))
             return make_integer(1);
+        if (inst_idx == pi_id || inst_idx == neg_pi_id)
+            return make_integer(-1);
         return cos(inst_idx);
     case Kind::Tan:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
             return make_integer(0);
         return tan(inst_idx);
+    case Kind::Log:
+        if (inst_idx == e_id)
+            return make_integer(1);
+        else if (inst_idx == neg_e_id)
+            return make_integer(-1);
+        if (instances[inst_idx].kind == Kind::Exp)
+            return instances[inst_idx].data.idx_pair.first;
+        return log(inst_idx);
+    case Kind::Sqrt:
+        if (instances[inst_idx].kind == Kind::Pow)
+            if (instances[inst_idx].data.idx_pair.second == make_integer(2))
+                return instances[inst_idx].data.idx_pair.first;
+        return sqrt(inst_idx);
+    case Kind::Cbrt:
+        if (instances[inst_idx].kind == Kind::Pow)
+            if (instances[inst_idx].data.idx_pair.second == make_integer(3))
+                return instances[inst_idx].data.idx_pair.first;
+        return cbrt(inst_idx);
     case Kind::Neg:
+        if (inst_idx == pi_id)
+            return neg_pi_id;
+        else if (inst_idx == neg_pi_id)
+            return pi_id;
+        else if (inst_idx == e_id)
+            return neg_e_id;
+        else if (inst_idx == neg_e_id)
+            return e_id;
+
         switch(instances[inst_idx].kind){
         case Kind::Integer:
             return make_integer(-instances[inst_idx].data.intgr);
@@ -524,7 +559,42 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
     case Kind::Log:
         return create(Kind::Div,
                       diff(inst.data.idx_pair.first, wrt_id),
-                      inst_id
+                      inst.data.idx_pair.first
+                      );
+    case Kind::Sqrt:
+        return create(Kind::Div,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      create(Kind::Mul,
+                             inst_id,
+                             make_integer(2))
+                      );
+    case Kind::Cbrt:
+        return create(Kind::Mul,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      create(Kind::Div,
+                             create(Kind::Pow,
+                                    inst.data.idx_pair.first,
+                                    create(Kind::Div,
+                                           make_integer(-2),
+                                           make_integer(3))
+                                    ),
+                             make_integer(3))
+                      );
+    case Kind::Erf:
+        return create(Kind::Mul,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      create(Kind::Div,
+                             create(Kind::Mul,
+                                    make_integer(2),
+                                    create(Kind::Exp,
+                                           create(Kind::Neg,
+                                                  create(Kind::Pow,
+                                                         inst.data.idx_pair.first,
+                                                         make_integer(2)
+                                                         )))),
+                             create(Kind::Sqrt,
+                                    pi_id)
+                             )
                       );
     default:
         std::cout << "Unsupported kind: " << kind_names[static_cast<int>(inst.kind)] << std::endl;

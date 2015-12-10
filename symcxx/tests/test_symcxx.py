@@ -5,6 +5,7 @@ import math
 import numpy as np
 from symcxx import NameSpace
 
+
 def test_NameSpace_Symbol():
     ns = NameSpace(2)
     x = ns.Symbol('x')
@@ -16,6 +17,7 @@ def test_NameSpace_Symbol():
     sub = x - y
     result = sub.evalf(np.array([3., 5.]))
     assert abs(result + 2) < 1e-15
+
 
 def test_NameSpace_relational():
     ns = NameSpace(2)
@@ -66,10 +68,12 @@ def test_diff0():
     print(ref, ref.idx)
     assert (deriv == ref) is True
 
+
 def test_str():
     ns = NameSpace(0)
     x = ns.Symbol('x')
     assert str(3*x) == 'Mul2(Integer(3), Symbol(x))'
+
 
 def test_Div_diff0():
     ns = NameSpace(1)
@@ -79,12 +83,14 @@ def test_Div_diff0():
     ref = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)**2)
     assert abs(deriv.evalf(np.array([3.14])) - ref) < 1e-15
 
+
 def test_sin_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')
     expr = ns.sin(3*x + 1)
     ref = 3*math.cos(3*3.14 + 1)
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
 
 def test_cos_diff0():
     ns = NameSpace(1)
@@ -93,12 +99,14 @@ def test_cos_diff0():
     ref = -3*math.sin(3*3.14 + 1)
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
 
+
 def test_exp_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')
     expr = ns.exp(3*x + 1)
     ref = 3*math.exp(3*3.14 + 1)
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
 
 def test_tan_diff0():
     ns = NameSpace(1)
@@ -107,9 +115,34 @@ def test_tan_diff0():
     ref = 3*(1 + math.tan(3*3.14 + 1)**2)
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
 
+
 def test_log_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')
     expr = ns.log(3*x + 1)
     ref = 3/(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_sqrt_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.sqrt(3*x + 1)
+    ref = .5*3/(3*3.14 + 1)**.5
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_cbrt_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.cbrt(3*x + 1)
+    ref = 1./(3*3.14 + 1)**(2/3.)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_erf_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.erf(3*x + 1)
+    ref = 3*2*math.exp(-3.14**2)/math.pi**.5
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15

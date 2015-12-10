@@ -11,6 +11,12 @@ namespace symcxx{
         idx_t n_symbs;
         // idx_t __padding {0};
         const static idx_t n_pre_intgrs = 7;
+        const static idx_t n_special = 4; // see below:
+        const static idx_t pi_id = n_pre_intgrs; // atan(1)*4
+        const static idx_t neg_pi_id = n_pre_intgrs+1; // -atan(1)*4
+        const static idx_t e_id = n_pre_intgrs+2; // exp(1)
+        const static idx_t neg_e_id = n_pre_intgrs+3; // -exp(1)
+
         NameSpace(idx_t=0);
         // idx_t idx(const Basic*) const;
         idx_t reg_args(const std::vector<idx_t>&);
@@ -57,4 +63,4 @@ namespace symcxx{
     };
 
 }
-static_assert(symcxx::NameSpace::n_pre_intgrs >= 3, "We need 0, 1 to be zero and one"); // see is_zero, is_one
+static_assert(symcxx::NameSpace::n_pre_intgrs >= 7, "We need 0, 1, 2, 3 to be zero, one, two and three"); // see is_zero, is_one

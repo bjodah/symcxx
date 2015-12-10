@@ -154,13 +154,35 @@ TEST_CASE( "diff_div1", "[symcxx::NameSpace]" ) {
     const double res_div = ns.evalf(div_id, x);
     REQUIRE( std::abs(res_div - ref_div) < 1e-15 );
 
-    std::cout << "\n\nAbout to diff!\n\n";
     auto div_diff_id = ns.diff(div_id, x0_id);
-    std::cout << "\n\nDiff done!\n\n";
     for (symcxx::idx_t i=0; i<ns.instances.size(); ++i)
         std::cout << i << ": " << ns.print_ast(i, {"x"}) << std::endl;
 
     const double ref_div_diff = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)*(3.14 - 2));
     const double res_div_diff = ns.evalf(div_diff_id, x);
     REQUIRE( std::abs(res_div_diff - ref_div_diff) < 1e-15 );
+}
+
+TEST_CASE( "diff_log1", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3.14};
+    auto ns = symcxx::NameSpace();
+    symcxx::idx_t x0_id = ns.make_symbol();
+
+    auto mul_id = ns.mul2(ns.make_integer(3), x0_id);
+    auto add_id = ns.add2(mul_id, ns.make_integer(1));
+    auto log_id = ns.log(add_id);
+
+    const double ref_log = std::log(3*3.14 + 1);
+    const double res_log = ns.evalf(log_id, x);
+    REQUIRE( std::abs(res_log - ref_log) < 1e-15 );
+
+    std::cout << "\n\nAbout to diff!\n\n";
+    auto log_diff_id = ns.diff(log_id, x0_id);
+    std::cout << "\n\nDiff done!\n\n";
+    for (symcxx::idx_t i=0; i<ns.instances.size(); ++i)
+        std::cout << i << ": " << ns.print_ast(i, {"x"}) << std::endl;
+
+    const double ref_log_diff = 3./(3*3.14 + 1);
+    const double res_log_diff = ns.evalf(log_diff_id, x);
+    REQUIRE( std::abs(res_log_diff - ref_log_diff) < 1e-15 );
 }
