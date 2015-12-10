@@ -102,7 +102,7 @@ symcxx::NameSpace::make_symbol(idx_t symb_idx){
         return idx;
     }
 #if !defined(NDEBUG)
-    std::cout << "make_symbol(" << idx << ") - new!" << std::endl;
+    std::cout << "make_symbol(" << symb_idx << ") - new!" << std::endl;
 #endif
     if (symb_idx != n_symbs)
         throw std::runtime_error("Something fishy about skipping symbols..");
@@ -288,9 +288,9 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
             return ite(args);
     default:
 #if !defined(NDEBUG)
-        std::cout << "!create does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;
+        std::cout << "create(vector) does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;
 #endif
-        throw std::runtime_error("create does not support kind.");
+        throw std::runtime_error("create(vector) does not support kind.");
     }
 }
 
@@ -328,9 +328,9 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
         }
     default:
 #if !defined(NDEBUG)
-        std::cout << "!create does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;
+        std::cout << "create(unary) does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;
 #endif
-        throw std::runtime_error("create does not support kind.");
+        throw std::runtime_error("create(unary) does not support kind.");
     }
 }
 
@@ -395,7 +395,10 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
         else
             return hypot(inst_idx1, inst_idx0);
     default:
-        throw std::runtime_error("create does not support kind.");
+#if !defined(NDEBUG)
+        std::cout << "create(binary) does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;
+#endif
+        throw std::runtime_error("create(binary) does not support kind.");
     }
 }
 
@@ -484,6 +487,25 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                              inst.data.idx_pair.second,
                              make_integer(2))
                       );
+    case Kind::Exp:
+        return create(Kind::Mul,
+                      inst_id,
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Sin:
+        return create(Kind::Mul,
+                      create(Kind::Cos,
+                             inst.data.idx_pair.first),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Cos:
+        return create(Kind::Mul, {{
+                    make_integer(-1),
+                        create(Kind::Sin,
+                               inst.data.idx_pair.first),
+                        diff(inst.data.idx_pair.first, wrt_id)
+                        }}
+            );
     default:
         std::cout << "Unsupported kind: " << kind_names[static_cast<int>(inst.kind)] << std::endl;
         throw std::runtime_error("diff does not support kind.");

@@ -113,7 +113,6 @@ TEST_CASE( "evalb", "[symcxx::Basic]" ) {
     REQUIRE( not gt.evalb(&xm1) );
     REQUIRE( not gt.evalb(&x0) );
     REQUIRE( gt.evalb(&x1) );
-
 }
 
 

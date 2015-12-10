@@ -128,6 +128,7 @@ TEST_CASE( "diff_div0", "[symcxx::NameSpace]" ) {
     const double x[1] = {3.14};
     auto ns = symcxx::NameSpace();
     symcxx::idx_t x0_id = ns.make_symbol(0);
+    REQUIRE( ns.instances[x0_id].data.idx_pair.first == 0 );
     symcxx::idx_t zero_id = ns.make_integer(0);
     symcxx::idx_t one_id = ns.make_integer(1);
 

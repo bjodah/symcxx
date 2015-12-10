@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+import math
 import numpy as np
 from symcxx import NameSpace
 
@@ -77,3 +78,24 @@ def test_Div_diff0():
     deriv = expr.diff(x)
     ref = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)**2)
     assert abs(deriv.evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_sin_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.sin(3*x + 1)
+    ref = 3*math.cos(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_cos_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.cos(3*x + 1)
+    ref = -3*math.sin(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_exp_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.exp(3*x + 1)
+    ref = 3*math.exp(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15

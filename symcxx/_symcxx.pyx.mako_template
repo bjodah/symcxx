@@ -17,6 +17,8 @@ ctypedef unsigned int idx_t
 import sys
 import numpy as np
 
+# TODO: use create(..., ) rather than raw methods. (will require C api)
+
 cdef extern from "symcxx/core.hpp" namespace "symcxx":
     cdef cppclass NameSpace:
         idx_t n_symbs
