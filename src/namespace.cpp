@@ -312,6 +312,10 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
         if (is_zero(inst_idx))
             return make_integer(1);
         return cos(inst_idx);
+    case Kind::Tan:
+        if (is_zero(inst_idx))
+            return make_integer(0);
+        return tan(inst_idx);
     case Kind::Neg:
         switch(instances[inst_idx].kind){
         case Kind::Integer:
@@ -506,6 +510,22 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                         diff(inst.data.idx_pair.first, wrt_id)
                         }}
             );
+    case Kind::Tan:
+        return create(Kind::Mul,
+                      create(Kind::Add,
+                             make_integer(1),
+                             create(Kind::Pow,
+                                    create(Kind::Tan,
+                                           inst.data.idx_pair.first),
+                                    make_integer(2))
+                             ),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Log:
+        return create(Kind::Div,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      inst_id
+                      );
     default:
         std::cout << "Unsupported kind: " << kind_names[static_cast<int>(inst.kind)] << std::endl;
         throw std::runtime_error("diff does not support kind.");

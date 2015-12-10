@@ -99,3 +99,17 @@ def test_exp_diff0():
     expr = ns.exp(3*x + 1)
     ref = 3*math.exp(3*3.14 + 1)
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_tan_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.tan(3*x + 1)
+    ref = 3*(1 + math.tan(3*3.14 + 1)**2)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_log_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.log(3*x + 1)
+    ref = 3/(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
