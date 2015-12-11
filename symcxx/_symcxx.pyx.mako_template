@@ -22,6 +22,12 @@ import numpy as np
 cdef extern from "symcxx/core.hpp" namespace "symcxx":
     cdef cppclass NameSpace:
         idx_t n_symbs
+
+        const idx_t pi_id
+        const idx_t neg_pi_id
+        const idx_t e_id
+        const idx_t neg_e_id
+
         NameSpace(idx_t)
         idx_t make_symbol(idx_t)
         idx_t make_integer(int)
@@ -116,9 +122,14 @@ def _implicit_conversion(ns, other):
 cdef class PyNameSpace:
     cdef NameSpace *thisptr
     cdef readonly vector[string] symbol_names
+    cdef readonly object pi, neg_pi, E, neg_E
 
-    def __cinit__(self, idx_t n):
+    def __cinit__(self, idx_t n=0):
         self.thisptr = new NameSpace(n)
+        self.pi = _IndexedObject(self.thisptr.pi_id, self)
+        self.neg_pi = _IndexedObject(self.thisptr.neg_pi_id, self)
+        self.E = _IndexedObject(self.thisptr.e_id, self)
+        self.neg_E = _IndexedObject(self.thisptr.neg_e_id, self)
 
     def __dealloc__(self):
         del self.thisptr
@@ -132,6 +143,9 @@ cdef class PyNameSpace:
 
     def make_integer(self, intgr):
         return self.thisptr.make_integer(intgr)
+
+    def make_float(self, double dble):
+        return self.thisptr.make_float(dble)
 
     def make_nan(self):
         return self.thisptr.make_nan()

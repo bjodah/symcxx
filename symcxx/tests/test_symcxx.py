@@ -143,6 +143,6 @@ def test_cbrt_diff0():
 def test_erf_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')
-    expr = ns.erf(3*x + 1)
-    ref = 3*2*math.exp(-3.14**2)/math.pi**.5
+    expr = ns.erf(.1*x - 1)
+    ref = .1*2*math.exp(-(.1*3.14-1)**2)/math.pi**.5
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
