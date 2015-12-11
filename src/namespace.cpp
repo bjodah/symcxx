@@ -10,6 +10,8 @@ symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_sy
     make_float(-3.1415926535897932385); // -pi
     make_float(2.7182818284590452354); // exp(1)
     make_float(-2.7182818284590452354); // -exp(1)
+    make_float(0.69314718055994530942); // log(2)
+    make_float(2.3025850929940456840); // log(10)
     for (idx_t idx=0; idx < n_pre_symbs; ++idx)
         instances.push_back(Symbol(idx, this));
 #if !defined(NDEBUG)
@@ -324,6 +326,30 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
         if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
             return make_integer(0);
         return tan(inst_idx);
+    case Kind::Cosh:
+        if (is_zero(inst_idx))
+            return make_integer(1);
+        return cosh(inst_idx);
+    case Kind::Sinh:
+        if (is_zero(inst_idx))
+            return make_integer(0);
+        return sinh(inst_idx);
+    case Kind::Tanh:
+        if (is_zero(inst_idx))
+            return make_integer(0);
+        return tanh(inst_idx);
+    case Kind::Acosh:
+        if (is_one(inst_idx))
+            return make_integer(0);
+        return acosh(inst_idx);
+    case Kind::Asinh:
+        if (is_zero(inst_idx))
+            return make_integer(0);
+        return asinh(inst_idx);
+    case Kind::Atanh:
+        if (is_zero(inst_idx))
+            return make_integer(0);
+        return atanh(inst_idx);
     case Kind::Log:
         if (inst_idx == e_id)
             return make_integer(1);
@@ -556,10 +582,101 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                              ),
                       diff(inst.data.idx_pair.first, wrt_id)
                       );
+    case Kind::Acos:
+    case Kind::Asin:
+        return create(Kind::Mul,
+                      create(Kind::Div,
+                             make_integer((inst.kind == Kind::Asin) ? 1 : -1),
+                             create(Kind::Sqrt,
+                                    create(Kind::Sub,
+                                           make_integer(1),
+                                           create(Kind::Pow,
+                                                  inst.data.idx_pair.first,
+                                                  make_integer(2)
+                                                  )
+                                           )
+                                    )
+                             ),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Atan:
+        return create(Kind::Div,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      create(Kind::Add,
+                             make_integer(1),
+                             create(Kind::Pow,
+                                    inst.data.idx_pair.first,
+                                    make_integer(2)))
+                      );
+    case Kind::Cosh:
+        return create(Kind::Mul,
+                      create(Kind::Sinh,
+                             inst.data.idx_pair.first),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Sinh:
+        return create(Kind::Mul,
+                      create(Kind::Cosh,
+                             inst.data.idx_pair.first),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Tanh:
+        return create(Kind::Mul,
+                      create(Kind::Sub,
+                             make_integer(1),
+                             create(Kind::Pow,
+                                    inst_id,
+                                    make_integer(2))),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Acosh:
+    case Kind::Asinh:
+        return create(Kind::Mul,
+                      create(Kind::Div,
+                             make_integer(1),
+                             create(Kind::Sqrt,
+                                    create(Kind::Add,
+                                           make_integer((inst.kind == Kind::Asinh) ? 1 : -1),
+                                           create(Kind::Pow,
+                                                  inst.data.idx_pair.first,
+                                                  make_integer(2)
+                                                  )
+                                           )
+                                    )
+                             ),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Atanh:
+        return create(Kind::Mul,
+                      create(Kind::Div,
+                             make_integer(1),
+                                    create(Kind::Sub,
+                                           make_integer(1),
+                                           create(Kind::Pow,
+                                                  inst.data.idx_pair.first,
+                                                  make_integer(2)
+                                                  )
+                                           )
+                             ),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
     case Kind::Log:
         return create(Kind::Div,
                       diff(inst.data.idx_pair.first, wrt_id),
                       inst.data.idx_pair.first
+                      );
+    case Kind::Log10:
+        return create(Kind::Div,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      create(Kind::Mul, inst.data.idx_pair.first, ln10_id)
+                      );
+    case Kind::Exp2:
+        return create(Kind::Mul, {{ inst_id, ln2_id,
+                        diff(inst.data.idx_pair.first, wrt_id) }});
+    case Kind::Expm1:
+        return create(Kind::Mul,
+                      create(Kind::Exp, inst.data.idx_pair.first),
+                      diff(inst.data.idx_pair.first, wrt_id)
                       );
     case Kind::Sqrt:
         return create(Kind::Div,
@@ -581,11 +698,12 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                              make_integer(3))
                       );
     case Kind::Erf:
+    case Kind::Erfc:
         return create(Kind::Mul,
                       diff(inst.data.idx_pair.first, wrt_id),
                       create(Kind::Div,
                              create(Kind::Mul,
-                                    make_integer(2),
+                                    make_integer((inst.kind == Kind::Erf) ? 2 : -2),
                                     create(Kind::Exp,
                                            create(Kind::Neg,
                                                   create(Kind::Pow,

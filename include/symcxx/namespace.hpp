@@ -11,11 +11,14 @@ namespace symcxx{
         idx_t n_symbs;
         // idx_t __padding {0};
         const static idx_t n_pre_intgrs = 7;
-        const static idx_t n_special = 4; // see below:
+        const static idx_t n_special = 6; // see below:
         const static idx_t pi_id = n_pre_intgrs; // atan(1)*4
         const static idx_t neg_pi_id = n_pre_intgrs+1; // -atan(1)*4
         const static idx_t e_id = n_pre_intgrs+2; // exp(1)
         const static idx_t neg_e_id = n_pre_intgrs+3; // -exp(1)
+        const static idx_t ln2_id = n_pre_intgrs+4; // log(2)
+        const static idx_t ln10_id = n_pre_intgrs+5; // log(10)
+
 
         NameSpace(idx_t=0);
         // idx_t idx(const Basic*) const;
