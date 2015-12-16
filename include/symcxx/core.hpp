@@ -85,6 +85,7 @@ namespace symcxx{
 #include "symcxx/basic.hpp"
 #include "symcxx/namespace.hpp"
 #include "symcxx/derived.hpp"
+#include "symcxx/matrix.hpp"
 
 inline symcxx::hash_t symcxx::calc_hash(const idx_t args_idx, const Kind kind,
                                         const std::vector<Basic>& instances,

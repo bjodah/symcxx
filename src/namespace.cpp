@@ -21,15 +21,6 @@ symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_sy
 #endif
 }
 
-// symcxx::idx_t
-// symcxx::NameSpace::idx(const Basic* basic_ptr) const {
-//     const auto begin = &instances[0];
-//     const auto end = begin + instances.capacity();
-//     if ((basic_ptr < begin) || (basic_ptr > end))
-//         throw std::runtime_error("Instance not in namespace.");
-//     return (basic_ptr - begin);
-// }
-
 symcxx::idx_t
 symcxx::NameSpace::reg_args(const std::vector<idx_t>& objs) {
     args_stack.push_back(objs);
@@ -119,7 +110,7 @@ symcxx::NameSpace::make_symbol(idx_t symb_idx){
 
 symcxx::idx_t
 symcxx::NameSpace::make_symbol(){
-    return make_symbol(n_symbs);
+    return make_symbols(1);
 }
 
 std::vector<symcxx::idx_t>
@@ -164,6 +155,39 @@ symcxx::NameSpace::make_float(double f){
 symcxx::idx_t
 symcxx::NameSpace::make_nan(){
     return make_float(std::nan(""));
+}
+
+symcxx::idx_t
+symcxx::NameSpace::make_matrix(idx_t nr, idx_t nc, std::vector<idt_t> data){
+    matrices.push_back(Matrix(nr, nc, data));
+    const auto instance = MatProx(matrices.size() - 1);
+    instances.push_back(instance);
+    return instances.size() - 1;
+}
+
+symcxx::idx_t
+symcxx::matrix_jacobian(idx_t idx_y, idx_t idx_dx){
+    matrices.push_back(matrices[instances[idx_y].idx_pair.first].jacobian(matrices[instances[idx_dx].idx_pair.first], this));
+    const auto instance = MatProx(matrices.size() - 1);
+    instances.push_back(instance);
+    return instances.size() - 1;
+}
+
+void
+symcxx::matrix_evalf(idx_t idx, const double * const inp, double * const out) const {
+    matrices[instances[idx].idx_pair.first].evalf_all(inp, out, this);
+}
+
+symcxx::idx_t
+symcxx::matrix_get_nr(idx_t idx) const {
+    const auto& mat = matrices[instances[idx].idx_pair.first];
+    return mat.nr;
+}
+
+symcxx::idx_t
+symcxx::matrix_get_nc(idx_t idx) const {
+    const auto& mat = matrices[instances[idx].idx_pair.first];
+    return mat.nc;
 }
 
 std::string

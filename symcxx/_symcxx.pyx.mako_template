@@ -14,7 +14,9 @@ from libcpp.string cimport string
 
 ctypedef unsigned int idx_t
 
+import itertools
 import sys
+
 import numpy as np
 
 # TODO: use create(..., ) rather than raw methods. (will require C api)
@@ -33,6 +35,11 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         idx_t make_integer(int)
         idx_t make_float(double)
         idx_t make_nan()
+        idx_t make_matrix(idx_t, idx_t, vector[idx_t]);
+        idx_t matrix_jacobian(idx_t, idx_t);
+        void matrix_evalf(idx_t, const double * const, double * const) const;
+        idx_t matrix_get_nr(idx_t) const
+        idx_t matrix_get_nc(idx_t) const
         string print_ast(const idx_t, vector[string]&) except +
 
         bool evalb(idx_t, const double *) except +
@@ -46,6 +53,26 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
 %for Cls, Parent, meth in types_nonatomic_binary:
         idx_t ${meth}(idx_t, idx_t)
 %endfor
+
+class _Matrix(object):
+
+    def __init__(self, idx, namespace):
+        self.idx = idx
+        self.ns = namespace
+
+    @property
+    def shape(self):
+        return (self.ns.matrix_get_nr(self.idx),
+                self.ns.matrix_get_ns(self.idx))
+
+    def jacobian(self, other):
+        return self.ns.matrix_jacobian(self.idx, other.idx)
+
+    def evalf(self, inp, out=None):
+        if out is None:
+            out = np.empty(self.shape)
+        self.ns.matrix_evalf(self.idx, inp, out)
+        return out
 
 
 class _IndexedObject(object):
@@ -150,6 +177,24 @@ cdef class PyNameSpace:
     def make_nan(self):
         return self.thisptr.make_nan()
 
+    def make_matrix(self, nr, nc, data):
+        return self.thisptr.make_matrix(nr, nc, data)
+
+    def matrix_jacobian(self, y, dx):
+        return self.thisptr.matrix_jacobian(y, dx)
+
+    def matrix_get_nr(self, idx_t idx):
+        return self.thisptr.matrix_get_nr(idx)
+
+    def matrix_get_nc(self, idx_t idx):
+        return self.thisptr.matrix_get_nc(idx)
+
+    def matrix_evalf(self, idx_t idx, double[::1] inp, double[::1] out):
+        mat_size = self.matrix_get_nr(idx) * self.matrix_get_nc(idx)
+        if inp.size < mat_size or out.size < mat_size:
+            raise ValueError("Insufficient length")
+        self.thisptr.matrix_evalf(idx, inp, out)
+
     def print_ast(self, idx):
         return self.thisptr.print_ast(idx, self.symbol_names)
 
@@ -202,3 +247,17 @@ cdef class PyNameSpace:
             arr[index] = self.Symbol('%s_%s' % (
                 prefix, '_'.join(map(str, index))))
         return arr
+
+    def Matrix(self, nr, nc, source):
+        if callable(source):
+            callback = source
+        else:
+            def callback(ri, ci):
+                try:
+                    return source[ri, ci]
+                except TypeError:
+                    return source[ri*ncols + ci]
+        data = [callback(ri, ci) for ri, ci
+                in itertools.product(range(nrows), range(ncols))]
+        mat_idx = self.make_matrix(nr, nc, data)
+        return _IndexedObject(mat_idx, self)

@@ -19,6 +19,9 @@ namespace symcxx{
         const static idx_t ln2_id = n_pre_intgrs+4; // log(2)
         const static idx_t ln10_id = n_pre_intgrs+5; // log(10)
 
+    private:
+        std::vector<Matrix> matrices;
+    public:
 
         NameSpace(idx_t=0);
         // idx_t idx(const Basic*) const;
@@ -33,6 +36,11 @@ namespace symcxx{
         idx_t make_integer(int i);
         idx_t make_float(double f);
         idx_t make_nan();
+        idx_t make_matrix(idx_t, idx_t, std::vector<idx_t>);
+        idx_t matrix_jacobian(idx_t, idx_t);
+        void matrix_evalf(idx_t, const double * const, double * const) const;
+        idx_t matrix_get_nr(idx_t) const;
+        idx_t matrix_get_nc(idx_t) const;
         std::string print_ast(const idx_t, const std::vector<std::string>&) const;
 
 #define SYMCXX_TYPE(Cls, Parent, meth) idx_t meth(const std::vector<idx_t>&);

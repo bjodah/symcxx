@@ -260,3 +260,14 @@ def test_erfc_diff0():
     expr = ns.erfc(.1*x - 1)
     ref = -.1*2*math.exp(-(.1*3.14-1)**2)/math.pi**.5
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_Matrix():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    add = x + y
+    matrix = ns.Matrix(2, 2, [[x+1, y-2],
+                              [x-y, x*y]])
+    out = matrix.evalf(np.array(2., 3.))
+    assert np.allclose(out, [[3, 1],
+                             [-1, 6]])
