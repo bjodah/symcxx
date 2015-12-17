@@ -60,6 +60,7 @@ namespace symcxx{
             }};
 
     struct Basic;
+    struct Matrix;
     struct NameSpace;
 #define SYMCXX_TYPE(Cls, Parent, meth) struct Cls;
 #include "symcxx/types_nonatomic.inc"
@@ -81,6 +82,7 @@ namespace symcxx{
     bool lt(const data_t arg1, const data_t arg2, const Kind kind, const ArgStack_t&, const std::vector<Basic>&);
     bool eq(const data_t arg1, const data_t arg2, const Kind kind, const ArgStack_t&, const std::vector<Basic>&);
 }
+
 
 #include "symcxx/basic.hpp"
 #include "symcxx/namespace.hpp"

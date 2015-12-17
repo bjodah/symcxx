@@ -268,6 +268,6 @@ def test_Matrix():
     add = x + y
     matrix = ns.Matrix(2, 2, [[x+1, y-2],
                               [x-y, x*y]])
-    out = matrix.evalf(np.array(2., 3.))
+    out = matrix.evalf(np.array([2., 3.]))
     assert np.allclose(out, [[3, 1],
                              [-1, 6]])

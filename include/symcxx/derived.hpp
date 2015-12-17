@@ -6,7 +6,7 @@ namespace symcxx {
     };
     struct MatProx : public Symbol {
         MatProx(const idx_t data, const NameSpace * const ns) : Symbol(data, ns) {}
-    }
+    };
     struct Float : public Basic {
         Float(const double data, const NameSpace * const ns) : Basic(std::hash<double>()(data), Kind::Float, data, ns) {}
     };

@@ -110,7 +110,7 @@ symcxx::NameSpace::make_symbol(idx_t symb_idx){
 
 symcxx::idx_t
 symcxx::NameSpace::make_symbol(){
-    return make_symbols(1);
+    return make_symbol(n_symbs);
 }
 
 std::vector<symcxx::idx_t>
@@ -158,35 +158,35 @@ symcxx::NameSpace::make_nan(){
 }
 
 symcxx::idx_t
-symcxx::NameSpace::make_matrix(idx_t nr, idx_t nc, std::vector<idt_t> data){
+symcxx::NameSpace::make_matrix(idx_t nr, idx_t nc, std::vector<idx_t> data){
     matrices.push_back(Matrix(nr, nc, data));
-    const auto instance = MatProx(matrices.size() - 1);
+    const auto instance = MatProx(matrices.size() - 1, this);
     instances.push_back(instance);
     return instances.size() - 1;
 }
 
 symcxx::idx_t
-symcxx::matrix_jacobian(idx_t idx_y, idx_t idx_dx){
-    matrices.push_back(matrices[instances[idx_y].idx_pair.first].jacobian(matrices[instances[idx_dx].idx_pair.first], this));
-    const auto instance = MatProx(matrices.size() - 1);
+symcxx::NameSpace::matrix_jacobian(idx_t idx_y, idx_t idx_dx){
+    matrices.push_back(matrices[instances[idx_y].data.idx_pair.first].jacobian(matrices[instances[idx_dx].data.idx_pair.first], this));
+    const auto instance = MatProx(matrices.size() - 1, this);
     instances.push_back(instance);
     return instances.size() - 1;
 }
 
 void
-symcxx::matrix_evalf(idx_t idx, const double * const inp, double * const out) const {
-    matrices[instances[idx].idx_pair.first].evalf_all(inp, out, this);
+symcxx::NameSpace::matrix_evalf(idx_t idx, const double * const inp, double * const out) const {
+    matrices[instances[idx].data.idx_pair.first].evalf_all(inp, out, this);
 }
 
 symcxx::idx_t
-symcxx::matrix_get_nr(idx_t idx) const {
-    const auto& mat = matrices[instances[idx].idx_pair.first];
+symcxx::NameSpace::matrix_get_nr(idx_t idx) const {
+    const auto& mat = matrices[instances[idx].data.idx_pair.first];
     return mat.nr;
 }
 
 symcxx::idx_t
-symcxx::matrix_get_nc(idx_t idx) const {
-    const auto& mat = matrices[instances[idx].idx_pair.first];
+symcxx::NameSpace::matrix_get_nc(idx_t idx) const {
+    const auto& mat = matrices[instances[idx].data.idx_pair.first];
     return mat.nc;
 }
 
@@ -198,6 +198,7 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
     switch(inst.kind){
     case Kind::Symbol:
     case Kind::Integer:
+    case Kind::MatProx:
     case Kind::Float:
         os << inst.print(symbol_names); break;
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \

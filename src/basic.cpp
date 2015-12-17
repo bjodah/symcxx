@@ -47,6 +47,9 @@ symcxx::Basic::print(const std::vector<std::string>& symbol_names) const {
         else
             os << symbol_names[data.idx_pair.first];
         break;
+    case Kind::MatProx:
+        os << data.idx_pair.first;
+        break;
     case Kind::Integer:
         os << data.intgr; break;
     case Kind::Float:

@@ -63,7 +63,7 @@ class _Matrix(object):
     @property
     def shape(self):
         return (self.ns.matrix_get_nr(self.idx),
-                self.ns.matrix_get_ns(self.idx))
+                self.ns.matrix_get_nc(self.idx))
 
     def jacobian(self, other):
         return self.ns.matrix_jacobian(self.idx, other.idx)
@@ -71,8 +71,9 @@ class _Matrix(object):
     def evalf(self, inp, out=None):
         if out is None:
             out = np.empty(self.shape)
-        self.ns.matrix_evalf(self.idx, inp, out)
-        return out
+        local_out = np.ravel(out)
+        self.ns.matrix_evalf(self.idx, inp, local_out)
+        return local_out.reshape(self.shape)
 
 
 class _IndexedObject(object):
@@ -191,9 +192,9 @@ cdef class PyNameSpace:
 
     def matrix_evalf(self, idx_t idx, double[::1] inp, double[::1] out):
         mat_size = self.matrix_get_nr(idx) * self.matrix_get_nc(idx)
-        if inp.size < mat_size or out.size < mat_size:
+        if inp.size < self.thisptr.n_symbs or out.size < mat_size:
             raise ValueError("Insufficient length")
-        self.thisptr.matrix_evalf(idx, inp, out)
+        self.thisptr.matrix_evalf(idx, &inp[0], &out[0])
 
     def print_ast(self, idx):
         return self.thisptr.print_ast(idx, self.symbol_names)
@@ -254,10 +255,14 @@ cdef class PyNameSpace:
         else:
             def callback(ri, ci):
                 try:
-                    return source[ri, ci]
+                    return source[ri, ci].idx
                 except TypeError:
-                    return source[ri*ncols + ci]
+                    try:
+                        return source[ri][ci].idx
+                    except TypeError:
+                        return source[ri*nc + ci].idx
         data = [callback(ri, ci) for ri, ci
-                in itertools.product(range(nrows), range(ncols))]
+                in itertools.product(range(nr), range(nc))]
+        print(nr, nc, data)
         mat_idx = self.make_matrix(nr, nc, data)
-        return _IndexedObject(mat_idx, self)
+        return _Matrix(mat_idx, self)
