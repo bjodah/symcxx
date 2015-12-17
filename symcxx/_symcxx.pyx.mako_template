@@ -43,6 +43,8 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         idx_t matrix_get_nc(idx_t) const
         string print_ast(const idx_t, vector[string]&) except +
 
+        unique_ptr[NameSpace] rebuild_from_matrix(const vector[idx_t]&, idx_t)
+
         bool evalb(idx_t, const double *) except +
         double evalf(idx_t, const double *) except +
         idx_t diff(const idx_t, const idx_t) except +

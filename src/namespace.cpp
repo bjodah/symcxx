@@ -230,7 +230,39 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
 
 symcxx::idx_t
 symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const {
-    // visitor-pattern-goes here, recurive call witch switch?
+    // visitor-pattern-goes here, recurive call with switch?
+    const auto& inst = instances[idx];
+    std::vector<idx_t> args;
+    switch(inst.kind){
+    case Kind::Symbol:
+        return inst.data.idx_pair.first;
+    case Kind::Integer:
+        return ns.make_integer(inst.data.intgr);
+    case Kind::MatProx:
+        for (idx_t inner : matrices[inst.data.idx_pair.first].data){
+            args.push_back(rebuild_idx_into_ns(inner, ns));
+        }
+        return ns.make_matrix(matrices[inst.data.idx_pair.first].nr,
+                              matrices[inst.data.idx_pair.first].nc, args);
+    case Kind::Float:
+        return ns.make_float(inst.data.dble);
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_unary.inc"
+        return ns.create(kind, rebuild_idx_into_ns(inst.data.idx_pair.first, ns));
+#include "symcxx/types_nonatomic_binary.inc"
+        return ns.create(kind,
+                         rebuild_idx_into_ns(inst.data.idx_pair.first, ns),
+                         rebuild_idx_into_ns(inst.data.idx_pair.second, ns));
+#include "symcxx/types_nonatomic_args_stack.inc"
+#undef SYMCXX_TYPE
+        for (idx_t inner : matrices[inst.data.idx_pair.first].data){
+            args.push_back(rebuild_idx_into_ns(inner, ns));
+        }
+        return ns.create(kind, args);
+    // default:
+    //     throw std::runtime_error("unhandled kind.");
+    }
 }
 
 std::unique_ptr<symcxx::NameSpace>
