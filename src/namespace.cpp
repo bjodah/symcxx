@@ -228,6 +228,28 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
     return os.str();
 }
 
+symcxx::idx_t
+symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const {
+    // visitor-pattern-goes here, recurive call witch switch?
+}
+
+std::unique_ptr<symcxx::NameSpace>
+symcxx::NameSpace::rebuild(const std::vector<idx_t>& args, const std::vector<idx_t>& exprs) const {
+    auto ns = std::make_unique<NameSpace>(args.size());
+    std::vector<idx_t> new_exprs;
+    for (auto expr : exprs) {
+        new_exprs.push_back(rebuild_idx_into_ns(expr, ns))
+    }
+    ns->make_matrix(new_exprs.size(), 1, new_exprs);
+    return ns;
+}
+
+std::unique_ptr<symcxx::NameSpace>
+symcxx::NameSpace rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat_idx) const {
+    return rebuild(args, matrices[instances[mat_idx].data.idx_pair.first].data);
+};
+
+
 
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     symcxx::idx_t symcxx::NameSpace::METH_(const std::vector<symcxx::idx_t>& args){ \

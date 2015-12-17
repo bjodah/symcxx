@@ -43,6 +43,10 @@ namespace symcxx{
         idx_t matrix_get_nc(idx_t) const;
         std::string print_ast(const idx_t, const std::vector<std::string>&) const;
 
+        idx_t symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const
+        std::unique_ptr<symcxx::NameSpace> rebuild(const std::vector<idx_t>&, const std::vector<idx_t>&) const;
+        std::unique_ptr<symcxx::NameSpace> rebuild_from_matrix(const std::vector<idx_t>&, idx_t) const;
+
 #define SYMCXX_TYPE(Cls, Parent, meth) idx_t meth(const std::vector<idx_t>&);
 #include "symcxx/types_nonatomic_args_stack.inc"
 #undef SYMCXX_TYPE
