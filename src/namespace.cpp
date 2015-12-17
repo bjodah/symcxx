@@ -234,11 +234,9 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
         const auto instance = CLS_(reg_args(args), this);                \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << STRINGIFY(METH_) "("<< args <<") - old!" << std::endl; \
             args_stack.pop_back();                                      \
             return idx;                                                 \
         }                                                               \
-        std::cout << STRINGIFY(METH_) "("<< args <<") - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -251,10 +249,8 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
         const auto instance = CLS_(inst, this);                          \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << STRINGIFY(METH_) "("<< inst <<") - old!" << std::endl;          \
             return idx;                                                 \
         }                                                               \
-        std::cout << STRINGIFY(METH_) "("<< inst <<") - new!" << std::endl;   \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -266,10 +262,8 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
         const auto instance = CLS_(inst0, inst1, this);                  \
         idx_t idx;                                                      \
         if (has(instance, &idx)){                                       \
-            std::cout << STRINGIFY(METH_) "("<< inst0 <<", "<< inst1 <<") - old!" << std::endl;          \
             return idx;                                                 \
         }                                                               \
-        std::cout << STRINGIFY(METH_) "("<< inst0 <<", "<< inst1 <<") - new!" << std::endl;              \
         instances.push_back(instance);                                  \
         return instances.size() - 1;                                    \
     }
@@ -834,7 +828,9 @@ symcxx::NameSpace::merge_drop_sort_collect(const std::vector<idx_t>& args,
     std::vector<idx_t> new_args;
     for (const auto arg : merge(merge_kind, sort_args(args))){
         for (const auto drp : drop){
+#if !defined(NDEBUG)
             std::cout << "Comparing arg, drp: " << arg << ", " << drp << std::endl;
+#endif
             if (arg == drp)
                 goto break_twice;
         }

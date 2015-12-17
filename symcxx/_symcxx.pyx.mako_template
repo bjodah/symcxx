@@ -36,8 +36,8 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         idx_t make_float(double)
         idx_t make_nan()
         idx_t make_matrix(idx_t, idx_t, vector[idx_t]);
-        idx_t matrix_jacobian(idx_t, idx_t);
-        void matrix_evalf(idx_t, const double * const, double * const) const;
+        idx_t matrix_jacobian(idx_t, idx_t) except +
+        void matrix_evalf(idx_t, const double * const, double * const) except +
         idx_t matrix_get_nr(idx_t) const
         idx_t matrix_get_nc(idx_t) const
         string print_ast(const idx_t, vector[string]&) except +
@@ -66,7 +66,7 @@ class _Matrix(object):
                 self.ns.matrix_get_nc(self.idx))
 
     def jacobian(self, other):
-        return self.ns.matrix_jacobian(self.idx, other.idx)
+        return _Matrix(self.ns.matrix_jacobian(self.idx, other.idx), self.ns)
 
     def evalf(self, inp, out=None):
         if out is None:

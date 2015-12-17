@@ -271,3 +271,17 @@ def test_Matrix():
     out = matrix.evalf(np.array([2., 3.]))
     assert np.allclose(out, [[3, 1],
                              [-1, 6]])
+
+def test_jacobian():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    add = x + y
+    my = ns.Matrix(2, 1, [x+y, x*y])
+    mx = ns.Matrix(1, 2, [x, y])
+    assert my.shape == (2, 1)
+    assert mx.shape == (1, 2)
+    J = my.jacobian(mx)
+    out = J.evalf(np.array([2., 3.]))
+    assert np.allclose(out, [[1, 1],
+                             [3, 2]])
