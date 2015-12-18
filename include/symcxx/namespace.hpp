@@ -43,9 +43,10 @@ namespace symcxx{
         idx_t matrix_get_nc(idx_t) const;
         std::string print_ast(const idx_t, const std::vector<std::string>&) const;
 
-        idx_t symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const
+        idx_t rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const;
         std::unique_ptr<symcxx::NameSpace> rebuild(const std::vector<idx_t>&, const std::vector<idx_t>&) const;
         std::unique_ptr<symcxx::NameSpace> rebuild_from_matrix(const std::vector<idx_t>&, idx_t) const;
+        inline idx_t get_instances_size() const { return instances.size(); }
 
 #define SYMCXX_TYPE(Cls, Parent, meth) idx_t meth(const std::vector<idx_t>&);
 #include "symcxx/types_nonatomic_args_stack.inc"
@@ -77,5 +78,18 @@ namespace symcxx{
                                                    const std::vector<idx_t>&, const Kind);
     };
 
+    template <class T, class ...Args>
+    typename std::enable_if
+    <
+        !std::is_array<T>::value,
+        std::unique_ptr<T>
+        >::type
+    make_unique(Args&& ...args)
+    {
+        return std::unique_ptr<T>(new T(std::forward<Args>(args)...));
+    }
+    inline std::unique_ptr<NameSpace> make_unique_NameSpace(const idx_t n_pre_symbs=0) {
+        return make_unique<NameSpace>(n_pre_symbs);
+    }
 }
 static_assert(symcxx::NameSpace::n_pre_intgrs >= 7, "We need 0, 1, 2, 3 to be zero, one, two and three"); // see is_zero, is_one

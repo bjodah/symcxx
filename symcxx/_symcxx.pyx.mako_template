@@ -18,6 +18,7 @@ ctypedef unsigned int idx_t
 import itertools
 import sys
 
+from cython.operator import dereference as deref
 import numpy as np
 
 # TODO: use create(..., ) rather than raw methods. (will require C api)
@@ -44,7 +45,7 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         string print_ast(const idx_t, vector[string]&) except +
 
         unique_ptr[NameSpace] rebuild_from_matrix(const vector[idx_t]&, idx_t)
-
+        idx_t get_instances_size()
         bool evalb(idx_t, const double *) except +
         double evalf(idx_t, const double *) except +
         idx_t diff(const idx_t, const idx_t) except +
@@ -56,6 +57,9 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
 %for Cls, Parent, meth in types_nonatomic_binary:
         idx_t ${meth}(idx_t, idx_t)
 %endfor
+
+    cdef unique_ptr[NameSpace] make_unique_NameSpace(const idx_t)
+
 
 cdef class _Matrix(object):
 
@@ -154,85 +158,70 @@ def _implicit_conversion(ns, other):
 
 
 cdef class PyNameSpace:
-    cdef NameSpace *thisptr
-    cdef bint we_allocated
+    cdef unique_ptr[NameSpace] thisptr
     cdef readonly vector[string] symbol_names
     cdef readonly object pi, neg_pi, E, neg_E
 
     def __cinit__(self, idx_t n=0, alloc=True):
         if alloc:
-            self.thisptr = new NameSpace(n)
-            self.we_allocated = True
-        else:
-            self.thisptr = NULL
-
-    @staticmethod
-    cdef from_NameSpace(NameSpace * ns):
-        cdef PyNameSpace pns = PyNameSpace(alloc=False)
-        pns.thisptr = ns
-        pns.initialize()
-        return pns
+            self.thisptr = make_unique_NameSpace(n)
 
     def initialize(self):
-        self.pi = _IndexedObject(self.thisptr.pi_id, self)
-        self.neg_pi = _IndexedObject(self.thisptr.neg_pi_id, self)
-        self.E = _IndexedObject(self.thisptr.e_id, self)
-        self.neg_E = _IndexedObject(self.thisptr.neg_e_id, self)
-
-    def __dealloc__(self):
-        if self.we_allocated:
-            del self.thisptr
+        self.pi = _IndexedObject(deref(self.thisptr).pi_id, self)
+        self.neg_pi = _IndexedObject(deref(self.thisptr).neg_pi_id, self)
+        self.E = _IndexedObject(deref(self.thisptr).e_id, self)
+        self.neg_E = _IndexedObject(deref(self.thisptr).neg_e_id, self)
 
     property n_symbs:
         def __get__(self):
-            return self.thisptr.n_symbs
+            return deref(self.thisptr).n_symbs
 
     def make_symbol(self, symb_idx):
-        return self.thisptr.make_symbol(symb_idx)
+        return deref(self.thisptr).make_symbol(symb_idx)
 
     def make_integer(self, intgr):
-        return self.thisptr.make_integer(intgr)
+        return deref(self.thisptr).make_integer(intgr)
 
     def make_float(self, double dble):
-        return self.thisptr.make_float(dble)
+        return deref(self.thisptr).make_float(dble)
 
     def make_nan(self):
-        return self.thisptr.make_nan()
+        return deref(self.thisptr).make_nan()
 
     def make_matrix(self, nr, nc, data):
-        return self.thisptr.make_matrix(nr, nc, data)
+        return deref(self.thisptr).make_matrix(nr, nc, data)
 
     def matrix_jacobian(self, y, dx):
-        return self.thisptr.matrix_jacobian(y, dx)
+        return deref(self.thisptr).matrix_jacobian(y, dx)
 
     def matrix_get_nr(self, idx_t idx):
-        return self.thisptr.matrix_get_nr(idx)
+        return deref(self.thisptr).matrix_get_nr(idx)
 
     def matrix_get_nc(self, idx_t idx):
-        return self.thisptr.matrix_get_nc(idx)
+        return deref(self.thisptr).matrix_get_nc(idx)
 
     def matrix_evalf(self, idx_t idx, double[::1] inp, double[::1] out):
         mat_size = self.matrix_get_nr(idx) * self.matrix_get_nc(idx)
-        if inp.size < self.thisptr.n_symbs or out.size < mat_size:
+        if inp.size < deref(self.thisptr).n_symbs or out.size < mat_size:
             raise ValueError("Insufficient length")
-        self.thisptr.matrix_evalf(idx, &inp[0], &out[0])
+        deref(self.thisptr).matrix_evalf(idx, &inp[0], &out[0])
 
     def print_ast(self, idx):
-        return self.thisptr.print_ast(idx, self.symbol_names)
+        return deref(self.thisptr).print_ast(idx, self.symbol_names)
 
     def evalb(self, idx_t idx, double [::1] inp):
-        return self.thisptr.evalb(idx, &inp[0])
+        return deref(self.thisptr).evalb(idx, &inp[0])
 
     def evalf(self, idx_t idx, double [::1] inp):
-        return self.thisptr.evalf(idx, &inp[0])
+        return deref(self.thisptr).evalf(idx, &inp[0])
 
     def diff(self, idx0, idx1):
-        return self.thisptr.diff(idx0, idx1)
+        return deref(self.thisptr).diff(idx0, idx1)
 
     # Unary:
 %for Cls, Parent, meth in types_nonatomic_unary:
     def _${Cls}(self, idx):
-        return self.thisptr.${meth}(idx)
+        return deref(self.thisptr).${meth}(idx)
 
     def ${meth}(self, obj):
         obj = _implicit_conversion(self, obj)
@@ -242,7 +231,7 @@ cdef class PyNameSpace:
     # Binary:
 %for Cls, Parent, meth in types_nonatomic_binary:
     def _${Cls}(self, idx0, idx1):
-        return self.thisptr.${meth}(idx0, idx1)
+        return deref(self.thisptr).${meth}(idx0, idx1)
     def ${meth}(self, obj0, obj1):
         obj0 = _implicit_conversion(self, obj0)
         obj1 = _implicit_conversion(self, obj1)
@@ -288,8 +277,10 @@ cdef class PyNameSpace:
         mat_idx = self.make_matrix(nr, nc, data)
         return _Matrix(mat_idx, self)
 
-    cdef PyNameSpace rebuild(self, args, _Matrix mtx):
-        return self.from_NameSpace(self.thisptr.rebuild_from_matrix([arg.idx for arg in args], mtx.idx))
+    cdef _Matrix rebuild(self, args, _Matrix mtx):
+        cdef PyNameSpace new_ns = PyNameSpace(alloc=False)
+        new_ns.thisptr = deref(self.thisptr).rebuild_from_matrix([arg.idx for arg in args], mtx.idx)
+        return _Matrix(deref(new_ns.thisptr).get_instances_size()-1, new_ns)
 
     def lambdify(self, args, exprs):
         if not isinstance(exprs, _Matrix):

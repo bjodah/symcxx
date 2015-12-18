@@ -4,6 +4,7 @@
 #include <array>  // std::array
 #include <cmath>
 #include <functional>
+#include <memory>  // std::unique_ptr
 #include <vector>  // std::vector
 #include <string>
 #include <sstream>

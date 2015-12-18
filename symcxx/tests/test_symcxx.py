@@ -285,3 +285,18 @@ def test_jacobian():
     out = J.evalf(np.array([2., 3.]))
     assert np.allclose(out, [[1, 1],
                              [3, 2]])
+
+def test_lambdify():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+
+    lmb1 = ns.lambdify((x, y), [x+y, x-y, x*y])
+    out1 = lmb1(np.array([2.0, 3.0]))
+    ref1 = [5, -1, 6]
+    assert np.allclose(out1, ref1)
+
+    lmb2 = ns.lambdify((y, x), [x+y, x-y, x*y])
+    out2 = lmb2(np.array([2.0, 3.0]))
+    ref2 = [5, 1, 6]
+    assert np.allclose(out2, ref2)

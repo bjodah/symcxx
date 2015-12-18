@@ -249,9 +249,9 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const {
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:
 #include "symcxx/types_nonatomic_unary.inc"
-        return ns.create(kind, rebuild_idx_into_ns(inst.data.idx_pair.first, ns));
+        return ns.create(inst.kind, rebuild_idx_into_ns(inst.data.idx_pair.first, ns));
 #include "symcxx/types_nonatomic_binary.inc"
-        return ns.create(kind,
+        return ns.create(inst.kind,
                          rebuild_idx_into_ns(inst.data.idx_pair.first, ns),
                          rebuild_idx_into_ns(inst.data.idx_pair.second, ns));
 #include "symcxx/types_nonatomic_args_stack.inc"
@@ -259,25 +259,25 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const {
         for (idx_t inner : matrices[inst.data.idx_pair.first].data){
             args.push_back(rebuild_idx_into_ns(inner, ns));
         }
-        return ns.create(kind, args);
-    // default:
-    //     throw std::runtime_error("unhandled kind.");
+        return ns.create(inst.kind, args);
+    default: //case Kind::Kind_Count:
+        throw std::runtime_error("Kind_Count not valid.");
     }
 }
 
 std::unique_ptr<symcxx::NameSpace>
 symcxx::NameSpace::rebuild(const std::vector<idx_t>& args, const std::vector<idx_t>& exprs) const {
-    auto ns = std::make_unique<NameSpace>(args.size());
+    auto ns = make_unique<NameSpace>(args.size());
     std::vector<idx_t> new_exprs;
     for (auto expr : exprs) {
-        new_exprs.push_back(rebuild_idx_into_ns(expr, ns))
+        new_exprs.push_back(rebuild_idx_into_ns(expr, *ns));
     }
     ns->make_matrix(new_exprs.size(), 1, new_exprs);
     return ns;
 }
 
 std::unique_ptr<symcxx::NameSpace>
-symcxx::NameSpace rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat_idx) const {
+symcxx::NameSpace::rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat_idx) const {
     return rebuild(args, matrices[instances[mat_idx].data.idx_pair.first].data);
 };
 
