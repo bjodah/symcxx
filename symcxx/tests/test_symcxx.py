@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import, division, print_function
 
+import math
 import numpy as np
 from symcxx import NameSpace
+
 
 def test_NameSpace_Symbol():
     ns = NameSpace(2)
@@ -15,6 +17,7 @@ def test_NameSpace_Symbol():
     sub = x - y
     result = sub.evalf(np.array([3., 5.]))
     assert abs(result + 2) < 1e-15
+
 
 def test_NameSpace_relational():
     ns = NameSpace(2)
@@ -65,7 +68,250 @@ def test_diff0():
     print(ref, ref.idx)
     assert (deriv == ref) is True
 
+
 def test_str():
     ns = NameSpace(0)
     x = ns.Symbol('x')
     assert str(3*x) == 'Mul2(Integer(3), Symbol(x))'
+
+
+def test_Div_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = (3*x + 1) / (x - 2)
+    deriv = expr.diff(x)
+    ref = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)**2)
+    assert abs(deriv.evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_sin_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.sin(3*x + 1)
+    ref = 3*math.cos(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_cos_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.cos(3*x + 1)
+    ref = -3*math.sin(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_exp_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.exp(3*x + 1)
+    ref = 3*math.exp(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_tan_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.tan(3*x + 1)
+    ref = 3*(1 + math.tan(3*3.14 + 1)**2)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_acos_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.acos(.1*x + .2)
+    ref = -0.11657862476093600653
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_asin_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.asin(.1*x + .2)
+    ref = 0.11657862476093600653
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_asin_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.asin(.1*x + .2)
+    ref = 0.11657862476093600653
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_atan_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.atan(.1*x + .2)
+    ref = .1/((.1*3.14+.2)**2 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_cosh_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.cosh(.1*x + .2)
+    ref = .1*math.sinh(.1*3.14 + .2)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_sinh_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.sinh(.1*x + .2)
+    ref = .1*math.cosh(.1*3.14 + .2)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_tanh_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.tanh(.1*x + .2)
+    ref = .1*(1 - math.tanh(.1*3.14 + .2)**2)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_acosh_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.acosh(3*x + 4)
+    ref = 0.224170172808993
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_asinh_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.asinh(3*x + 4)
+    ref = 0.222928886183630
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_atanh_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.atanh(3*x + 4)
+    ref = -0.0167507554590712
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_log_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.log(3*x + 1)
+    ref = 3/(3*3.14 + 1)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_log10_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.log10(3*x + 1)
+    ref = 3/(3*3.14 + 1)/math.log(10)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_exp2_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.exp2(3*x + 1)
+    ref = 3*2**(3*3.14 + 1)*math.log(2)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-12
+
+
+def test_expm1():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.expm1(3*x + 1e-16)
+    assert abs(expr.evalf(np.array([3.14e-17])) - 1.942e-16) < 1e-18
+
+
+def test_expm1_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.expm1(3*x + 1e-16)
+    ref = 3 + 2.86e-14
+    assert abs(expr.diff(x).evalf(np.array([3.14e-15])) - ref) < 1e-15
+
+
+def test_sqrt_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.sqrt(3*x + 1)
+    ref = .5*3/(3*3.14 + 1)**.5
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_cbrt_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.cbrt(3*x + 1)
+    ref = 1./(3*3.14 + 1)**(2/3.)
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_erf_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.erf(.1*x - 1)
+    ref = .1*2*math.exp(-(.1*3.14-1)**2)/math.pi**.5
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_erfc_diff0():
+    ns = NameSpace(1)
+    x = ns.Symbol('x')
+    expr = ns.erfc(.1*x - 1)
+    ref = -.1*2*math.exp(-(.1*3.14-1)**2)/math.pi**.5
+    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
+
+def test_Matrix():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    add = x + y
+    matrix = ns.Matrix(2, 2, [[x+1, y-2],
+                              [x-y, x*y]])
+    out = matrix.evalf(np.array([2., 3.]))
+    assert np.allclose(out, [[3, 1],
+                             [-1, 6]])
+
+def test_jacobian():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    add = x + y
+    my = ns.Matrix(2, 1, [x+y, x*y])
+    mx = ns.Matrix(1, 2, [x, y])
+    assert my.shape == (2, 1)
+    assert mx.shape == (1, 2)
+    J = my.jacobian(mx)
+    out = J.evalf(np.array([2., 3.]))
+    assert np.allclose(out, [[1, 1],
+                             [3, 2]])
+
+def test_lambdify():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    z = ns.Symbol('z')
+    u = ns.Symbol('u')
+    v = ns.Symbol('v')
+    w = ns.Symbol('w')
+
+    lmb0 = ns.lambdify((x, y, z, u, v, w), [x, y, z, u, v, w])
+    out0 = lmb0(np.array([2., 3, 4, 5, 6, 7]))
+    ref0 = [2., 3, 4, 5, 6, 7]
+    assert np.allclose(out0.flatten(), ref0)
+
+    lmb3 = ns.lambdify((z, y, x), [x, y, z])
+    out3 = lmb3(np.array([2., 3, 4]))
+    ref3 = [4, 3, 2]
+    assert np.allclose(out3.flatten(), ref3)
+
+
+    lmb1 = ns.lambdify((x, y), [x+y, x-y, x*y, 13*x + 2*y])
+    out1 = lmb1(np.array([2.0, 3.0]))
+    ref1 = [5, -1, 6, 13*2 + 2*3]
+    assert np.allclose(out1.flatten(), ref1)
+
+    lmb2 = ns.lambdify((y, x), [x+y, x-y, x*y])
+    out2 = lmb2(np.array([2.0, 3.0]))
+    ref2 = [5, 1, 6]
+    assert np.allclose(out2.flatten(), ref2)

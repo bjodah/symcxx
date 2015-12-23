@@ -2,9 +2,11 @@
 #include "symcxx/core.hpp"
 
 TEST_CASE( "homogenous ordering", "[symcxx::Symbol]" ) {
-    auto ns = symcxx::NameSpace(2);
-    auto& s0 = ns.instances[0];
-    auto& s1 = ns.instances[1];
+    auto ns = symcxx::NameSpace();
+    auto s0_id = ns.make_symbol(0);
+    auto s1_id = ns.make_symbol(1);
+    auto& s0 = ns.instances[s0_id];
+    auto& s1 = ns.instances[s1_id];
     REQUIRE( s0.data.idx_pair.first == 0 );
     REQUIRE( s1.data.idx_pair.first == 1 );
     REQUIRE( s0 < s1 );
@@ -29,9 +31,10 @@ TEST_CASE( "homogenous ordering", "[symcxx::Symbol]" ) {
 }
 
 TEST_CASE( "heterogeneous ordering", "[symcxx::Basic]" ) {
-    auto ns = symcxx::NameSpace(1);
+    auto ns = symcxx::NameSpace();
     auto idx_i = ns.make_integer(0);
-    auto& s = ns.instances[0];
+    auto idx_s = ns.make_symbol(0);
+    auto& s = ns.instances[idx_s];
     auto& i = ns.instances[idx_i];
 
     REQUIRE( s < i );
@@ -57,19 +60,20 @@ TEST_CASE( "heterogeneous ordering", "[symcxx::Basic]" ) {
 
 TEST_CASE( "evalb", "[symcxx::Basic]" ) {
     std::cout << "evalb" << std::endl;
-    auto ns = symcxx::NameSpace(1);
+    auto ns = symcxx::NameSpace();
     auto idx_i = ns.make_integer(0);
     auto idx_i2 = ns.make_integer(0);
     REQUIRE( idx_i == idx_i2 );
+    auto idx_s = ns.make_symbol(0);
 
-    auto idx_lt = ns.lt(0, idx_i);
-    auto idx_le = ns.le(0, idx_i);
-    auto idx_eq = ns.eq(0, idx_i);
-    auto idx_ne = ns.ne(0, idx_i);
-    auto idx_ge = ns.ge(0, idx_i);
-    auto idx_gt = ns.gt(0, idx_i);
+    auto idx_lt = ns.lt(idx_s, idx_i);
+    auto idx_le = ns.le(idx_s, idx_i);
+    auto idx_eq = ns.eq(idx_s, idx_i);
+    auto idx_ne = ns.ne(idx_s, idx_i);
+    auto idx_ge = ns.ge(idx_s, idx_i);
+    auto idx_gt = ns.gt(idx_s, idx_i);
 
-    auto& s = ns.instances[0];
+    auto& s = ns.instances[idx_s];
     REQUIRE( s.data.idx_pair.first == 0 );
     auto& i = ns.instances[idx_i];
     REQUIRE( i.data.intgr == 0 );
@@ -109,14 +113,14 @@ TEST_CASE( "evalb", "[symcxx::Basic]" ) {
     REQUIRE( not gt.evalb(&xm1) );
     REQUIRE( not gt.evalb(&x0) );
     REQUIRE( gt.evalb(&x1) );
-
 }
 
 
 TEST_CASE( "add_ordering", "[symcxx::Basic]" ) {
-    auto ns = symcxx::NameSpace(1);
+    auto ns = symcxx::NameSpace();
     auto idx_i = ns.make_integer(0);
-    auto& s = ns.instances[0];
+    auto idx_s = ns.make_symbol(0);
+    auto& s = ns.instances[idx_s];
     auto& i = ns.instances[idx_i];
 
     REQUIRE( s < i );

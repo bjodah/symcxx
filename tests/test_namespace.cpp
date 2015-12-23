@@ -3,10 +3,9 @@
 #include <cmath>
 
 TEST_CASE( "construct, mul, evalf", "[symcxx::NameSpace]" ) {
-    auto ns = symcxx::NameSpace(3);
-    std::vector<symcxx::idx_t> v{{0, 1, 2}};
+    auto ns = symcxx::NameSpace();
+    auto v = ns.make_symbols(3);
     auto mul_id = ns.mul(v);
-    REQUIRE( mul_id == 3 + symcxx::NameSpace::n_pre_intgrs );
 
     double data[3] = {2.0, 3.0, 5.0};
     double result = ns.evalf(mul_id, data);
@@ -19,14 +18,15 @@ TEST_CASE( "evalf", "[symcxx::NameSpace]" ) {
     double x1 = 1;
     double x2 = 2;
     double x3 = 3;
-    auto ns = symcxx::NameSpace(1);
+    auto ns = symcxx::NameSpace();
+    auto x0_id = ns.make_symbol();
 
-    REQUIRE (std::abs(ns.evalf(0, &x0) - x0) < 1e-15);
-    REQUIRE (std::abs(ns.evalf(0, &x1) - x1) < 1e-15);
-    REQUIRE (std::abs(ns.evalf(0, &x2) - x2) < 1e-15);
-    REQUIRE (std::abs(ns.evalf(0, &x3) - x3) < 1e-15);
+    REQUIRE (std::abs(ns.evalf(x0_id, &x0) - x0) < 1e-15);
+    REQUIRE (std::abs(ns.evalf(x0_id, &x1) - x1) < 1e-15);
+    REQUIRE (std::abs(ns.evalf(x0_id, &x2) - x2) < 1e-15);
+    REQUIRE (std::abs(ns.evalf(x0_id, &x3) - x3) < 1e-15);
 
-    auto exp_id = ns.exp(0);
+    auto exp_id = ns.exp(x0_id);
     const double exp0 = ns.evalf(exp_id, &x0);
     const double exp1 = ns.evalf(exp_id, &x1);
     const double exp2 = ns.evalf(exp_id, &x2);
@@ -38,7 +38,7 @@ TEST_CASE( "evalf", "[symcxx::NameSpace]" ) {
 
     double x[5] = {-2, -1, 0, 1, 2};
     double res[5];
-    auto sin_idx = ns.sin(0);
+    auto sin_idx = ns.sin(x0_id);
     for (int i=0; i<5; ++i){
         res[i] = ns.evalf(sin_idx, x+i);
     }
@@ -48,7 +48,7 @@ TEST_CASE( "evalf", "[symcxx::NameSpace]" ) {
 }
 
 TEST_CASE( "create", "[symcxx::NameSpace]" ) {
-    auto ns = symcxx::NameSpace(0);
+    auto ns = symcxx::NameSpace();
     auto two_id = ns.make_integer(2);
     auto two_plus_two_id = ns.create(symcxx::Kind::Add, two_id, two_id);
     REQUIRE (ns.instances[two_plus_two_id].kind == symcxx::Kind::Pow );
@@ -59,9 +59,9 @@ TEST_CASE( "create", "[symcxx::NameSpace]" ) {
 
 TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double x[2] = {3, 5};
-    auto ns = symcxx::NameSpace(2);
-
-    std::vector<symcxx::idx_t> v {{ 0, 1, 1 }};
+    auto ns = symcxx::NameSpace();
+    auto ids = ns.make_symbols(2);
+    std::vector<symcxx::idx_t> v {{ ids[0], ids[1], ids[1] }};
     auto expr_id = ns.add(v);
     auto expr_id2 = ns.add(v);
     REQUIRE( expr_id == expr_id2 );
@@ -69,12 +69,12 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double ref = 3 + 5 + 5;
     REQUIRE (std::abs(res - ref) < 1e-15);
 
-    auto diff0_id = ns.diff(expr_id, 0);
+    auto diff0_id = ns.diff(expr_id, ids[0]);
     const double res0 = ns.evalf(diff0_id, x);
     const double ref0 = 1;
     REQUIRE (std::abs(res0 - ref0) < 1e-15);
 
-    auto diff1_id = ns.diff(expr_id, 1);
+    auto diff1_id = ns.diff(expr_id, ids[1]);
     const double res1 = ns.evalf(diff1_id, x);
     const double ref1 = 2;
     REQUIRE (std::abs(res1 - ref1) < 1e-15);
@@ -83,14 +83,15 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
 
 TEST_CASE( "diff_add2", "[symcxx::NameSpace]" ) {
     const double x[2] = {3, 5};
-    auto ns = symcxx::NameSpace(2);
+    auto ns = symcxx::NameSpace();
+    auto symb_ids = ns.make_symbols(2);
 
-    auto expr3_id = ns.add2(0, 1);
+    auto expr3_id = ns.add2(symb_ids[0], symb_ids[1]);
     const double res3 = ns.evalf(expr3_id, x);
     const double ref3 = 3 + 5;
     REQUIRE( std::abs(res3 - ref3) < 1e-15 );
 
-    auto diff3_id = ns.diff(expr3_id, 0);
+    auto diff3_id = ns.diff(expr3_id, symb_ids[0]);
 
     const double res3d = ns.evalf(diff3_id, x);
     REQUIRE( std::abs(res3d - 1) < 1e-15 );
@@ -98,11 +99,11 @@ TEST_CASE( "diff_add2", "[symcxx::NameSpace]" ) {
 
 TEST_CASE( "diff_mul2", "[symcxx::NameSpace]" ) {
     const double x[2] = {3, 5};
-    auto ns = symcxx::NameSpace(1);
+    auto ns = symcxx::NameSpace();
     auto pi_id = ns.make_float(3.14);
-    symcxx::idx_t x0_id = 0;
+    auto x0_id = ns.make_symbol();
     auto add_id = ns.add2(x0_id, pi_id);
-    auto x1_id = ns.make_symbol(1);
+    auto x1_id = ns.make_symbol();
     auto mul_id = ns.mul2(x1_id, add_id);
 
     const double res0 = ns.evalf(mul_id, x);
@@ -121,4 +122,83 @@ TEST_CASE( "diff_mul2", "[symcxx::NameSpace]" ) {
     auto expr_id = ns.mul2(intgr3, x0_id);
     auto dexpr_id = ns.diff(expr_id, x0_id);
     REQUIRE( dexpr_id == intgr3 );
+}
+
+TEST_CASE( "diff_div0", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3.14};
+    auto ns = symcxx::NameSpace();
+    symcxx::idx_t x0_id = ns.make_symbol(0);
+    REQUIRE( ns.instances[x0_id].data.idx_pair.first == 0 );
+    symcxx::idx_t zero_id = ns.make_integer(0);
+    symcxx::idx_t one_id = ns.make_integer(1);
+
+    auto div_id0 = ns.create(symcxx::Kind::Div, zero_id, x0_id);
+    REQUIRE( div_id0 == zero_id );
+
+    auto div_id1 = ns.create(symcxx::Kind::Div, x0_id, one_id);
+    REQUIRE( div_id1 == x0_id );
+}
+
+
+TEST_CASE( "diff_div1", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3.14};
+    auto ns = symcxx::NameSpace();
+    symcxx::idx_t x0_id = ns.make_symbol(0);
+
+    auto mul_id = ns.mul2(ns.make_integer(3), x0_id);
+    auto add_id = ns.add2(mul_id, ns.make_integer(1));
+    auto sub_id = ns.sub(x0_id, ns.make_integer(2));
+    auto div_id = ns.div(add_id, sub_id);
+
+    const double ref_div = (3*3.14 + 1) / (3.14 - 2);
+    const double res_div = ns.evalf(div_id, x);
+    REQUIRE( std::abs(res_div - ref_div) < 1e-15 );
+
+    auto div_diff_id = ns.diff(div_id, x0_id);
+    for (symcxx::idx_t i=0; i<ns.instances.size(); ++i)
+        std::cout << i << ": " << ns.print_ast(i, {"x"}) << std::endl;
+
+    const double ref_div_diff = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)*(3.14 - 2));
+    const double res_div_diff = ns.evalf(div_diff_id, x);
+    REQUIRE( std::abs(res_div_diff - ref_div_diff) < 1e-15 );
+}
+
+TEST_CASE( "diff_log1", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3.14};
+    auto ns = symcxx::NameSpace();
+    symcxx::idx_t x0_id = ns.make_symbol();
+
+    auto mul_id = ns.mul2(ns.make_integer(3), x0_id);
+    auto add_id = ns.add2(mul_id, ns.make_integer(1));
+    auto log_id = ns.log(add_id);
+
+    const double ref_log = std::log(3*3.14 + 1);
+    const double res_log = ns.evalf(log_id, x);
+    REQUIRE( std::abs(res_log - ref_log) < 1e-15 );
+
+    std::cout << "\n\nAbout to diff!\n\n";
+    auto log_diff_id = ns.diff(log_id, x0_id);
+    std::cout << "\n\nDiff done!\n\n";
+    for (symcxx::idx_t i=0; i<ns.instances.size(); ++i)
+        std::cout << i << ": " << ns.print_ast(i, {"x"}) << std::endl;
+
+    const double ref_log_diff = 3./(3*3.14 + 1);
+    const double res_log_diff = ns.evalf(log_diff_id, x);
+    REQUIRE( std::abs(res_log_diff - ref_log_diff) < 1e-15 );
+}
+
+TEST_CASE( "matrix_evalf", "[symcxx::NameSpace]" ) {
+    const double x[2] = {3.14, 42.0};
+    double xout[2];
+    auto ns = symcxx::NameSpace();
+    auto x0_id = ns.make_symbol();
+    auto x1_id = ns.make_symbol();
+    auto one_id = ns.make_integer(1);
+    auto two_id = ns.make_integer(2);
+    auto sub_id = ns.sub(x1_id, x0_id);
+    auto div_id = ns.div(x0_id, x1_id);
+    auto mtx_id = ns.make_matrix(two_id, one_id, { sub_id, div_id });
+    ns.matrix_evalf(mtx_id, x, xout);
+    REQUIRE( std::abs(xout[0] - (x[1] - x[0])) < 1e-15 );
+    REQUIRE( std::abs(xout[1] - (x[0] / x[1])) < 1e-15 );
 }

@@ -47,6 +47,9 @@ symcxx::Basic::print(const std::vector<std::string>& symbol_names) const {
         else
             os << symbol_names[data.idx_pair.first];
         break;
+    case Kind::MatProx:
+        os << data.idx_pair.first;
+        break;
     case Kind::Integer:
         os << data.intgr; break;
     case Kind::Float:
@@ -69,6 +72,7 @@ symcxx::Basic::evalf(const double inp[]) const {
     auto evalf_arg0 = [&]() -> double { return ns->instances[data.idx_pair.first].evalf(inp); };
     auto evalf_arg1 = [&]() -> double { return ns->instances[data.idx_pair.second].evalf(inp); };
     switch(kind){
+// Atomic
     case Kind::Symbol:
         result = inp[data.idx_pair.first]; break;
     case Kind::Float:
@@ -80,6 +84,7 @@ symcxx::Basic::evalf(const double inp[]) const {
         for (const auto idx: args_from_stack())
             result += ns->instances[idx].evalf(inp);
         break;
+// With args stack
     case Kind::Mul:
         result = 1;
         for (const auto idx: args_from_stack())
@@ -89,6 +94,15 @@ symcxx::Basic::evalf(const double inp[]) const {
         result = (ns->instances[args_from_stack()[0]].evalb(inp)) ?
             ns->instances[args_from_stack()[1]].evalf(inp) :
             ns->instances[args_from_stack()[2]].evalf(inp); break;
+// Unary
+    case Kind::Neg:
+        result = -evalf_arg0(); break;
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_: \
+        result = std::METH_(evalf_arg0()); break;
+#include "symcxx/types_nonatomic_unary_math_h.inc"
+#undef SYMCXX_TYPE
+// Binary
     case Kind::Sub:
         result = evalf_arg0() - evalf_arg1(); break;
     case Kind::Div:
@@ -97,11 +111,6 @@ symcxx::Basic::evalf(const double inp[]) const {
         result = evalf_arg0() + evalf_arg1(); break;
     case Kind::Mul2:
         result = evalf_arg0() * evalf_arg1(); break;
-#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
-    case Kind::CLS_: \
-        result = std::METH_(evalf_arg0()); break;
-#include "symcxx/types_nonatomic_unary.inc"
-#undef SYMCXX_TYPE
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_: \
         result = std::METH_(evalf_arg0(), evalf_arg1()); break;

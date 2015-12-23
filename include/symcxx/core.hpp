@@ -4,6 +4,7 @@
 #include <array>  // std::array
 #include <cmath>
 #include <functional>
+#include <memory>  // std::unique_ptr
 #include <vector>  // std::vector
 #include <string>
 #include <sstream>
@@ -60,6 +61,7 @@ namespace symcxx{
             }};
 
     struct Basic;
+    struct Matrix;
     struct NameSpace;
 #define SYMCXX_TYPE(Cls, Parent, meth) struct Cls;
 #include "symcxx/types_nonatomic.inc"
@@ -82,9 +84,11 @@ namespace symcxx{
     bool eq(const data_t arg1, const data_t arg2, const Kind kind, const ArgStack_t&, const std::vector<Basic>&);
 }
 
+
 #include "symcxx/basic.hpp"
 #include "symcxx/namespace.hpp"
 #include "symcxx/derived.hpp"
+#include "symcxx/matrix.hpp"
 
 inline symcxx::hash_t symcxx::calc_hash(const idx_t args_idx, const Kind kind,
                                         const std::vector<Basic>& instances,
