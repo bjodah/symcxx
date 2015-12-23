@@ -186,3 +186,19 @@ TEST_CASE( "diff_log1", "[symcxx::NameSpace]" ) {
     const double res_log_diff = ns.evalf(log_diff_id, x);
     REQUIRE( std::abs(res_log_diff - ref_log_diff) < 1e-15 );
 }
+
+TEST_CASE( "matrix_evalf", "[symcxx::NameSpace]" ) {
+    const double x[2] = {3.14, 42.0};
+    double xout[2];
+    auto ns = symcxx::NameSpace();
+    auto x0_id = ns.make_symbol();
+    auto x1_id = ns.make_symbol();
+    auto one_id = ns.make_integer(1);
+    auto two_id = ns.make_integer(2);
+    auto sub_id = ns.sub(x1_id, x0_id);
+    auto div_id = ns.div(x0_id, x1_id);
+    auto mtx_id = ns.make_matrix(two_id, one_id, { sub_id, div_id });
+    ns.matrix_evalf(mtx_id, x, xout);
+    REQUIRE( std::abs(xout[0] - (x[1] - x[0])) < 1e-15 );
+    REQUIRE( std::abs(xout[1] - (x[0] / x[1])) < 1e-15 );
+}

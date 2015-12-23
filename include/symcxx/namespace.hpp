@@ -7,7 +7,7 @@ namespace symcxx{
         // there until the NameSpace instance is deleted.
         std::vector<Basic> instances;
         std::vector<std::vector<idx_t> > args_stack;
-        const idx_t n_pre_symbs = 3;
+        const idx_t n_pre_symbs;
         idx_t n_symbs;
         // idx_t __padding {0};
         const static idx_t n_pre_intgrs = 7;
@@ -43,7 +43,7 @@ namespace symcxx{
         idx_t matrix_get_nc(idx_t) const;
         std::string print_ast(const idx_t, const std::vector<std::string>&) const;
 
-        idx_t rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const;
+        idx_t rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>&) const;
         std::unique_ptr<symcxx::NameSpace> rebuild(const std::vector<idx_t>&, const std::vector<idx_t>&) const;
         std::unique_ptr<symcxx::NameSpace> rebuild_from_matrix(const std::vector<idx_t>&, idx_t) const;
         inline idx_t get_instances_size() const { return instances.size(); }

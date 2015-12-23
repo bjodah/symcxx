@@ -229,18 +229,19 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
 }
 
 symcxx::idx_t
-symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const {
+symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>& symb_mapping) const {
     // visitor-pattern-goes here, recurive call with switch?
     const auto& inst = instances[idx];
     std::vector<idx_t> args;
     switch(inst.kind){
     case Kind::Symbol:
-        return inst.data.idx_pair.first;
+        return ns.n_pre_intgrs + ns.n_special + std::find(symb_mapping.begin(), symb_mapping.end(),
+                                                          n_pre_intgrs + n_special + inst.data.idx_pair.first) - symb_mapping.begin();
     case Kind::Integer:
         return ns.make_integer(inst.data.intgr);
     case Kind::MatProx:
         for (idx_t inner : matrices[inst.data.idx_pair.first].data){
-            args.push_back(rebuild_idx_into_ns(inner, ns));
+            args.push_back(rebuild_idx_into_ns(inner, ns, symb_mapping));
         }
         return ns.make_matrix(matrices[inst.data.idx_pair.first].nr,
                               matrices[inst.data.idx_pair.first].nc, args);
@@ -249,15 +250,15 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns) const {
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:
 #include "symcxx/types_nonatomic_unary.inc"
-        return ns.create(inst.kind, rebuild_idx_into_ns(inst.data.idx_pair.first, ns));
+        return ns.create(inst.kind, rebuild_idx_into_ns(inst.data.idx_pair.first, ns, symb_mapping));
 #include "symcxx/types_nonatomic_binary.inc"
         return ns.create(inst.kind,
-                         rebuild_idx_into_ns(inst.data.idx_pair.first, ns),
-                         rebuild_idx_into_ns(inst.data.idx_pair.second, ns));
+                         rebuild_idx_into_ns(inst.data.idx_pair.first, ns, symb_mapping),
+                         rebuild_idx_into_ns(inst.data.idx_pair.second, ns, symb_mapping));
 #include "symcxx/types_nonatomic_args_stack.inc"
 #undef SYMCXX_TYPE
         for (idx_t inner : matrices[inst.data.idx_pair.first].data){
-            args.push_back(rebuild_idx_into_ns(inner, ns));
+            args.push_back(rebuild_idx_into_ns(inner, ns, symb_mapping));
         }
         return ns.create(inst.kind, args);
     default: //case Kind::Kind_Count:
@@ -270,7 +271,7 @@ symcxx::NameSpace::rebuild(const std::vector<idx_t>& args, const std::vector<idx
     auto ns = make_unique<NameSpace>(args.size());
     std::vector<idx_t> new_exprs;
     for (auto expr : exprs) {
-        new_exprs.push_back(rebuild_idx_into_ns(expr, *ns));
+        new_exprs.push_back(rebuild_idx_into_ns(expr, *ns, args));
     }
     ns->make_matrix(new_exprs.size(), 1, new_exprs);
     return ns;
@@ -279,8 +280,7 @@ symcxx::NameSpace::rebuild(const std::vector<idx_t>& args, const std::vector<idx
 std::unique_ptr<symcxx::NameSpace>
 symcxx::NameSpace::rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat_idx) const {
     return rebuild(args, matrices[instances[mat_idx].data.idx_pair.first].data);
-};
-
+}
 
 
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
