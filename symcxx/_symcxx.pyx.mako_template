@@ -119,6 +119,9 @@ class _IndexedObject(object):
         other = _implicit_conversion(self.ns, other)
         return _IndexedObject(self.ns._Sub(other.idx, self.idx), self.ns)
 
+    def __neg__(self):
+        return _IndexedObject(self.ns._Neg(self.idx), self.ns)
+
     def __mul__(self, other):
         other = _implicit_conversion(self.ns, other)
         return _IndexedObject(self.ns._Mul2(self.idx, other.idx), self.ns)

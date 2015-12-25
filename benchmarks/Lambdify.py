@@ -17,12 +17,14 @@ def setup(mod):
     tim = clock() - tim
     return tim, mod.lambdify(args, exprs)
 
-def evaluate(lmb, niter=500):
+def evaluate(lmb, niter=5000, unpack=False):
     inp = np.ones(28)
     tim = clock()
-    res = np.empty(len(exprs))
     for i in range(niter):
-        res = lmb(inp)
+        if unpack:
+            res = lmb(*inp)
+        else:
+            res = lmb(inp)
     tim = clock() - tim
     return tim, res
 
@@ -32,8 +34,10 @@ result_setup, result_evaluate = {}, {}
 time_setup['sympy'], result_setup['sympy'] = setup(sympy)
 time_setup['symcxx'], result_setup['symcxx'] = setup(symcxx)
 
-time_evaluate['sympy'], result_evaluate['sympy'] = evaluate(sympy)
-time_evaluate['symcxx'], result_evaluate['symcxx'] = evaluate(symcxx)
+time_evaluate['sympy'], result_evaluate['sympy'] = evaluate(result_setup['sympy'], unpack=True)
+time_evaluate['symcxx'], result_evaluate['symcxx'] = evaluate(result_setup['symcxx'])
 
 print('time_setup', time_setup)
 print('time_evaluate', time_evaluate)
+print('setup speedup: %.1f' % (time_setup['sympy']/time_setup['symcxx']))
+print('evaluate speedup: %.1f' % (time_evaluate['sympy']/time_evaluate['symcxx']))
