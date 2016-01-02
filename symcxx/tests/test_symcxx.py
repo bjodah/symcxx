@@ -286,7 +286,7 @@ def test_jacobian():
     assert np.allclose(out, [[1, 1],
                              [3, 2]])
 
-def test_lambdify():
+def test_Lambdify():
     ns = NameSpace(2)
     x = ns.Symbol('x')
     y = ns.Symbol('y')
@@ -295,23 +295,23 @@ def test_lambdify():
     v = ns.Symbol('v')
     w = ns.Symbol('w')
 
-    lmb0 = ns.lambdify((x, y, z, u, v, w), [x, y, z, u, v, w])
+    lmb0 = ns.Lambdify((x, y, z, u, v, w), [x, y, z, u, v, w])
     out0 = lmb0(np.array([2., 3, 4, 5, 6, 7]))
     ref0 = [2., 3, 4, 5, 6, 7]
     assert np.allclose(out0.flatten(), ref0)
 
-    lmb3 = ns.lambdify((z, y, x), [x, y, z])
+    lmb3 = ns.Lambdify((z, y, x), [x, y, z])
     out3 = lmb3(np.array([2., 3, 4]))
     ref3 = [4, 3, 2]
     assert np.allclose(out3.flatten(), ref3)
 
 
-    lmb1 = ns.lambdify((x, y), [x+y, x-y, x*y, 13*x + 2*y])
+    lmb1 = ns.Lambdify((x, y), [x+y, x-y, x*y, 13*x + 2*y])
     out1 = lmb1(np.array([2.0, 3.0]))
     ref1 = [5, -1, 6, 13*2 + 2*3]
     assert np.allclose(out1.flatten(), ref1)
 
-    lmb2 = ns.lambdify((y, x), [x+y, x-y, x*y])
+    lmb2 = ns.Lambdify((y, x), [x+y, x-y, x*y])
     out2 = lmb2(np.array([2.0, 3.0]))
     ref2 = [5, 1, 6]
     assert np.allclose(out2.flatten(), ref2)

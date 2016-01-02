@@ -285,7 +285,7 @@ cdef class PyNameSpace:
         new_ns.thisptr = deref(self.thisptr).rebuild_from_matrix([arg.idx for arg in args], mtx.idx)
         return _Matrix(deref(new_ns.thisptr).get_instances_size()-1, new_ns)
 
-    def lambdify(self, args, exprs):
+    def Lambdify(self, args, exprs):
         if not isinstance(exprs, _Matrix):
             try:
                 exprs = self.Matrix(*exprs.shape, exprs)
@@ -293,3 +293,10 @@ cdef class PyNameSpace:
                 exprs = self.Matrix(len(exprs), 1, exprs)
         mtx = self.rebuild(args, exprs)
         return mtx.evalf
+
+    def lambdify(self, args, exprs):
+        Lmb = self.Lambdify(args, exprs)
+        return lambda *args: Lmb(args)
+
+    def symbols(self, args):
+        return tuple([self.Symbol(arg) for arg in args.split()])
