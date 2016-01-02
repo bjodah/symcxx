@@ -82,7 +82,7 @@ cdef class _Matrix(object):
         if out is None:
             out = np.empty(self.shape)
         local_out = np.ravel(out)
-        self.ns.matrix_evalf(self.idx, inp, local_out)
+        self.ns.matrix_evalf(self.idx, np.asarray(inp, dtype=np.float64), local_out)
         return local_out.reshape(self.shape)
 
 
@@ -137,6 +137,10 @@ class _IndexedObject(object):
     def __rtruediv__(self, other):
         other = _implicit_conversion(self.ns, other)
         return _IndexedObject(self.ns._Div(other.idx, self.idx), self.ns)
+
+    def __pow__(self, exponent):
+        exponent = _implicit_conversion(self.ns, exponent)
+        return _IndexedObject(self.ns._Pow(self.idx, exponent.idx), self.ns)
 
     def evalb(self, inp):
         return self.ns.evalb(self.idx, inp)
@@ -290,7 +294,14 @@ cdef class PyNameSpace:
             try:
                 exprs = self.Matrix(*exprs.shape, exprs)
             except:
-                exprs = self.Matrix(len(exprs), 1, exprs)
+                try:
+                    exprs = self.Matrix(len(exprs), 1, exprs)
+                except:
+                    exprs = self.Matrix(1, 1, [exprs])  # single expression
+        try:
+            len(args)
+        except TypeError:
+            args = [args]  # single arg
         mtx = self.rebuild(args, exprs)
         return mtx.evalf
 
