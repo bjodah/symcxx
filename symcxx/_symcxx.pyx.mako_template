@@ -33,7 +33,7 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         const idx_t neg_e_id
 
         NameSpace(idx_t)
-        idx_t make_symbol(idx_t)
+        idx_t make_symbol(idx_t) except +
         idx_t make_integer(int)
         idx_t make_float(double)
         idx_t make_nan()
@@ -258,7 +258,11 @@ cdef class PyNameSpace:
             return _IndexedObject(self.make_float(val), self)
 
     def Symbol(self, name):
-        symb_idx = self.make_symbol(self.symbol_names.size())
+        try:
+            symb_nr = self.symbol_names.index(name)
+        except ValueError:  # name not in list
+            symb_nr = self.symbol_names.size()
+        symb_idx = self.make_symbol(symb_nr)
         self.symbol_names.push_back(name if sys.version_info[0] == 2
                                     else bytes(name, encoding='utf-8'))
         return _IndexedObject(symb_idx, self)

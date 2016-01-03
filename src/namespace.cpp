@@ -95,7 +95,7 @@ symcxx::NameSpace::make_symbol(idx_t symb_idx){
 #if !defined(NDEBUG)
         std::cout << "make_symbol(" << symb_idx << ") - old!" << std::endl;
 #endif
-        throw std::runtime_error("Something fishy about that call..");
+        // throw std::runtime_error("Something fishy about that call..");
         return idx;
     }
 #if !defined(NDEBUG)
@@ -267,19 +267,21 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std
 }
 
 std::unique_ptr<symcxx::NameSpace>
-symcxx::NameSpace::rebuild(const std::vector<idx_t>& args, const std::vector<idx_t>& exprs) const {
+symcxx::NameSpace::rebuild(const std::vector<idx_t>& args,
+                           const std::vector<idx_t>& exprs, idx_t nr, idx_t nc) const {
     auto ns = make_unique<NameSpace>(args.size());
     std::vector<idx_t> new_exprs;
     for (auto expr : exprs) {
         new_exprs.push_back(rebuild_idx_into_ns(expr, *ns, args));
     }
-    ns->make_matrix(new_exprs.size(), 1, new_exprs);
+    ns->make_matrix(nr, nc, new_exprs);
     return ns;
 }
 
 std::unique_ptr<symcxx::NameSpace>
 symcxx::NameSpace::rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat_idx) const {
-    return rebuild(args, matrices[instances[mat_idx].data.idx_pair.first].data);
+    const Matrix& mat = matrices[instances[mat_idx].data.idx_pair.first];
+    return rebuild(args, mat.data, mat.nr, mat.nc);
 }
 
 
