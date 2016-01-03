@@ -75,6 +75,16 @@ def test_str():
     assert str(3*x) == 'Mul2(Integer(3), Symbol(x))'
 
 
+def test_trigfuncs_evalf():
+    ns = NameSpace()
+    cos_pi = ns.cos(ns.pi)
+    sin_pi = ns.sin(ns.pi)
+    tan_pi = ns.tan(ns.pi)
+    assert abs(cos_pi.evalf(np.array([])) + 1) <  1e-15
+    assert abs(sin_pi.evalf(np.array([]))) <  1e-15
+    assert abs(tan_pi.evalf(np.array([]))) <  1e-15
+
+
 def test_Div_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')

@@ -51,7 +51,7 @@ def test_sqrt():
 
 def test_trig():
     f = se.lambdify([s0], [se.cos(s0), se.sin(s0)])
-    d = f(se.pi)
+    d = f(math.pi)
     prec = 1e-11
     assert -prec < d[0] + 1
     assert d[0] + 1 < prec
@@ -67,7 +67,7 @@ def test_trig():
 
 def allclose(iter_a, iter_b, rtol=1e-10, atol=1e-10):
     for a, b in zip(iter_a, iter_b):
-        if (abs(a-b) < abs(a)*rtol + atol) is not True:
+        if not (abs(a-b) < abs(a)*rtol + atol):
             return False
     return True
 
@@ -82,7 +82,7 @@ def test_vector_simple():
 
 def test_trig_symbolic():
     f = se.lambdify([s0], [se.cos(s0), se.sin(s0)])
-    d = f(se.pi)
+    d = f(math.pi)
     assert abs(d[0] + 1) < 0.0001
     assert abs(d[1] - 0) < 0.0001
 
