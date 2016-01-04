@@ -42,6 +42,7 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         void matrix_evalf(idx_t, const double * const, double * const) except +
         idx_t matrix_get_nr(idx_t) const
         idx_t matrix_get_nc(idx_t) const
+        idx_t matrix_get_elem(idx_t, idx_t, idx_t) const
         string print_ast(const idx_t, vector[string]&) except +
 
         unique_ptr[NameSpace] rebuild_from_matrix(const vector[idx_t]&, idx_t)
@@ -77,6 +78,14 @@ cdef class _Matrix(object):
         return (self.ns.matrix_get_nr(self.idx),
                 self.ns.matrix_get_nc(self.idx))
 
+    def __getitem__(self, key):
+        ri, ci = key
+        return _IndexedObject(self.ns.matrix_get_elem(self.idx, ri, ci), self.ns)
+
+    def tolist(self):
+        return [[self[ri, ci] for ci in range(self.ns.matrix_get_nr(self.idx))]
+                for ri in range(self.ns.matrix_get_nc(self.idx))]
+
     def jacobian(self, other):
         return _Matrix(self.ns.matrix_jacobian(self.idx, other.idx), self.ns)
 
@@ -84,7 +93,9 @@ cdef class _Matrix(object):
         if out is None:
             out = np.empty(self.shape)
         local_out = np.ravel(out)
-        self.ns.matrix_evalf(self.idx, np.asarray(inp, dtype=np.float64), local_out)
+        inp = np.asarray(inp, dtype=np.float64)
+        print('inp =', inp)
+        self.ns.matrix_evalf(self.idx, inp, local_out)
         if self.flat_output:
             return local_out
         else:
@@ -212,6 +223,9 @@ cdef class PyNameSpace:
     def matrix_get_nc(self, idx_t idx):
         return deref(self.thisptr).matrix_get_nc(idx)
 
+    def matrix_get_elem(self, idx_t idx, idx_t ri, idx_t ci):
+        return deref(self.thisptr).matrix_get_elem(idx, ri, ci)
+
     def matrix_evalf(self, idx_t idx, double[::1] inp, double[::1] out):
         mat_size = self.matrix_get_nr(idx) * self.matrix_get_nc(idx)
         if inp.size < deref(self.thisptr).n_symbs or out.size < mat_size:
@@ -314,6 +328,7 @@ cdef class PyNameSpace:
         except TypeError:
             args = [args]  # single arg
         mtx = self.rebuild(args, exprs, flat_output=flat_output)
+        print([[str(elem) for elem in row] for row in mtx.tolist()])
         return mtx.evalf
 
     def lambdify(self, args, exprs):

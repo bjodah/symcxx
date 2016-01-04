@@ -102,6 +102,19 @@ def test_Lambdify():
                     [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
 
 
+def test_Lambdify_out():
+    import numpy as np
+    n = 7
+    args = x, y, z = se.symbols('x y z')
+    exprs = [x+y+z, x**2, (x-y)/z, x*y*z]
+    lmb = se.Lambdify(args, exprs)
+    inp = np.arange(n, n+6.)
+    out = np.empty(len(exprs))
+    lmb(inp, out)
+    assert allclose(out,
+                    [3*n+3, n**2, -1/(n+2), n*(n+1)*(n+2)])
+
+
 def _get_2_to_2by2_numpy():
     import numpy as np
     args = x, y = se.symbols('x y')

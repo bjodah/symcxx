@@ -32,6 +32,7 @@ namespace symcxx{
         void evalf_all(const double * const __restrict__ inp,
                        double * const __restrict__ out,
                        const NameSpace * const __restrict__ ns) const {
+            std::cout << inp[0] << " " << inp[1] << " " << inp[2] << std::endl; // DO-NOT-MERGE!
             for (idx_t ri=0; ri<nr; ++ri){
                 for (idx_t ci=0; ci<nc; ++ci){
                     out[ri*nc + ci] = ns->evalf(data[ri*nc + ci], inp);

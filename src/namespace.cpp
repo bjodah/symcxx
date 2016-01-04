@@ -189,6 +189,12 @@ symcxx::NameSpace::matrix_get_nc(idx_t idx) const {
     const auto& mat = matrices[instances[idx].data.idx_pair.first];
     return mat.nc;
 }
+symcxx::idx_t
+symcxx::NameSpace::matrix_get_elem(idx_t idx, idx_t ri, idx_t ci) const {
+    const auto& mat = matrices[instances[idx].data.idx_pair.first];
+    return mat.data[ri*matrix_get_nc(idx) + ci];
+}
+
 
 std::string
 symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& symbol_names) const {

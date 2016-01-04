@@ -41,6 +41,7 @@ namespace symcxx{
         void matrix_evalf(idx_t, const double * const, double * const) const;
         idx_t matrix_get_nr(idx_t) const;
         idx_t matrix_get_nc(idx_t) const;
+        idx_t matrix_get_elem(idx_t, idx_t, idx_t) const;
         std::string print_ast(const idx_t, const std::vector<std::string>&) const;
 
         idx_t rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>&) const;
