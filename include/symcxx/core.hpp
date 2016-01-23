@@ -40,7 +40,7 @@ namespace symcxx{
         data_t(const int64_t i) : intgr(i) {}
         data_t(const double d) : dble(d) {}
     };
-    static_assert(sizeof(data_t) == 8, "8 bytes please");
+    static_assert(sizeof(data_t) == 8, "8 bytes please");  // mind the cache
 
     enum class Kind : int
     {

@@ -12,12 +12,12 @@ namespace symcxx{
         // idx_t __padding {0};
         const static idx_t n_pre_intgrs = 7;
         const static idx_t n_special = 6; // see below:
-        const static idx_t pi_id = n_pre_intgrs; // atan(1)*4
-        const static idx_t neg_pi_id = n_pre_intgrs+1; // -atan(1)*4
-        const static idx_t e_id = n_pre_intgrs+2; // exp(1)
-        const static idx_t neg_e_id = n_pre_intgrs+3; // -exp(1)
-        const static idx_t ln2_id = n_pre_intgrs+4; // log(2)
-        const static idx_t ln10_id = n_pre_intgrs+5; // log(10)
+        const static idx_t pi_id     = n_pre_intgrs + 0; //  atan(1)*4
+        const static idx_t neg_pi_id = n_pre_intgrs + 1; // -atan(1)*4
+        const static idx_t e_id      = n_pre_intgrs + 2; //  exp(1)
+        const static idx_t neg_e_id  = n_pre_intgrs + 3; // -exp(1)
+        const static idx_t ln2_id    = n_pre_intgrs + 4; //  log(2)
+        const static idx_t ln10_id   = n_pre_intgrs + 5; //  log(10)
 
     private:
         std::vector<Matrix> matrices;
@@ -33,7 +33,7 @@ namespace symcxx{
         idx_t make_symbol(idx_t i);
         idx_t make_symbol();
         std::vector<idx_t> make_symbols(idx_t n);
-        idx_t make_integer(int i);
+        idx_t make_integer(int64_t i);
         idx_t make_float(double f);
         idx_t make_nan();
         idx_t make_matrix(idx_t, idx_t, std::vector<idx_t>);

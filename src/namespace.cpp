@@ -123,7 +123,7 @@ symcxx::NameSpace::make_symbols(symcxx::idx_t n){
 }
 
 symcxx::idx_t
-symcxx::NameSpace::make_integer(int i){
+symcxx::NameSpace::make_integer(int64_t i){
     if (i >= 0 && static_cast<idx_t>(i) < (n_pre_intgrs+1)/2)
         return i;
     if (i < 0 && static_cast<idx_t>(-i) < n_pre_intgrs/2)
