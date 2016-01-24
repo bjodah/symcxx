@@ -8,6 +8,7 @@
 </%doc>
 # ${_message_for_rendered}
 
+from libc.stdint cimport int64_t
 from libcpp cimport bool
 from libcpp.vector cimport vector
 from libcpp.string cimport string
@@ -24,6 +25,21 @@ import numpy as np
 # TODO: use create(..., ) rather than raw methods. (will require C api)
 
 cdef extern from "symcxx/core.hpp" namespace "symcxx":
+    cdef cppclass idx_pair_t:
+        idx_t first;
+        idx_t second;
+
+    cdef union data_t:
+        const idx_pair_t idx_pair;
+        const int64_t intgr;
+        const double dble;
+
+    cdef cppclass Basic:
+        const data_t data;
+        # const Kind kind;
+        # const hash_t hash;
+        const NameSpace * const ns;
+
     cdef cppclass NameSpace:
         idx_t n_symbs
 
@@ -43,6 +59,7 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         idx_t matrix_get_nr(idx_t) const
         idx_t matrix_get_nc(idx_t) const
         idx_t matrix_get_elem(idx_t, idx_t, idx_t) const
+        string print_node(const idx_t, vector[string]&) except +
         string print_ast(const idx_t, vector[string]&) except +
 
         unique_ptr[NameSpace] rebuild_from_matrix(const vector[idx_t]&, idx_t)
@@ -100,6 +117,12 @@ cdef class _Matrix(object):
             return local_out
         else:
             return local_out.reshape(self.shape)
+
+    def __str__(self):
+        rows = ['[' + ', '.join(
+            [str(self[ri, ci]) for ci in range(self.shape[1])]
+        ) + ']' for ri in range(self.shape[0])]
+        return '[' + ',\n '.join(rows) + ']'
 
 
 class _IndexedObject(object):
@@ -233,6 +256,13 @@ cdef class PyNameSpace:
         deref(self.thisptr).matrix_evalf(idx, &inp[0] if inp.size > 0 else NULL,
                                          &out[0] if out.size > 0 else NULL)
 
+    property n_instances:
+        def __get__(self):
+            return deref(self.thisptr).get_instances_size()
+
+    def print_node(self, idx):
+        return deref(self.thisptr).print_node(idx, [])  # self.symbol_names)
+
     def print_ast(self, idx):
         return deref(self.thisptr).print_ast(idx, self.symbol_names)
 
@@ -310,7 +340,10 @@ cdef class PyNameSpace:
     cdef _Matrix rebuild(self, args, _Matrix mtx, flat_output=False):
         cdef PyNameSpace new_ns = PyNameSpace(alloc=False)
         new_ns.thisptr = deref(self.thisptr).rebuild_from_matrix([arg.idx for arg in args], mtx.idx)
-        return _Matrix(deref(new_ns.thisptr).get_instances_size()-1, new_ns, flat_output)
+        return _Matrix(deref(new_ns.thisptr).get_instances_size() - 1, new_ns, flat_output)
+
+    def rebuild_debug(self, args, mtx):
+        return self.rebuild(args, mtx)
 
     def Lambdify(self, args, exprs):
         flat_output = False

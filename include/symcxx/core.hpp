@@ -67,6 +67,12 @@ namespace symcxx{
 #include "symcxx/types_nonatomic.inc"
 #undef SYMCXX_TYPE
 
+    inline std::string all_kind_names(){
+        std::string s;
+        for (int i=0; i < static_cast<int>(Kind::Kind_Count); ++i)
+            s += std::to_string(i) + ": " + kind_names[i] + "\n";
+        return s;
+    }
 
     using ArgStack_t = std::vector<std::vector<idx_t> >;
 

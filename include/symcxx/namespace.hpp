@@ -18,7 +18,7 @@ namespace symcxx{
         const static idx_t neg_e_id  = n_pre_intgrs + 3; // -exp(1)
         const static idx_t ln2_id    = n_pre_intgrs + 4; //  log(2)
         const static idx_t ln10_id   = n_pre_intgrs + 5; //  log(10)
-
+        // order in NameSpace.instances: integers, special, symbols, user-defined
     private:
         std::vector<Matrix> matrices;
     public:
@@ -42,6 +42,7 @@ namespace symcxx{
         idx_t matrix_get_nr(idx_t) const;
         idx_t matrix_get_nc(idx_t) const;
         idx_t matrix_get_elem(idx_t, idx_t, idx_t) const;
+        std::string print_node(const idx_t, const std::vector<std::string>&) const;
         std::string print_ast(const idx_t, const std::vector<std::string>&) const;
 
         idx_t rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>&) const;

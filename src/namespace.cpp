@@ -1,7 +1,7 @@
 #include "symcxx/core.hpp"
 
 symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_symbs(n_pre_symbs) {
-    instances.reserve(n_pre_intgrs + 2 + 2*n_pre_symbs);  // arbitrary
+    instances.reserve(2*(n_pre_intgrs + n_special + n_pre_symbs));  // arbitrary, "2" could be optimized
     for (idx_t idx=0; idx < (n_pre_intgrs+1)/2; ++idx)  //
         instances.push_back(Integer(idx, this));
     for (idx_t idx=0; idx < n_pre_intgrs/2; ++idx)
@@ -14,11 +14,6 @@ symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_sy
     make_float(2.3025850929940456840); // log(10)
     for (idx_t idx=0; idx < n_pre_symbs; ++idx)
         instances.push_back(Symbol(idx, this));
-#if !defined(NDEBUG)
-    std::cout << "n_pre_intgrs=" << n_pre_intgrs << std::endl;
-    for (int i=0; i<static_cast<int>(Kind::Kind_Count); ++i)
-        std::cout << i << ": " << kind_names[i] << std::endl;
-#endif
 }
 
 symcxx::idx_t
@@ -30,9 +25,9 @@ symcxx::NameSpace::reg_args(const std::vector<idx_t>& objs) {
 bool
 symcxx::NameSpace::has(const Basic& looking_for, idx_t * idx) const {
     idx_t idx_ = 0;
-#if !defined(NDEBUG)
-    std::cout << "has(looking_for.hash=" << looking_for.hash << ")";
-#endif
+// #if !defined(NDEBUG)
+//     std::cout << "has(looking_for.hash=" << looking_for.hash << ")";
+// #endif
     for (const auto& inst : instances){
         if (looking_for == inst){
             *idx = idx_;
@@ -195,12 +190,50 @@ symcxx::NameSpace::matrix_get_elem(idx_t idx, idx_t ri, idx_t ci) const {
     return mat.data[ri*matrix_get_nc(idx) + ci];
 }
 
+std::string
+symcxx::NameSpace::print_node(const idx_t idx, const std::vector<std::string>& symbol_names) const {
+    const auto& inst = instances[idx];
+    std::ostringstream os;
+    bool first = true;
+    switch(inst.kind){
+    case Kind::Symbol:
+    case Kind::Integer:
+    case Kind::MatProx:
+    case Kind::Float:
+        os << inst.print(symbol_names); break;
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_unary.inc"
+        os << kind_names[static_cast<int>(inst.kind)] + "(" <<
+            inst.data.idx_pair.first << ")"; break;
+#include "symcxx/types_nonatomic_binary.inc"
+        os << kind_names[static_cast<int>(inst.kind)] + "(" <<
+            inst.data.idx_pair.first << ", " <<
+            inst.data.idx_pair.second << ")"; break;
+#include "symcxx/types_nonatomic_args_stack.inc"
+#undef SYMCXX_TYPE
+        os << kind_names[static_cast<int>(inst.kind)] + "(";
+        for (auto i : args_stack[inst.data.idx_pair.first]){
+            if (first)
+                first = false;
+            else
+                os << ", ";
+            os << i;
+        }
+        os << ")";
+        break;
+    case Kind::Kind_Count:
+        break;
+    }
+    return os.str();
+}
 
 std::string
 symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& symbol_names) const {
     const auto& inst = instances[idx];
     std::ostringstream os;
     bool first = true;
+    std::cout << kind_names[static_cast<int>(inst.kind)];
     switch(inst.kind){
     case Kind::Symbol:
     case Kind::Integer:
@@ -236,9 +269,9 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
 
 symcxx::idx_t
 symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>& symb_mapping) const {
-    // visitor-pattern-goes here, recurive call with switch?
     const auto& inst = instances[idx];
     std::vector<idx_t> args;
+    std::cout << "rebuild_idx_into_ns(" << idx << ", ns, " << symb_mapping << ")" << std::endl; // DO-NOT-MERGE!
     switch(inst.kind){
     case Kind::Symbol:
         return ns.n_pre_intgrs + ns.n_special + std::find(symb_mapping.begin(), symb_mapping.end(),
@@ -267,8 +300,10 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std
             args.push_back(rebuild_idx_into_ns(inner, ns, symb_mapping));
         }
         return ns.create(inst.kind, args);
-    default: //case Kind::Kind_Count:
+    case Kind::Kind_Count:
         throw std::runtime_error("Kind_Count not valid.");
+    default: //case Kind::Kind_Count:
+        throw std::runtime_error("Bug: unhandled kind.");
     }
 }
 

@@ -94,6 +94,46 @@ def test_trig_float():
     assert abs(d[1] - 0) < 0.0001
 
 
+def test_Lambdify_twice():
+    n = 7
+
+    args1 = x, y = se.symbols('x y')
+
+    exprs1 = [x+y, x*y]
+
+    for idx in range(se.n_instances):
+        print('%d: %s' % (idx, se.print_node(idx)))
+
+    l1 = se.Lambdify(args1, exprs1)
+
+    v1 = l1(range(n, n+len(args1)))
+    ref1 = [2*n+1, n*(n+1)]
+    assert allclose(v1, ref1)
+
+    args2 = u, v = se.symbols('u v')
+
+    exprs2 = [u - v, u/v]
+    # print(list(map(str, args2)))
+    # print(list(map(str, exprs2)))
+
+    mat = se.Matrix(len(exprs2), 1, exprs2)
+
+    for idx in range(se.n_instances):
+        print('%d: %s' % (idx, se.print_node(idx)))
+
+    mat2 = se.rebuild_debug(args2, mat)
+    assert mat2.ns.n_symbs == 2
+
+    for idx in range(mat2.ns.n_instances):
+        print('%d: %s' % (idx, mat2.ns.print_node(idx)))
+
+    # print(mat2)
+    # l2 = se.Lambdify(args2, exprs2)
+    # v2 = l2(range(n, n+len(args2)))
+    # ref2 = [-1, n/(n+1)]
+    # assert allclose(v2, ref2)
+
+
 def test_Lambdify():
     n = 7
     args = x, y, z = se.symbols('x y z')
