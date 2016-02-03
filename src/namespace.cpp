@@ -902,7 +902,7 @@ symcxx::NameSpace::collect(const Kind collect_to_kind, const std::vector<idx_t>&
         if (cnt_ == 1)
             new_args.push_back(arg_);
         else if (cnt_ > 1)
-            new_args.push_back(create(collect_to_kind, make_integer(cnt_), arg_));
+            new_args.push_back(create(collect_to_kind, arg_, make_integer(cnt_)));
     };
     for (idx_t idx=1; idx<nargs; ++idx){
         const auto arg = sorted_args[idx];

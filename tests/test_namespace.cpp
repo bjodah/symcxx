@@ -260,4 +260,12 @@ TEST_CASE( "rebuild_from_matrix", "[symcxx::NameSpace]" ) {
     ns4->matrix_evalf(ns4->instances.size() - 1, x, xout);
     REQUIRE( std::abs(xout[0] - (x[0] / x[1])) < 1e-15 );
     REQUIRE( std::abs(xout[1] - (x[2] + 1)) < 1e-15 );
+
+    auto mul_id = ns.mul2(x0_id, x0_id);
+    auto mtx4_id = ns.make_matrix(one_id, one_id, { mul_id });
+    ns.matrix_evalf(mtx4_id, x, xout);
+    REQUIRE( std::abs(xout[0] - (x[0] * x[0])) < 1e-15 );
+    auto ns5 = ns.rebuild_from_matrix({x0_id}, mtx4_id);
+    ns5->matrix_evalf(ns5->instances.size() - 1, x, xout);
+    REQUIRE( std::abs(xout[0] - (x[0] * x[0])) < 1e-15 );
 }

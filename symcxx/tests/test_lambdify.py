@@ -95,18 +95,12 @@ def test_trig_float():
 
 
 def test_Lambdift_simple():
-    # f = se.lambdify([s0], [s0])
-    # assert f(1) == 1
-    # g = se.lambdify([s1], [s1])
-    # assert g(2) == 2
     print('s2.idx=', s2.idx)
     h = se.lambdify([s2], [s2])
-    #print('h.idx=', h.idx)
     assert h(8) == 8
     x = se.Symbol('x')
     print('x.idx=', x.idx)
     i = se.lambdify([x], [x])
-    #print('i.idx=', i.idx)
     assert i(16) == 16
 
 def test_Lambdify_twice():
@@ -128,8 +122,6 @@ def test_Lambdify_twice():
     args2 = u, v = se.symbols('u v')
 
     exprs2 = [u - v, u/v]
-    # print(list(map(str, args2)))
-    # print(list(map(str, exprs2)))
 
     mat = se.Matrix(len(exprs2), 1, exprs2)
 
@@ -142,11 +134,10 @@ def test_Lambdify_twice():
     for idx in range(mat2.ns.n_instances):
         print('%d: %s' % (idx, mat2.ns.print_node(idx)))
 
-    # print(mat2)
-    # l2 = se.Lambdify(args2, exprs2)
-    # v2 = l2(range(n, n+len(args2)))
-    # ref2 = [-1, n/(n+1)]
-    # assert allclose(v2, ref2)
+    l2 = se.Lambdify(args2, exprs2)
+    v2 = l2(range(n, n+len(args2)))
+    ref2 = [-1, n/(n+1)]
+    assert allclose(v2, ref2)
 
 
 def test_Lambdify():
@@ -230,6 +221,11 @@ def _get_1_to_2by3_matrix():
         assert abs(A[1, 2] - (1/(X**3.0))) < 1e-15
     return l, check
 
+def test_x_times_x():
+    import numpy as np
+    l = se.Lambdify([s0], [s0*s0])
+    res = l([7.0])
+    assert abs(res - 49.) < 1e-15
 
 def test_2dim_Matrix():
     l, check = _get_1_to_2by3_matrix()
