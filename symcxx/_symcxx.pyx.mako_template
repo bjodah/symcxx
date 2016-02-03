@@ -106,7 +106,7 @@ cdef class _Matrix(object):
     def jacobian(self, other):
         return _Matrix(self.ns.matrix_jacobian(self.idx, other.idx), self.ns)
 
-    def evalf(self, inp, out=None):
+    def eval_float(self, inp, out=None):
         if out is None:
             out = np.empty(self.shape)
         local_out = np.ravel(out)
@@ -360,13 +360,20 @@ cdef class PyNameSpace:
             len(args)
         except TypeError:
             args = [args]  # single arg
+        print('exprs.idx=', exprs.idx)
         mtx = self.rebuild(args, exprs, flat_output=flat_output)
         print([[str(elem) for elem in row] for row in mtx.tolist()])
-        return mtx.evalf
+        return mtx.eval_float
 
     def lambdify(self, args, exprs):
         Lmb = self.Lambdify(args, exprs)
         return lambda *args: Lmb(args)
 
     def symbols(self, args):
-        return tuple([self.Symbol(arg) for arg in args.split()])
+        lst = [self.Symbol(arg) for arg in args.split()]
+        if len(lst) == 0:
+            raise ValueError('no symbols given')
+        elif len(lst) == 1:
+            return lst[0]
+        else:
+            return tuple(lst)

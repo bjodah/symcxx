@@ -94,6 +94,14 @@ def test_Div_diff0():
     assert abs(deriv.evalf(np.array([3.14])) - ref) < 1e-15
 
 
+def test_Pow_diff0():
+    ns = NameSpace(7)
+    x = ns.Symbol('x')
+    expr = (3*x + 1) ** (x - 2)
+    deriv = expr.diff(x)
+    assert abs(deriv.evalf(np.array([3.14])) - 38.6541588883393) < 1e-13
+
+
 def test_sin_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')
@@ -278,7 +286,7 @@ def test_Matrix():
     add = x + y
     matrix = ns.Matrix(2, 2, [[x+1, y-2],
                               [x-y, x*y]])
-    out = matrix.evalf(np.array([2., 3.]))
+    out = matrix.eval_float(np.array([2., 3.]))
     assert np.allclose(out, [[3, 1],
                              [-1, 6]])
 
@@ -292,7 +300,7 @@ def test_jacobian():
     assert my.shape == (2, 1)
     assert mx.shape == (1, 2)
     J = my.jacobian(mx)
-    out = J.evalf(np.array([2., 3.]))
+    out = J.eval_float(np.array([2., 3.]))
     assert np.allclose(out, [[1, 1],
                              [3, 2]])
 

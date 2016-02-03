@@ -23,10 +23,10 @@ symcxx::NameSpace::reg_args(const std::vector<idx_t>& objs) {
 }
 
 bool
-symcxx::NameSpace::has(const Basic& looking_for, idx_t * idx) const {
+symcxx::NameSpace::in_namespace(const Basic& looking_for, idx_t * idx) const {
     idx_t idx_ = 0;
 // #if !defined(NDEBUG)
-//     std::cout << "has(looking_for.hash=" << looking_for.hash << ")";
+//     std::cout << "in_namespace(looking_for.hash=" << looking_for.hash << ")";
 // #endif
     for (const auto& inst : instances){
         if (looking_for == inst){
@@ -43,6 +43,37 @@ symcxx::NameSpace::has(const Basic& looking_for, idx_t * idx) const {
 #endif
     return false;
 }
+
+bool
+symcxx::NameSpace::has(const idx_t idx, const idx_t looking_for) const {
+    if (idx == looking_for)
+        return true;
+    const auto& inst = instances[idx];
+    std::ostringstream os;
+    switch(inst.kind){
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_atomic.inc"
+        return false;
+#include "symcxx/types_nonatomic_unary.inc"
+        return has(inst.data.idx_pair.first, looking_for);
+#include "symcxx/types_nonatomic_binary.inc"
+        return (has(inst.data.idx_pair.first, looking_for) ||
+                has(inst.data.idx_pair.second, looking_for)) ? true : false;
+#include "symcxx/types_nonatomic_args_stack.inc"
+#undef SYMCXX_TYPE
+        for (auto i : args_stack[inst.data.idx_pair.first]){
+            if (has(i, looking_for))
+                return true;
+        }
+        return false;
+    case Kind::Kind_Count:
+        throw std::runtime_error("Kind_Count is only a place-holder");
+    default:
+        throw std::runtime_error("Unhandled kind");
+    }
+}
+
 
 bool
 symcxx::NameSpace::is_zero(const idx_t idx) const {
@@ -86,7 +117,7 @@ symcxx::NameSpace::make_symbol(idx_t symb_idx){
         return n_pre_intgrs + n_special + symb_idx;
     const auto instance = Symbol(symb_idx, this);
     idx_t idx;
-    if (has(instance, &idx)){
+    if (in_namespace(instance, &idx)){
 #if !defined(NDEBUG)
         std::cout << "make_symbol(" << symb_idx << ") - old!" << std::endl;
 #endif
@@ -125,7 +156,7 @@ symcxx::NameSpace::make_integer(int64_t i){
         return n_pre_intgrs + i;
     const auto instance = Integer(i, this);
     idx_t idx;
-    if (has(instance, &idx)){
+    if (in_namespace(instance, &idx)){
 #if !defined(NDEBUG)
         std::cout << "make_integer(" << i << ") - old!" << std::endl;
 #endif
@@ -142,7 +173,7 @@ symcxx::idx_t
 symcxx::NameSpace::make_float(double f){
     const auto instance = Float(f, this);
     idx_t idx;
-    if (has(instance, &idx))
+    if (in_namespace(instance, &idx))
         return idx;
     instances.push_back(instance);
     return instances.size() - 1;
@@ -196,13 +227,10 @@ symcxx::NameSpace::print_node(const idx_t idx, const std::vector<std::string>& s
     std::ostringstream os;
     bool first = true;
     switch(inst.kind){
-    case Kind::Symbol:
-    case Kind::Integer:
-    case Kind::MatProx:
-    case Kind::Float:
-        os << inst.print(symbol_names); break;
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:
+#include "symcxx/types_atomic.inc"
+        os << inst.print(symbol_names); break;
 #include "symcxx/types_nonatomic_unary.inc"
         os << kind_names[static_cast<int>(inst.kind)] + "(" <<
             inst.data.idx_pair.first << ")"; break;
@@ -235,13 +263,10 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
     bool first = true;
     std::cout << kind_names[static_cast<int>(inst.kind)];
     switch(inst.kind){
-    case Kind::Symbol:
-    case Kind::Integer:
-    case Kind::MatProx:
-    case Kind::Float:
-        os << inst.print(symbol_names); break;
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:
+#include "symcxx/types_atomic.inc"
+        os << inst.print(symbol_names); break;
 #include "symcxx/types_nonatomic_unary.inc"
         os << kind_names[static_cast<int>(inst.kind)] + "(" <<
             print_ast(inst.data.idx_pair.first, symbol_names) << ")"; break;
@@ -275,7 +300,7 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std
     switch(inst.kind){
     case Kind::Symbol:
         return ns.n_pre_intgrs + ns.n_special + std::find(symb_mapping.begin(), symb_mapping.end(),
-                                                          n_pre_intgrs + n_special + inst.data.idx_pair.first) - symb_mapping.begin();
+                                                          idx) - symb_mapping.begin();
     case Kind::Integer:
         return ns.make_integer(inst.data.intgr);
     case Kind::MatProx:
@@ -330,7 +355,7 @@ symcxx::NameSpace::rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat
     symcxx::idx_t symcxx::NameSpace::METH_(const std::vector<symcxx::idx_t>& args){ \
         const auto instance = CLS_(reg_args(args), this);                \
         idx_t idx;                                                      \
-        if (has(instance, &idx)){                                       \
+        if (in_namespace(instance, &idx)){                                       \
             args_stack.pop_back();                                      \
             return idx;                                                 \
         }                                                               \
@@ -345,7 +370,7 @@ symcxx::NameSpace::rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat
     symcxx::idx_t symcxx::NameSpace::METH_(const symcxx::idx_t inst){ \
         const auto instance = CLS_(inst, this);                          \
         idx_t idx;                                                      \
-        if (has(instance, &idx)){                                       \
+        if (in_namespace(instance, &idx)){                                       \
             return idx;                                                 \
         }                                                               \
         instances.push_back(instance);                                  \
@@ -358,7 +383,7 @@ symcxx::NameSpace::rebuild_from_matrix(const std::vector<idx_t>& args, idx_t mat
     symcxx::idx_t symcxx::NameSpace::METH_(const symcxx::idx_t inst0, const symcxx::idx_t inst1){  \
         const auto instance = CLS_(inst0, inst1, this);                  \
         idx_t idx;                                                      \
-        if (has(instance, &idx)){                                       \
+        if (in_namespace(instance, &idx)){                                       \
             return idx;                                                 \
         }                                                               \
         instances.push_back(instance);                                  \
@@ -637,21 +662,6 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
         return create(Kind::Sub,
                       diff(inst.data.idx_pair.first, wrt_id),
                       diff(inst.data.idx_pair.second, wrt_id));
-    case Kind::Add2:
-        return create(Kind::Add,
-                      diff(inst.data.idx_pair.first, wrt_id),
-                      diff(inst.data.idx_pair.second, wrt_id));
-    case Kind::Mul2:
-        return create(Kind::Add,
-                      create(Kind::Mul,
-                             diff(inst.data.idx_pair.first, wrt_id),
-                             inst.data.idx_pair.second
-                             ),
-                      create(Kind::Mul,
-                             inst.data.idx_pair.first,
-                             diff(inst.data.idx_pair.second, wrt_id)
-                             )
-                      );
     case Kind::Div:
         return create(Kind::Div,
                       create(Kind::Sub,
@@ -668,6 +678,46 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                              inst.data.idx_pair.second,
                              make_integer(2))
                       );
+    case Kind::Add2:
+        return create(Kind::Add,
+                      diff(inst.data.idx_pair.first, wrt_id),
+                      diff(inst.data.idx_pair.second, wrt_id));
+    case Kind::Mul2:
+        return create(Kind::Add,
+                      create(Kind::Mul,
+                             diff(inst.data.idx_pair.first, wrt_id),
+                             inst.data.idx_pair.second
+                             ),
+                      create(Kind::Mul,
+                             inst.data.idx_pair.first,
+                             diff(inst.data.idx_pair.second, wrt_id)
+                             )
+                      );
+    case Kind::Pow:
+        {
+            const auto base = inst.data.idx_pair.first;
+            const auto exponent = inst.data.idx_pair.second;
+            const bool in_base = has(base, wrt_id);
+            const bool in_exponent = has(exponent, wrt_id);
+            if (in_base){
+                if (!in_exponent){
+                    return create(Kind::Mul, {{
+                                exponent,
+                                    create(Kind::Pow, base, create(Kind::Sub, exponent, make_integer(1))),
+                                    diff(base, wrt_id)
+                                    }});
+                }
+            } else {
+                if (!in_exponent){
+                    return make_integer(0);
+                }
+            }
+            return diff(create(Kind::Exp,
+                               create(Kind::Mul,
+                                      create(Kind::Log, base),
+                                      exponent)),
+                        wrt_id);
+        }
     case Kind::Exp:
         return create(Kind::Mul,
                       inst_id,

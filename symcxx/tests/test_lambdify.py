@@ -94,6 +94,21 @@ def test_trig_float():
     assert abs(d[1] - 0) < 0.0001
 
 
+def test_Lambdift_simple():
+    # f = se.lambdify([s0], [s0])
+    # assert f(1) == 1
+    # g = se.lambdify([s1], [s1])
+    # assert g(2) == 2
+    print('s2.idx=', s2.idx)
+    h = se.lambdify([s2], [s2])
+    #print('h.idx=', h.idx)
+    assert h(8) == 8
+    x = se.Symbol('x')
+    print('x.idx=', x.idx)
+    i = se.lambdify([x], [x])
+    #print('i.idx=', i.idx)
+    assert i(16) == 16
+
 def test_Lambdify_twice():
     n = 7
 
@@ -256,5 +271,5 @@ def test_itertools_chain():
     args, exprs, inp, check = _get_array()
     l = se.Lambdify(args, exprs)
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
-    A = l(inp)
+    A = l(tuple(inp))  # numpy 1.10 array failing for itertools chain
     check(A)
