@@ -193,7 +193,8 @@ symcxx::NameSpace::make_matrix(idx_t nr, idx_t nc, std::vector<idx_t> data){
 
 symcxx::idx_t
 symcxx::NameSpace::matrix_jacobian(idx_t idx_y, idx_t idx_dx){
-    matrices.push_back(matrices[instances[idx_y].data.idx_pair.first].jacobian(matrices[instances[idx_dx].data.idx_pair.first], this));
+    matrices.push_back(matrices[instances[idx_y].data.idx_pair.first].jacobian(
+        matrices[instances[idx_dx].data.idx_pair.first], this));
     const auto instance = MatProx(matrices.size() - 1, this);
     instances.push_back(instance);
     return instances.size() - 1;
@@ -261,7 +262,7 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
     const auto& inst = instances[idx];
     std::ostringstream os;
     bool first = true;
-    std::cout << kind_names[static_cast<int>(inst.kind)];
+    std::cout << "print_ast: " << kind_names[static_cast<int>(inst.kind)];
     switch(inst.kind){
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:

@@ -218,6 +218,47 @@ TEST_CASE( "matrix_evalf", "[symcxx::NameSpace]" ) {
     REQUIRE( std::abs(xout[1] - (x[0] / x[1])) < 1e-15 );
 }
 
+TEST_CASE( "matrix_jacobian_simple", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3.14};
+    double xout[1];
+    auto ns = symcxx::NameSpace();
+    auto x_id = ns.make_symbol();
+    auto mul_id = ns.mul2(x_id, x_id);
+    auto one_id = ns.make_integer(1);
+    auto mtx_id = ns.make_matrix(one_id, one_id, { mul_id });  // [x**2]
+    auto wrt_id = ns.make_matrix(one_id, one_id, { x_id }); // [x]
+    auto jac_id = ns.matrix_jacobian(mtx_id, wrt_id);
+    // [[ 2*x ]]
+    std::cout << ns.print_ast(mtx_id, {"x"});
+    std::cout << ns.print_ast(wrt_id, {"x"});
+    std::cout << ns.print_ast(jac_id, {"x"});
+    ns.matrix_evalf(mtx_id, x, xout);
+    std::cout << xout[0];
+    REQUIRE( std::abs(xout[0] - 2*x[0]) < 1e-15 );
+}
+
+// TEST_CASE( "matrix_jacobian", "[symcxx::NameSpace]" ) {
+//     const double x[2] = {3.14, 42.0};
+//     double xout[4];
+//     auto ns = symcxx::NameSpace();
+//     auto x0_id = ns.make_symbol();
+//     auto x1_id = ns.make_symbol();
+//     auto one_id = ns.make_integer(1);
+//     auto two_id = ns.make_integer(2);
+//     auto sub_id = ns.sub(x1_id, x0_id);
+//     auto div_id = ns.div(x0_id, x1_id);
+//     auto mtx_id = ns.make_matrix(two_id, one_id, { sub_id, div_id });  // [y-x, x/y]
+//     auto wrt_id = ns.make_matrix(two_id, one_id, { x0_id, x1_id }); // [x, y]
+//     auto jac_id = ns.matrix_jacobian(mtx_id, wrt_id);
+//     // [[ -1,  1 ],
+//     //  [ 1/y, -x/(y*y) ]
+//     ns.matrix_evalf(mtx_id, x, xout);
+//     REQUIRE( std::abs(xout[0] - (-1)) < 1e-15 );
+//     REQUIRE( std::abs(xout[1] - ( 1)) < 1e-15 );
+//     REQUIRE( std::abs(xout[2] - (1.0/x[1])) < 1e-15 );
+//     REQUIRE( std::abs(xout[3] - (-x[0]/(x[1]*x[1]))) < 1e-15 );
+// }
+
 TEST_CASE( "rebuild_from_matrix", "[symcxx::NameSpace]" ) {
     // begin copy-paste from matrix_evalf
     const double x[3] = {3.14, 42.0, 13.0};

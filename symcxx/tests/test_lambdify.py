@@ -237,6 +237,8 @@ def test_jacobian_simple():
     args = se.Matrix(1, 1, [s0])
     v = se.Matrix(1, 1, [s0*s0])
     jac = v.jacobian(args)
+    print(str(jac.tolist()[0][0]))
+    return
     lmb = se.Lambdify(args, jac)
     out = np.empty((1, 1))
     inp = X, = 7,
