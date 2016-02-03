@@ -232,6 +232,17 @@ def test_2dim_Matrix():
     inp = [7]
     check(l(inp), inp)
 
+def test_jacobian_simple():
+    import numpy as np
+    args = se.Matrix(1, 1, [s0])
+    v = se.Matrix(1, 1, [s0*s0])
+    jac = v.jacobian(args)
+    lmb = se.Lambdify(args, jac)
+    out = np.empty((1, 1))
+    inp = X, = 7,
+    lmb(inp, out)
+    assert np.atleast_1d(out).shape == (1, 1)
+    assert np.allclose(out, [[14.0]])
 
 def test_jacobian():
     import numpy as np
