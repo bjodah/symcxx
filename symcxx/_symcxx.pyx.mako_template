@@ -306,9 +306,9 @@ cdef class PyNameSpace:
             symb_nr = self.symbol_names.index(name)
         except ValueError:  # name not in list
             symb_nr = self.symbol_names.size()
+            self.symbol_names.push_back(name if sys.version_info[0] == 2
+                                        else bytes(name, encoding='utf-8'))
         symb_idx = self.make_symbol(symb_nr)
-        self.symbol_names.push_back(name if sys.version_info[0] == 2
-                                    else bytes(name, encoding='utf-8'))
         return _IndexedObject(symb_idx, self)
 
     def symarray(self, prefix, shape, real=True):
@@ -339,8 +339,10 @@ cdef class PyNameSpace:
 
     cdef _Matrix rebuild(self, args, _Matrix mtx, flat_output=False):
         cdef PyNameSpace new_ns = PyNameSpace(alloc=False)
-        new_ns.thisptr = deref(self.thisptr).rebuild_from_matrix([arg.idx for arg in args], mtx.idx)
-        return _Matrix(deref(new_ns.thisptr).get_instances_size() - 1, new_ns, flat_output)
+        new_ns.thisptr = deref(self.thisptr).rebuild_from_matrix(
+            [arg.idx for arg in args], mtx.idx)
+        return _Matrix(deref(new_ns.thisptr).get_instances_size() - 1,
+                       new_ns, flat_output)
 
     def rebuild_debug(self, args, mtx):
         return self.rebuild(args, mtx)

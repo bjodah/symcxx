@@ -127,8 +127,9 @@ symcxx::NameSpace::make_symbol(idx_t symb_idx){
 #if !defined(NDEBUG)
     std::cout << "make_symbol(" << symb_idx << ") - new!" << std::endl;
 #endif
-    if (symb_idx != n_symbs)
+    if (symb_idx != n_symbs){
         throw std::runtime_error("Something fishy about skipping symbols..");
+    }
     n_symbs++;
     instances.push_back(instance);
     return instances.size() - 1;
@@ -262,7 +263,6 @@ symcxx::NameSpace::print_ast(const idx_t idx, const std::vector<std::string>& sy
     const auto& inst = instances[idx];
     std::ostringstream os;
     bool first = true;
-    std::cout << "print_ast: " << kind_names[static_cast<int>(inst.kind)];
     switch(inst.kind){
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:
@@ -297,7 +297,7 @@ symcxx::idx_t
 symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>& symb_mapping) const {
     const auto& inst = instances[idx];
     std::vector<idx_t> args;
-    std::cout << "rebuild_idx_into_ns(" << idx << ", ns, " << symb_mapping << ")" << std::endl; // DO-NOT-MERGE!
+    //std::cout << "rebuild_idx_into_ns(" << idx << ", ns, " << symb_mapping << ")" << std::endl; // DO-NOT-MERGE!
     switch(inst.kind){
     case Kind::Symbol:
         return ns.n_pre_intgrs + ns.n_special + std::find(symb_mapping.begin(), symb_mapping.end(),
@@ -409,7 +409,9 @@ symcxx::NameSpace::create(const Kind kind, const std::vector<idx_t>& args){
         if (args.size() == 0)
             throw std::runtime_error("create Add from length 0 vector of arguments");
         new_args = merge_drop_sort_collect(args, Kind::Mul, {zero, mul({zero})}, Kind::Add);
-        if (new_args.size() == 1)
+        if (new_args.size() == 0)
+            return zero;
+        else if (new_args.size() == 1)
             return new_args[0];
         else if (new_args.size() == 2)
             return add2(new_args[0], new_args[1]);

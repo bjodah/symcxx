@@ -232,7 +232,7 @@ def test_2dim_Matrix():
     inp = [7]
     check(l(inp), inp)
 
-def test_jacobian_simple():
+def test_lambdify_jacobian_simple():
     import numpy as np
     args = se.Matrix(1, 1, [s0])
     v = se.Matrix(1, 1, [s0*s0])
@@ -246,29 +246,29 @@ def test_jacobian_simple():
     assert np.atleast_1d(out).shape == (1, 1)
     assert np.allclose(out, [[14.0]])
 
-def test_jacobian():
+def test_lambdify_jacobian1():
     import numpy as np
     x, y = se.symbols('x, y')
     args = se.Matrix(2, 1, [x, y])
     v = se.Matrix(2, 1, [x**3 * y, (x+1)*(y+1)])
     jac = v.jacobian(args)
+    print(jac)
     lmb = se.Lambdify(args, jac)
     out = np.empty((2, 2))
     inp = X, Y = 7, 11
     lmb(inp, out)
-    assert np.atleast_1d(out).shape == (2, 2)
+    assert out.shape == (2, 2)
     assert np.allclose(out, [[3 * X**2 * Y, X**3],
                              [Y + 1, X + 1]])
 
 
-def test_jacobian2():
+def test_lambdify_jacobian2():
     import numpy as np
     x, y = se.symbols('x, y')
     args = se.Matrix(2, 1, [x, y])
     v = se.Matrix(2, 1, [x**3 * y, (x+1)*(y+1)])
     jac = v.jacobian(args)
     lmb = se.Lambdify(args, jac)
-    out = np.empty((2, 2))
     inp = X, Y = 7, 11
     out = lmb(inp)
     assert np.atleast_1d(out).shape == (2, 2)
