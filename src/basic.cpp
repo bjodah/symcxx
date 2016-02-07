@@ -117,9 +117,9 @@ symcxx::Basic::evalf(const double inp[]) const {
 #include "symcxx/types_nonatomic_binary_math_h.inc"
 #undef SYMCXX_TYPE
     default:
-#if !defined(NDEBUG)
+        //#if !defined(NDEBUG)
         std::cout << "Kind: " << static_cast<int>(kind) << std::endl;
-#endif
+        //#endif
         throw std::runtime_error("Cannot run evalf for type.");
     }
     return result;

@@ -36,7 +36,7 @@ test_%.o: test_%.cpp ../include/symcxx/*.hpp
 
 TESTFILES=catch_symcxx.o test_namespace.o test_basic.o basic.o namespace.o
 
-catch_symcxx: $(TESTFILES)
+catch_symcxx: $(TESTFILES) ../include/symcxx/core.hpp
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
 
 debug_symcxx: debug_symcxx.cpp basic.o namespace.o

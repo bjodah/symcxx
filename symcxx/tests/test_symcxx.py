@@ -64,8 +64,6 @@ def test_diff0():
     expr = (3*x)
     deriv = expr.diff(x)
     ref = ns.Number(3)
-    print(deriv, deriv.idx)
-    print(ref, ref.idx)
     assert (deriv == ref) is True
 
 
@@ -75,6 +73,16 @@ def test_str():
     assert str(3*x) == 'Mul2(Integer(3), Symbol(x))'
 
 
+def test_trigfuncs_evalf():
+    ns = NameSpace()
+    cos_pi = ns.cos(ns.pi)
+    sin_pi = ns.sin(ns.pi)
+    tan_pi = ns.tan(ns.pi)
+    assert abs(cos_pi.evalf(np.array([])) + 1) <  1e-15
+    assert abs(sin_pi.evalf(np.array([]))) <  1e-15
+    assert abs(tan_pi.evalf(np.array([]))) <  1e-15
+
+
 def test_Div_diff0():
     ns = NameSpace(1)
     x = ns.Symbol('x')
@@ -82,6 +90,14 @@ def test_Div_diff0():
     deriv = expr.diff(x)
     ref = (3*(3.14-2) - (3*3.14 + 1)) / ((3.14 - 2)**2)
     assert abs(deriv.evalf(np.array([3.14])) - ref) < 1e-15
+
+
+def test_Pow_diff0():
+    ns = NameSpace(7)
+    x = ns.Symbol('x')
+    expr = (3*x + 1) ** (x - 2)
+    deriv = expr.diff(x)
+    assert abs(deriv.evalf(np.array([3.14])) - 38.6541588883393) < 1e-13
 
 
 def test_sin_diff0():
@@ -268,7 +284,7 @@ def test_Matrix():
     add = x + y
     matrix = ns.Matrix(2, 2, [[x+1, y-2],
                               [x-y, x*y]])
-    out = matrix.evalf(np.array([2., 3.]))
+    out = matrix.eval_float(np.array([2., 3.]))
     assert np.allclose(out, [[3, 1],
                              [-1, 6]])
 
@@ -282,11 +298,11 @@ def test_jacobian():
     assert my.shape == (2, 1)
     assert mx.shape == (1, 2)
     J = my.jacobian(mx)
-    out = J.evalf(np.array([2., 3.]))
+    out = J.eval_float(np.array([2., 3.]))
     assert np.allclose(out, [[1, 1],
                              [3, 2]])
 
-def test_lambdify():
+def test_Lambdify():
     ns = NameSpace(2)
     x = ns.Symbol('x')
     y = ns.Symbol('y')
@@ -295,23 +311,23 @@ def test_lambdify():
     v = ns.Symbol('v')
     w = ns.Symbol('w')
 
-    lmb0 = ns.lambdify((x, y, z, u, v, w), [x, y, z, u, v, w])
+    lmb0 = ns.Lambdify((x, y, z, u, v, w), [x, y, z, u, v, w])
     out0 = lmb0(np.array([2., 3, 4, 5, 6, 7]))
     ref0 = [2., 3, 4, 5, 6, 7]
     assert np.allclose(out0.flatten(), ref0)
 
-    lmb3 = ns.lambdify((z, y, x), [x, y, z])
+    lmb3 = ns.Lambdify((z, y, x), [x, y, z])
     out3 = lmb3(np.array([2., 3, 4]))
     ref3 = [4, 3, 2]
     assert np.allclose(out3.flatten(), ref3)
 
 
-    lmb1 = ns.lambdify((x, y), [x+y, x-y, x*y, 13*x + 2*y])
+    lmb1 = ns.Lambdify((x, y), [x+y, x-y, x*y, 13*x + 2*y])
     out1 = lmb1(np.array([2.0, 3.0]))
     ref1 = [5, -1, 6, 13*2 + 2*3]
     assert np.allclose(out1.flatten(), ref1)
 
-    lmb2 = ns.lambdify((y, x), [x+y, x-y, x*y])
+    lmb2 = ns.Lambdify((y, x), [x+y, x-y, x*y])
     out2 = lmb2(np.array([2.0, 3.0]))
     ref2 = [5, 1, 6]
     assert np.allclose(out2.flatten(), ref2)

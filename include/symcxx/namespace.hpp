@@ -12,13 +12,21 @@ namespace symcxx{
         // idx_t __padding {0};
         const static idx_t n_pre_intgrs = 7;
         const static idx_t n_special = 6; // see below:
-        const static idx_t pi_id = n_pre_intgrs; // atan(1)*4
-        const static idx_t neg_pi_id = n_pre_intgrs+1; // -atan(1)*4
-        const static idx_t e_id = n_pre_intgrs+2; // exp(1)
-        const static idx_t neg_e_id = n_pre_intgrs+3; // -exp(1)
-        const static idx_t ln2_id = n_pre_intgrs+4; // log(2)
-        const static idx_t ln10_id = n_pre_intgrs+5; // log(10)
-
+        const static idx_t pi_id     = n_pre_intgrs + 0; //  atan(1)*4
+        const static idx_t neg_pi_id = n_pre_intgrs + 1; // -atan(1)*4
+        const static idx_t e_id      = n_pre_intgrs + 2; //  exp(1)
+        const static idx_t neg_e_id  = n_pre_intgrs + 3; // -exp(1)
+        const static idx_t ln2_id    = n_pre_intgrs + 4; //  log(2)
+        const static idx_t ln10_id   = n_pre_intgrs + 5; //  log(10)
+        // const static double special_val[n_special] = {
+        //     3.1415926535897932385,
+        //     -3.1415926535897932385, // -pi
+        //     2.7182818284590452354, // exp(1)
+        //     -2.7182818284590452354, // -exp(1)
+        //     0.69314718055994530942, // log(2)
+        //     2.3025850929940456840 // log(10)
+        // }
+        // order in NameSpace.instances: integers, special, pre-symbols, user-defined
     private:
         std::vector<Matrix> matrices;
     public:
@@ -26,14 +34,15 @@ namespace symcxx{
         NameSpace(idx_t=0);
         // idx_t idx(const Basic*) const;
         idx_t reg_args(const std::vector<idx_t>&);
-        bool has(const Basic&, idx_t*) const;
-        bool is_zero(const idx_t) const;
-        bool is_one(const idx_t) const;
-        bool apparently_negative(const idx_t) const;
+        bool in_namespace(const Basic&, idx_t*) const;
+        bool has(idx_t, idx_t) const;
+        bool is_zero(idx_t) const;
+        bool is_one(idx_t) const;
+        bool apparently_negative(idx_t) const;
         idx_t make_symbol(idx_t i);
         idx_t make_symbol();
         std::vector<idx_t> make_symbols(idx_t n);
-        idx_t make_integer(int i);
+        idx_t make_integer(int64_t i);
         idx_t make_float(double f);
         idx_t make_nan();
         idx_t make_matrix(idx_t, idx_t, std::vector<idx_t>);
@@ -41,10 +50,12 @@ namespace symcxx{
         void matrix_evalf(idx_t, const double * const, double * const) const;
         idx_t matrix_get_nr(idx_t) const;
         idx_t matrix_get_nc(idx_t) const;
-        std::string print_ast(const idx_t, const std::vector<std::string>&) const;
+        idx_t matrix_get_elem(idx_t, idx_t, idx_t) const;
+        std::string print_node(idx_t, const std::vector<std::string>&) const;
+        std::string print_ast(idx_t, const std::vector<std::string>&) const;
 
-        idx_t rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>&) const;
-        std::unique_ptr<symcxx::NameSpace> rebuild(const std::vector<idx_t>&, const std::vector<idx_t>&) const;
+        idx_t rebuild_idx_into_ns(idx_t idx, NameSpace& ns, const std::vector<idx_t>&) const;
+        std::unique_ptr<symcxx::NameSpace> rebuild(const std::vector<idx_t>&, const std::vector<idx_t>&, idx_t, idx_t) const;
         std::unique_ptr<symcxx::NameSpace> rebuild_from_matrix(const std::vector<idx_t>&, idx_t) const;
         inline idx_t get_instances_size() const { return instances.size(); }
 
