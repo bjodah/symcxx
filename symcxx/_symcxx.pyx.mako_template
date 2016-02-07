@@ -95,6 +95,12 @@ cdef class _Matrix(object):
         return (self.ns.matrix_get_nr(self.idx),
                 self.ns.matrix_get_nc(self.idx))
 
+    @property
+    def flat(self):
+        for ri in range(self.ns.matrix_get_nr(self.idx)):
+            for ci in range(self.ns.matrix_get_nc(self.idx)):
+                yield self[ri, ci]
+
     def __getitem__(self, key):
         ri, ci = key
         return _IndexedObject(self.ns.matrix_get_elem(self.idx, ri, ci), self.ns)
@@ -111,7 +117,6 @@ cdef class _Matrix(object):
             out = np.empty(self.shape)
         local_out = np.ravel(out)
         inp = np.asarray(inp, dtype=np.float64)
-        print('inp =', inp)
         self.ns.matrix_evalf(self.idx, inp, local_out)
         if self.flat_output:
             return local_out
@@ -359,12 +364,13 @@ cdef class PyNameSpace:
                 except TypeError:
                     exprs = self.Matrix(1, 1, [exprs])  # single expression
         try:
-            len(args)
-        except TypeError:
-            args = [args]  # single arg
-        print('exprs.idx=', exprs.idx)
+            args = args.flat
+        except AttributeError:
+            try:
+                len(args)
+            except TypeError:
+                args = [args]  # single arg
         mtx = self.rebuild(args, exprs, flat_output=flat_output)
-        print([[str(elem) for elem in row] for row in mtx.tolist()])
         return mtx.eval_float
 
     def lambdify(self, args, exprs):

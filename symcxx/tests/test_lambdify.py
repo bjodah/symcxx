@@ -95,11 +95,9 @@ def test_trig_float():
 
 
 def test_Lambdift_simple():
-    print('s2.idx=', s2.idx)
     h = se.lambdify([s2], [s2])
     assert h(8) == 8
     x = se.Symbol('x')
-    print('x.idx=', x.idx)
     i = se.lambdify([x], [x])
     assert i(16) == 16
 
@@ -109,9 +107,6 @@ def test_Lambdify_twice():
     args1 = x, y = se.symbols('x y')
 
     exprs1 = [x+y, x*y]
-
-    for idx in range(se.n_instances):
-        print('%d: %s' % (idx, se.print_node(idx)))
 
     l1 = se.Lambdify(args1, exprs1)
 
@@ -125,14 +120,8 @@ def test_Lambdify_twice():
 
     mat = se.Matrix(len(exprs2), 1, exprs2)
 
-    for idx in range(se.n_instances):
-        print('%d: %s' % (idx, se.print_node(idx)))
-
     mat2 = se.rebuild_debug(args2, mat)
     assert mat2.ns.n_symbs == 2
-
-    for idx in range(mat2.ns.n_instances):
-        print('%d: %s' % (idx, mat2.ns.print_node(idx)))
 
     l2 = se.Lambdify(args2, exprs2)
     v2 = l2(range(n, n+len(args2)))
@@ -237,7 +226,6 @@ def test_lambdify_jacobian_simple():
     args = se.Matrix(1, 1, [s0])
     v = se.Matrix(1, 1, [s0*s0])
     jac = v.jacobian(args)
-    print(str(jac.tolist()[0][0]))
     return
     lmb = se.Lambdify(args, jac)
     out = np.empty((1, 1))
@@ -246,13 +234,25 @@ def test_lambdify_jacobian_simple():
     assert np.atleast_1d(out).shape == (1, 1)
     assert np.allclose(out, [[14.0]])
 
+def test_lambdify_jacobian0():
+    import numpy as np
+    args = se.Matrix(2, 1, [s0, s1])
+    v = se.Matrix(2, 1, [s0**3 * s1, (s0+1)*(s1+1)])
+    jac = v.jacobian(args)
+    lmb = se.Lambdify([s0, s1], jac)
+    out = np.empty((2, 2))
+    inp = X, Y = 7, 11
+    lmb(inp, out)
+    assert out.shape == (2, 2)
+    assert np.allclose(out, [[3 * X**2 * Y, X**3],
+                             [Y + 1, X + 1]])
+
 def test_lambdify_jacobian1():
     import numpy as np
     x, y = se.symbols('x, y')
     args = se.Matrix(2, 1, [x, y])
     v = se.Matrix(2, 1, [x**3 * y, (x+1)*(y+1)])
     jac = v.jacobian(args)
-    print(jac)
     lmb = se.Lambdify(args, jac)
     out = np.empty((2, 2))
     inp = X, Y = 7, 11

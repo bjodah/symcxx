@@ -297,7 +297,6 @@ symcxx::idx_t
 symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std::vector<idx_t>& symb_mapping) const {
     const auto& inst = instances[idx];
     std::vector<idx_t> args;
-    //std::cout << "rebuild_idx_into_ns(" << idx << ", ns, " << symb_mapping << ")" << std::endl; // DO-NOT-MERGE!
     switch(inst.kind){
     case Kind::Symbol:
         return ns.n_pre_intgrs + ns.n_special + std::find(symb_mapping.begin(), symb_mapping.end(),

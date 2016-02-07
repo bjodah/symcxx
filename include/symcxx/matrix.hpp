@@ -1,21 +1,16 @@
 #pragma once
 #include "symcxx/core.hpp"
 
-#include <iostream> // DO-NOT-MERGE!
-
 namespace symcxx{
     struct Matrix {
         const idx_t nr, nc;
         const std::vector<idx_t> data;
         Matrix(idx_t nr, idx_t nc, const std::vector<idx_t> data) :
             nr(nr), nc(nc), data(data) {
-            std::cout << "Matrix(), nr: " << nr << ", nc: " << nc << std::endl;  // DO-NOT-MERGE!
             if ((nr < 1) || (nc < 1) || (data.size() != nr*nc))
                 throw std::runtime_error("improper dimensions");
         }
         Matrix jacobian(const Matrix& dx, NameSpace * const ns) const {
-            std::cout << "nr: " << nr << ", nc: " << nc << std::endl;  // DO-NOT-MERGE!
-            std::cout << "dx.nr: " << dx.nr << ", dx.nc: " << dx.nc << std::endl; // DO-NOT-MERGE!
             if ((nr > 1 && nc > 1) || (dx.nr > 1 && dx.nc > 1))
                 throw std::runtime_error("improper dimensions");
             const idx_t jnr = std::max(nr, nc);

@@ -64,8 +64,6 @@ def test_diff0():
     expr = (3*x)
     deriv = expr.diff(x)
     ref = ns.Number(3)
-    print(deriv, deriv.idx)
-    print(ref, ref.idx)
     assert (deriv == ref) is True
 
 
