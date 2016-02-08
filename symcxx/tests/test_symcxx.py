@@ -330,3 +330,11 @@ def test_Lambdify():
     out2 = lmb2(np.array([2.0, 3.0]))
     ref2 = [5, 1, 6]
     assert np.allclose(out2.flatten(), ref2)
+
+
+def test_equality():
+    ns = NameSpace()
+    p0 = ns.Symbol('p')
+    p1 = ns.Symbol('p')
+    assert p0 == p1
+    assert p1 == p1
