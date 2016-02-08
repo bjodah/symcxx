@@ -12,6 +12,7 @@ requirements:
     build:
         - python
         - numpy
+        - mako
     run:
         - python
         - numpy

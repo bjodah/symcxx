@@ -114,6 +114,8 @@ setup_kwargs = dict(
     url='https://github.com/bjodah/' + pkg_name,
     license='BSD',
     packages=[pkg_name] + tests,
+    setup_requires=['mako'],
+    install_requires=['numpy'],
     ext_modules=ext_modules,
 )
 
