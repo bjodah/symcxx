@@ -24,6 +24,8 @@ import numpy as np
 
 # TODO: use create(..., ) rather than raw methods. (will require C api)
 
+cdef int PY_MAJOR = sys.version_info[0] == 2
+
 cdef extern from "symcxx/core.hpp" namespace "symcxx":
     cdef cppclass idx_pair_t:
         idx_t first;
@@ -307,12 +309,12 @@ cdef class PyNameSpace:
             return _IndexedObject(self.make_float(val), self)
 
     def Symbol(self, name):
+        cdef string _name = name.encode('utf-8')
         try:
-            symb_nr = self.symbol_names.index(name)
+            symb_nr = self.symbol_names.index(_name)
         except ValueError:  # name not in list
             symb_nr = self.symbol_names.size()
-            self.symbol_names.push_back(name if sys.version_info[0] == 2
-                                        else bytes(name, encoding='utf-8'))
+            self.symbol_names.push_back(_name)
         symb_idx = self.make_symbol(symb_nr)
         return _IndexedObject(symb_idx, self)
 
