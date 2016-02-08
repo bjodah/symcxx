@@ -30,18 +30,23 @@ def _read(path, macro='SYMCXX_TYPE', inc_dir='./'):
 
 if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
         '--help-commands', 'egg_info', 'clean', '--version'):
-    pyx_path = 'symcxx/_symcxx.pyx'
-    template_path = pyx_path + '.mako_template'
-    USE_CYTHON = os.path.exists(template_path)
+    try:
+        from mako.template import Template
+        from mako.exceptions import text_error_template
+        from Cython.Build import cythonize
+    except ImportError:
+        USE_CYTHON = False
+    else:
+        pyx_path = 'symcxx/_symcxx.pyx'
+        template_path = pyx_path + '.mako_template'
+        USE_CYTHON = os.path.exists(template_path)
+
     ext = '.pyx' if USE_CYTHON else '.cpp'
     ext_modules = [Extension(
         'symcxx._symcxx',
         ['symcxx/_symcxx'+ext]
     )]
     if USE_CYTHON:
-        from mako.template import Template
-        from mako.exceptions import text_error_template
-        from Cython.Build import cythonize
         stub = 'types_nonatomic_'
         path_stub = 'symcxx/' + stub
         subsd = {stub+k: list(_read(path_stub+k+'.inc', inc_dir='./include/'))
