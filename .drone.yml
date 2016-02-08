@@ -1,5 +1,5 @@
 build:
-  image: bjodah/bjodahimg:latest
+  image: bjodah/bjodahimg:v1.1
   commands:
     - cd tests
     - make
@@ -7,7 +7,16 @@ build:
     - make -B RELEASE=1
     - make -B CXX=clang++-3.7 RELEASE=1
     - cd -
-    - python2.7 setup.py build_ext -i
-    - PYTHONPATH=$(pwd) py.test-2.7
-    - python3.4 setup.py build_ext -i
-    - PYTHONPATH=$(pwd) py.test-3.4
+    - ./scripts/ci.sh symcxx
+    - ./scripts/prepare_deploy.sh
+
+deploy:
+
+  rsync:
+    host: hera.physchem.kth.se
+    user: symcxx
+    port: 22
+    source: deploy/
+    target: ~
+    recursive: true
+    delete: false
