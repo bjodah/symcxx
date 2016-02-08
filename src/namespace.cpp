@@ -25,22 +25,13 @@ symcxx::NameSpace::reg_args(const std::vector<idx_t>& objs) {
 bool
 symcxx::NameSpace::in_namespace(const Basic& looking_for, idx_t * idx) const {
     idx_t idx_ = 0;
-// #if !defined(NDEBUG)
-//     std::cout << "in_namespace(looking_for.hash=" << looking_for.hash << ")";
-// #endif
     for (const auto& inst : instances){
         if (looking_for == inst){
             *idx = idx_;
-#if !defined(NDEBUG)
-            std::cout << " -> true" << std::endl;
-#endif
             return true;
         }
         ++idx_;
     }
-#if !defined(NDEBUG)
-    std::cout << " -> false" << std::endl;
-#endif
     return false;
 }
 
@@ -977,9 +968,9 @@ symcxx::NameSpace::merge_drop_sort_collect(const std::vector<idx_t>& args,
     std::vector<idx_t> new_args;
     for (const auto arg : merge(merge_kind, sort_args(args))){
         for (const auto drp : drop){
-#if !defined(NDEBUG)
-            std::cout << "Comparing arg, drp: " << arg << ", " << drp << std::endl;
-#endif
+// #if !defined(NDEBUG)
+//             std::cout << "Comparing arg, drp: " << arg << ", " << drp << std::endl;
+// #endif
             if (arg == drp)
                 goto break_twice;
         }

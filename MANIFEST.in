@@ -1,0 +1,6 @@
+recursive-include include *.hpp *.inc
+recursive-include src *.cpp
+include AUTHORS
+include CHANGES.rst
+include LICENSE
+include README.rst

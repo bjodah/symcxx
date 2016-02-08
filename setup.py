@@ -14,6 +14,7 @@ SYMCXX_RELEASE_VERSION = os.environ.get('SYMCXX_RELEASE_VERSION', '')  # v*
 # Cythonize .pyx file if it exists (not in source distribution)
 ext_modules = []
 
+
 def _read(path, macro='SYMCXX_TYPE', inc_dir='./'):
     for l in open(inc_dir + path, 'rt'):
         if l.startswith('#include'):
@@ -32,7 +33,7 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
     pyx_path = 'symcxx/_symcxx.pyx'
     template_path = pyx_path + '.mako_template'
     USE_CYTHON = os.path.exists(template_path)
-    ext = '.pyx' if USE_CYTHON else '.c'
+    ext = '.pyx' if USE_CYTHON else '.cpp'
     ext_modules = [Extension(
         'symcxx._symcxx',
         ['symcxx/_symcxx'+ext]
@@ -47,7 +48,8 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
                  for k in ('unary', 'binary')}
         subsd['_message_for_rendered'] = 'THIS IS A GENERATED FILE DO NOT EDIT'
         try:
-            rendered_pyx = Template(open(template_path, 'rt').read()).render(**subsd)
+            rendered_pyx = Template(open(template_path, 'rt').read()).render(
+                **subsd)
         except:
             print(text_error_template().render_unicode())
             raise
@@ -59,6 +61,10 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
     ext_modules[0].sources = [
         'src/basic.cpp', 'src/namespace.cpp'
     ] + ext_modules[0].sources
+    ext_modules[0].include_dirs += ['./include']
+    ext_modules[0].language = 'c++'
+    ext_modules[0].extra_compile_args = ['-std=c++11']
+
 
 # http://conda.pydata.org/docs/build.html#environment-variables-set-during-the-build-process
 if os.environ.get('CONDA_BUILD', '0') == '1':
