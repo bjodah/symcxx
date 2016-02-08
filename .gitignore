@@ -9,3 +9,5 @@ symcxx/_symcxx.cpp
 cython_debug/
 **.pyc
 symcxx/_symcxx.pyx
+dist/
+**.egg-info

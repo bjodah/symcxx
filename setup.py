@@ -32,7 +32,7 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
     pyx_path = 'symcxx/_symcxx.pyx'
     template_path = pyx_path + '.mako_template'
     USE_CYTHON = os.path.exists(template_path)
-    ext = '.pyx' if USE_CYTHON else '.c'
+    ext = '.pyx' if USE_CYTHON else '.cpp'
     ext_modules = [Extension(
         'symcxx._symcxx',
         ['symcxx/_symcxx'+ext]
@@ -54,11 +54,16 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
         else:
             open(pyx_path, 'wt').write(rendered_pyx)
         ext_modules = cythonize(ext_modules,
-                                include_path=['./include'],
+                                include_path = ['./include'],
                                 gdb_debug=True)
     ext_modules[0].sources = [
         'src/basic.cpp', 'src/namespace.cpp'
     ] + ext_modules[0].sources
+    ext_modules[0].include_dirs += ['./include']
+    ext_modules[0].language = 'c++'
+    ext_modules[0].extra_compile_args = ['-std=c++11']
+
+
 
 # http://conda.pydata.org/docs/build.html#environment-variables-set-during-the-build-process
 if os.environ.get('CONDA_BUILD', '0') == '1':

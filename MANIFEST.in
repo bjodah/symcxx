@@ -1,4 +1,4 @@
-recursive-include include *.hpp
+recursive-include include *.hpp *.inc
 recursive-include src *.cpp
 include AUTHORS
 include CHANGES.rst
