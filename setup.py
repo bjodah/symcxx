@@ -14,6 +14,7 @@ SYMCXX_RELEASE_VERSION = os.environ.get('SYMCXX_RELEASE_VERSION', '')  # v*
 # Cythonize .pyx file if it exists (not in source distribution)
 ext_modules = []
 
+
 def _read(path, macro='SYMCXX_TYPE', inc_dir='./'):
     for l in open(inc_dir + path, 'rt'):
         if l.startswith('#include'):
@@ -47,14 +48,15 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
                  for k in ('unary', 'binary')}
         subsd['_message_for_rendered'] = 'THIS IS A GENERATED FILE DO NOT EDIT'
         try:
-            rendered_pyx = Template(open(template_path, 'rt').read()).render(**subsd)
+            rendered_pyx = Template(open(template_path, 'rt').read()).render(
+                **subsd)
         except:
             print(text_error_template().render_unicode())
             raise
         else:
             open(pyx_path, 'wt').write(rendered_pyx)
         ext_modules = cythonize(ext_modules,
-                                include_path = ['./include'],
+                                include_path=['./include'],
                                 gdb_debug=True)
     ext_modules[0].sources = [
         'src/basic.cpp', 'src/namespace.cpp'
@@ -62,7 +64,6 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
     ext_modules[0].include_dirs += ['./include']
     ext_modules[0].language = 'c++'
     ext_modules[0].extra_compile_args = ['-std=c++11']
-
 
 
 # http://conda.pydata.org/docs/build.html#environment-variables-set-during-the-build-process

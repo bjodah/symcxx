@@ -101,6 +101,7 @@ def test_Lambdift_simple():
     i = se.lambdify([x], [x])
     assert i(16) == 16
 
+
 def test_Lambdify_twice():
     n = 7
 
@@ -210,16 +211,19 @@ def _get_1_to_2by3_matrix():
         assert abs(A[1, 2] - (1/(X**3.0))) < 1e-15
     return l, check
 
+
 def test_x_times_x():
     import numpy as np
     l = se.Lambdify([s0], [s0*s0])
     res = l([7.0])
     assert abs(res - 49.) < 1e-15
 
+
 def test_2dim_Matrix():
     l, check = _get_1_to_2by3_matrix()
     inp = [7]
     check(l(inp), inp)
+
 
 def test_lambdify_jacobian_simple():
     import numpy as np
@@ -234,6 +238,7 @@ def test_lambdify_jacobian_simple():
     assert np.atleast_1d(out).shape == (1, 1)
     assert np.allclose(out, [[14.0]])
 
+
 def test_lambdify_jacobian0():
     import numpy as np
     args = se.Matrix(2, 1, [s0, s1])
@@ -246,6 +251,7 @@ def test_lambdify_jacobian0():
     assert out.shape == (2, 2)
     assert np.allclose(out, [[3 * X**2 * Y, X**3],
                              [Y + 1, X + 1]])
+
 
 def test_lambdify_jacobian1():
     import numpy as np

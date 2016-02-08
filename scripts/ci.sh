@@ -6,6 +6,7 @@ fi
 python2 setup.py sdist
 pip install dist/*.tar.gz
 (cd /; python2 -m pytest --pyargs $1)
+python2 setup.py build_ext -i
 CFLAGS='-flto' python3 setup.py build_ext -i
 python3 -m pytest
 PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html

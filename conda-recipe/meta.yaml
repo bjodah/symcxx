@@ -1,0 +1,33 @@
+package:
+    name: symcxx
+    version: 0.1.0.dev0
+
+source:
+    path: ../
+
+build:
+    number: 0
+
+requirements:
+    build:
+        - python
+        - numpy
+    run:
+        - python
+        - numpy
+
+test:
+    imports:
+        - symcxx
+
+    requires:
+        - pytest
+        - numpy
+
+    commands:
+        - py.test --pyargs symcxx
+
+about:
+    home: https://github.com/bjodah/symcxx
+    license: BSD
+    summary: fast symbolic manipulation in Python
