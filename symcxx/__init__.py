@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-symcxx is a minimal symbolic manipulation library.
+symcxx is a minimal symbolic manipulation python package written in C++.
 """
 from __future__ import (absolute_import, division, print_function)
 
