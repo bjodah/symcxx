@@ -3,9 +3,9 @@ build:
   commands:
     - cd tests
     - make
-    - make -B CXX=clang++-3.7
-    - make -B RELEASE=1
+    - make -B CXX=clang++-3.7 DEFINES=-DNDEBUG
     - make -B CXX=clang++-3.7 RELEASE=1
+    - make -B RELEASE=1
     - cd -
     - ./scripts/ci.sh symcxx
     - ./scripts/prepare_deploy.sh

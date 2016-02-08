@@ -35,6 +35,8 @@ def test_NameSpace_relational():
     assert le.evalb(np.array([5., 5.])) is True
     assert eq.evalb(np.array([3., 5.])) is False
     assert eq.evalb(np.array([5., 5.])) is True
+    assert ne.evalb(np.array([3., 5.])) is True
+    assert ne.evalb(np.array([5., 5.])) is False
     assert ge.evalb(np.array([3., 5.])) is False
     assert ge.evalb(np.array([5., 5.])) is True
     assert gt.evalb(np.array([3., 5.])) is False
@@ -137,14 +139,6 @@ def test_acos_diff0():
     x = ns.Symbol('x')
     expr = ns.acos(.1*x + .2)
     ref = -0.11657862476093600653
-    assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
-
-
-def test_asin_diff0():
-    ns = NameSpace(1)
-    x = ns.Symbol('x')
-    expr = ns.asin(.1*x + .2)
-    ref = 0.11657862476093600653
     assert abs(expr.diff(x).evalf(np.array([3.14])) - ref) < 1e-15
 
 
@@ -287,7 +281,6 @@ def test_Matrix():
     ns = NameSpace(2)
     x = ns.Symbol('x')
     y = ns.Symbol('y')
-    add = x + y
     matrix = ns.Matrix(2, 2, [[x+1, y-2],
                               [x-y, x*y]])
     out = matrix.eval_float(np.array([2., 3.]))
@@ -299,7 +292,6 @@ def test_jacobian():
     ns = NameSpace(2)
     x = ns.Symbol('x')
     y = ns.Symbol('y')
-    add = x + y
     my = ns.Matrix(2, 1, [x+y, x*y])
     mx = ns.Matrix(1, 2, [x, y])
     assert my.shape == (2, 1)

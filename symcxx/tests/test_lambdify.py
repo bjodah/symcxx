@@ -213,7 +213,6 @@ def _get_1_to_2by3_matrix():
 
 
 def test_x_times_x():
-    import numpy as np
     l = se.Lambdify([s0], [s0*s0])
     res = l([7.0])
     assert abs(res - 49.) < 1e-15
