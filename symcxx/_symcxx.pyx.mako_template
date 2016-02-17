@@ -61,6 +61,9 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         idx_t matrix_get_nr(idx_t) const
         idx_t matrix_get_nc(idx_t) const
         idx_t matrix_get_elem(idx_t, idx_t, idx_t) const
+
+        idx_t factor(idx_t) except +
+
         string print_node(const idx_t, vector[string]&) except +
         string print_ast(const idx_t, vector[string]&) except +
 
@@ -76,6 +79,10 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
 
 %for Cls, Parent, meth in types_nonatomic_binary:
         idx_t ${meth}(idx_t, idx_t)
+%endfor
+
+%for Cls, Parent, meth in types_nonatomic_args_stack:
+        idx_t ${meth}(vector[idx_t])
 %endfor
 
     cdef unique_ptr[NameSpace] make_unique_NameSpace(const idx_t)
@@ -263,6 +270,9 @@ cdef class PyNameSpace:
         deref(self.thisptr).matrix_evalf(idx, &inp[0] if inp.size > 0 else NULL,
                                          &out[0] if out.size > 0 else NULL)
 
+    def _factor(self, idx_t idx):
+        return deref(self.thisptr).factor(idx)
+
     property n_instances:
         def __get__(self):
             return deref(self.thisptr).get_instances_size()
@@ -296,10 +306,21 @@ cdef class PyNameSpace:
 %for Cls, Parent, meth in types_nonatomic_binary:
     def _${Cls}(self, idx0, idx1):
         return deref(self.thisptr).${meth}(idx0, idx1)
+
     def ${meth}(self, obj0, obj1):
         obj0 = _implicit_conversion(self, obj0)
         obj1 = _implicit_conversion(self, obj1)
         return _IndexedObject(self._${Cls}(obj0.idx, obj1.idx), self)
+%endfor
+
+    # Vector arguments
+%for Cls, Parent, meth in types_nonatomic_args_stack:
+    def _${Cls}(self, vector[idx_t] idxs):
+        return deref(self.thisptr).${meth}(idxs)
+
+    def ${meth}(self, *objs):
+        return _IndexedObject(self._${Cls}([
+            _implicit_conversion(self, obj).idx for obj in objs]), self)
 %endfor
 
     def Number(self, val):
@@ -307,6 +328,9 @@ cdef class PyNameSpace:
             return _IndexedObject(self.make_integer(val), self)
         else:
             return _IndexedObject(self.make_float(val), self)
+
+    def factor(self, number):
+        return _IndexedObject(self._factor(number.idx), self)
 
     def Symbol(self, name):
         cdef string _name = name.encode('utf-8')

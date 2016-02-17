@@ -50,7 +50,7 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
         stub = 'types_nonatomic_'
         path_stub = 'symcxx/' + stub
         subsd = {stub+k: list(_read(path_stub+k+'.inc', inc_dir='./include/'))
-                 for k in ('unary', 'binary')}
+                 for k in ('unary', 'binary', 'args_stack')}
         subsd['_message_for_rendered'] = 'THIS IS A GENERATED FILE DO NOT EDIT'
         try:
             rendered_pyx = Template(open(template_path, 'rt').read()).render(

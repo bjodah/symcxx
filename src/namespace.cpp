@@ -214,6 +214,32 @@ symcxx::NameSpace::matrix_get_elem(idx_t idx, idx_t ri, idx_t ci) const {
     return mat.data[ri*matrix_get_nc(idx) + ci];
 }
 
+symcxx::idx_t
+symcxx::NameSpace::factor(idx_t idx) {
+    //auto * inst = &instances[idx];
+    if (instances[idx].kind != Kind::Integer){
+        throw std::runtime_error("Not an integer!");
+    }
+    const int64_t upper = std::ceil<int64_t>(std::sqrt(instances[idx].data.intgr));
+    std::vector<idx_t> args;
+    while(instances[idx].data.intgr % 2 == 0){
+        args.push_back(make_integer(2));
+        idx = make_integer(instances[idx].data.intgr/2);
+    }
+    for (int64_t cand=3; cand < upper; cand += 2){
+        while(instances[idx].data.intgr % cand == 0){
+            args.push_back(make_integer(cand));
+            idx = make_integer(instances[idx].data.intgr/cand);
+        }
+    }
+    if (args.size() == 0){
+        return idx;
+    } else {
+        args.push_back(idx);
+        return create(Kind::Mul, args);
+    }
+}
+
 std::string
 symcxx::NameSpace::print_node(const idx_t idx, const std::vector<std::string>& symbol_names) const {
     const auto& inst = instances[idx];

@@ -51,6 +51,9 @@ namespace symcxx{
         idx_t matrix_get_nr(idx_t) const;
         idx_t matrix_get_nc(idx_t) const;
         idx_t matrix_get_elem(idx_t, idx_t, idx_t) const;
+
+        idx_t factor(idx_t);
+
         std::string print_node(idx_t, const std::vector<std::string>&) const;
         std::string print_ast(idx_t, const std::vector<std::string>&) const;
 

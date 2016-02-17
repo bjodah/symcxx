@@ -338,3 +338,11 @@ def test_equality():
     p1 = ns.Symbol('p')
     assert p0 == p1
     assert p1 == p1
+
+
+def test_factor():
+    ns = NameSpace()
+    fortytwo = ns.Number(42)
+    factors = ns.factor(fortytwo)
+    ref = ns.mul(2, 3, 7)
+    assert ref == factors
