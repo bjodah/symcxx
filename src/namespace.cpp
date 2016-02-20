@@ -5,7 +5,7 @@ symcxx::NameSpace::NameSpace(idx_t n_pre_symbs) : n_pre_symbs(n_pre_symbs), n_sy
     for (idx_t idx=0; idx < (n_pre_intgrs+1)/2; ++idx)  //
         instances.push_back(Integer(idx, this));
     for (idx_t idx=0; idx < n_pre_intgrs/2; ++idx)
-        instances.push_back(Integer(-static_cast<int64_t>(n_pre_intgrs/2 - idx), this));
+        instances.push_back(Integer(-static_cast<intgr_t>(n_pre_intgrs/2 - idx), this));
     make_float(3.1415926535897932385); // pi
     make_float(-3.1415926535897932385); // -pi
     make_float(2.7182818284590452354); // exp(1)
@@ -141,7 +141,7 @@ symcxx::NameSpace::make_symbols(symcxx::idx_t n){
 }
 
 symcxx::idx_t
-symcxx::NameSpace::make_integer(int64_t i){
+symcxx::NameSpace::make_integer(intgr_t i){
     if (i >= 0 && static_cast<idx_t>(i) < (n_pre_intgrs+1)/2)
         return i;
     if (i < 0 && static_cast<idx_t>(-i) < n_pre_intgrs/2)
@@ -220,13 +220,13 @@ symcxx::NameSpace::factor(idx_t idx) {
     if (instances[idx].kind != Kind::Integer){
         throw std::runtime_error("Not an integer!");
     }
-    const int64_t upper = std::ceil<int64_t>(std::sqrt(instances[idx].data.intgr));
+    const intgr_t upper = std::ceil<int64_t>(std::sqrt(instances[idx].data.intgr));
     std::vector<idx_t> args;
     while(instances[idx].data.intgr % 2 == 0){
         args.push_back(make_integer(2));
         idx = make_integer(instances[idx].data.intgr/2);
     }
-    for (int64_t cand=3; cand < upper; cand += 2){
+    for (intgr_t cand=3; cand < upper; cand += 2){
         while(instances[idx].data.intgr % cand == 0){
             args.push_back(make_integer(cand));
             idx = make_integer(instances[idx].data.intgr/cand);

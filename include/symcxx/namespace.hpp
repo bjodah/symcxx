@@ -42,7 +42,7 @@ namespace symcxx{
         idx_t make_symbol(idx_t i);
         idx_t make_symbol();
         std::vector<idx_t> make_symbols(idx_t n);
-        idx_t make_integer(int64_t i);
+        idx_t make_integer(intgr_t i);
         idx_t make_float(double f);
         idx_t make_nan();
         idx_t make_matrix(idx_t, idx_t, std::vector<idx_t>);
