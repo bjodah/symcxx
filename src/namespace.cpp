@@ -614,6 +614,7 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
         else
             return pow(inst_idx0, inst_idx1);
     case Kind::Atan2:
+            return atan2(inst_idx0, inst_idx1);
     case Kind::Hypot:
         if (are_sorted())
             return hypot(inst_idx0, inst_idx1);
