@@ -19,10 +19,14 @@ sed -i -E \
     -e "/cython/d" \
     dist/conda-recipe-$VERSION/meta.yaml
 
-env ${PKG_UPPER}_RELEASE_VERSION=v$VERSION python setup.py upload_sphinx
+if [[ -d doc || -d docs ]]; then
+    env ${PKG_UPPER}_RELEASE_VERSION=v$VERSION python setup.py upload_sphinx
+fi
 
 # Specific for this project:
+ssh $PKG@$SERVER 'mkdir -p ~/public_html/conda-recipes/'
 scp -r dist/conda-recipe-$VERSION/ $PKG@$SERVER:~/public_html/conda-recipes/
+ssh $PKG@$SERVER 'mkdir -p ~/public_html/releases/'
 scp dist/${PKG}-$VERSION.tar.gz $PKG@$SERVER:~/public_html/releases/
 for CONDA_PY in 2.7 3.4 3.5; do
     for CONDA_NPY in 1.11; do

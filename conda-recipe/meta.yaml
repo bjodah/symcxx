@@ -1,35 +1,35 @@
 package:
-    name: symcxx
-    version: 0.2.0.git
+  name: symcxx
+  version: 0.2.0.git
 
 source:
-    path: ../
+  path: ../
 
 build:
-    number: 0
+  number: 0
 
 requirements:
-    build:
-        - python
-        - numpy
-        - mako
-        - cython ==0.23.4
-    run:
-        - python
-        - numpy
+  build:
+    - python
+    - numpy
+    - mako
+    - cython ==0.23.4
+  run:
+    - python
+    - numpy
 
 test:
-    imports:
-        - symcxx
+  imports:
+    - symcxx
 
-    requires:
-        - pytest
-        - numpy
+  requires:
+    - pytest
+    - numpy
 
-    commands:
-        - py.test --pyargs symcxx
+  # commands:
+  #   - py.test --pyargs symcxx
 
 about:
-    home: https://github.com/bjodah/symcxx
-    license: BSD
-    summary: fast symbolic manipulation in Python
+  home: https://github.com/bjodah/symcxx
+  license: BSD
+  summary: fast symbolic manipulation in Python
