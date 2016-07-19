@@ -42,7 +42,7 @@ namespace symcxx{
         idx_t make_symbol(idx_t i);
         idx_t make_symbol();
         std::vector<idx_t> make_symbols(idx_t n);
-        idx_t make_integer(int64_t i);
+        idx_t make_integer(intgr_t i);
         idx_t make_float(double f);
         idx_t make_nan();
         idx_t make_matrix(idx_t, idx_t, std::vector<idx_t>);
@@ -51,6 +51,9 @@ namespace symcxx{
         idx_t matrix_get_nr(idx_t) const;
         idx_t matrix_get_nc(idx_t) const;
         idx_t matrix_get_elem(idx_t, idx_t, idx_t) const;
+
+        idx_t factor(idx_t);
+
         std::string print_node(idx_t, const std::vector<std::string>&) const;
         std::string print_ast(idx_t, const std::vector<std::string>&) const;
 

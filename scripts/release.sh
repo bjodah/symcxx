@@ -24,5 +24,12 @@ git tag -a $1 -m $1
 git push
 git push --tags
 twine upload dist/${PKG}-${1#v}.tar.gz
-env ${PKG_UPPER}_RELEASE_VERSION=$1 python setup.py upload_sphinx
-echo "Remember to bump version (and commit and push)!"
+
+set +x
+echo ""
+echo "    Make a github release of the tag \"v$VERSION\" and name "
+echo "    it \"${PKG}-${VERSION}\", manually attach the new .tar.gz"
+echo "    file from the ./dist/ directory. Then run:"
+echo ""
+echo "        $ ./scripts/post_release.sh $1 MYSERVER MYGITHUBUSERNAME"
+echo ""

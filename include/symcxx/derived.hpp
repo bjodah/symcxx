@@ -11,7 +11,7 @@ namespace symcxx {
         Float(const double data, const NameSpace * const ns) : Basic(std::hash<double>()(data), Kind::Float, data, ns) {}
     };
     struct Integer : public Basic {
-        Integer(const int64_t data,  const NameSpace * const ns) : Basic(std::hash<int64_t>()(data), Kind::Integer, data, ns) {}
+        Integer(const intgr_t data,  const NameSpace * const ns) : Basic(std::hash<int64_t>()(data), Kind::Integer, data, ns) {}
     };
 
     // Non-atomic:

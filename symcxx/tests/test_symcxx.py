@@ -72,7 +72,19 @@ def test_diff0():
 def test_str():
     ns = NameSpace(0)
     x = ns.Symbol('x')
-    assert str(3*x) == 'Mul2(Integer(3), Symbol(x))'
+    assert str(3*x) in ('Mul2(Integer(3), Symbol(x))',
+                        'Mul2(Symbol(x), Integer(3))')
+
+
+def test_autosimplification():
+    ns = NameSpace(0)
+    x = ns.Symbol('x')
+    assert x - x == 0
+    assert x**2 - x*x == 0
+    # assert x**2*x**3 - x*x**4 == 0
+    # assert x*x*x*x - x**4 == 0
+    # assert x*4 - 2*(x*2) == 0
+    # assert x*4 - x - x - x - x == 0
 
 
 def test_trigfuncs_evalf():
@@ -338,3 +350,11 @@ def test_equality():
     p1 = ns.Symbol('p')
     assert p0 == p1
     assert p1 == p1
+
+
+def test_factor():
+    ns = NameSpace()
+    fortytwo = ns.Number(42)
+    factors = ns.factor(fortytwo)
+    ref = ns.mul(2, 3, 7)
+    assert ref == factors

@@ -9,6 +9,8 @@ pip install dist/*.tar.gz
 python2 setup.py build_ext -i
 CFLAGS='-flto' python3 setup.py build_ext -i
 python3 -m pytest
-PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
+for PYTHON in python2 python3; do
+    PYTHONPATH=$(pwd) ./scripts/run_tests.sh --cov $1 --cov-report html
+done
 ./scripts/coverage_badge.py htmlcov/ htmlcov/coverage.svg
 ! grep "DO-NOT-MERGE!" -R . --exclude ci.sh

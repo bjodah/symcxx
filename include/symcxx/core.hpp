@@ -26,6 +26,7 @@ std::ostream& operator<< (std::ostream& out, const std::vector<T>& v) {
 namespace symcxx{
     using hash_t = int; // std::size_t;
     using idx_t = unsigned int; // std::size_t;
+    using intgr_t = int64_t;
     struct idx_pair_t {
         idx_t first;
         idx_t second;
@@ -33,11 +34,11 @@ namespace symcxx{
 
     union data_t {
         const idx_pair_t idx_pair;
-        const int64_t intgr;
+        const intgr_t intgr;
         const double dble;
         data_t(const idx_t id) : idx_pair({id, 0}) {}
         data_t(const idx_pair_t pr) : idx_pair(pr) {}
-        data_t(const int64_t i) : intgr(i) {}
+        data_t(const intgr_t i) : intgr(i) {}
         data_t(const double d) : dble(d) {}
     };
     static_assert(sizeof(data_t) == 8, "8 bytes please");  // mind the cache
