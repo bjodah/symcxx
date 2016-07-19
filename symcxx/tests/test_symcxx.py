@@ -358,3 +358,10 @@ def test_factor():
     factors = ns.factor(fortytwo)
     ref = ns.mul(2, 3, 7)
     assert ref == factors
+
+
+def test_Dummy():
+    ns = NameSpace()
+    d = ns.Dummy()
+    lmb = ns.Lambdify([d], [3*d, 8])
+    assert np.allclose(lmb(np.array([7.0])), [21, 8])

@@ -232,8 +232,10 @@ cdef class PyNameSpace:
     cdef unique_ptr[NameSpace] thisptr
     cdef readonly vector[string] symbol_names
     cdef readonly object pi, neg_pi, E, neg_E
+    cdef idx_t dummy_counter
 
     def __cinit__(self, idx_t n=0, alloc=True):
+        self.dummy_counter = 0
         if alloc:
             self.thisptr = make_unique_NameSpace(n)
 
@@ -353,6 +355,10 @@ cdef class PyNameSpace:
         symb_idx = self.make_symbol(symb_nr)
         return _IndexedObject(symb_idx, self)
 
+    def Dummy(self):
+        self.dummy_counter += 1
+        return self.Symbol('dummy%d' % (self.dummy_counter - 1))
+
     def symarray(self, prefix, shape, real=True):
         if real is not True:
             raise NotImplementedError
@@ -368,12 +374,13 @@ cdef class PyNameSpace:
         else:
             def callback(ri, ci):
                 try:
-                    return source[ri, ci].idx
+                    elem = source[ri, ci]
                 except TypeError:
                     try:
-                        return source[ri][ci].idx
+                        elem = source[ri][ci]
                     except TypeError:
-                        return source[ri*nc + ci].idx
+                        elem = source[ri*nc + ci]
+                return _implicit_conversion(self, elem).idx
         data = [callback(ri, ci) for ri, ci
                 in itertools.product(range(nr), range(nc))]
         mat_idx = self.make_matrix(nr, nc, data)
