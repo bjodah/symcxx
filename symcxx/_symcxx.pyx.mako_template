@@ -22,9 +22,6 @@ import sys
 from cython.operator import dereference as deref
 import numpy as np
 
-# TODO: use create(..., ) rather than raw methods. (will require C api)
-
-# cdef int PY_MAJOR = sys.version_info[0] == 2
 
 cdef extern from "symcxx/core.hpp" namespace "symcxx":
     cdef cppclass Kind:
@@ -308,9 +305,6 @@ cdef class PyNameSpace:
 
     # Unary:
 %for Cls, Parent, meth in types_nonatomic_unary:
-    # def _${Cls}(self, idx):
-    #     return deref(self.thisptr).${meth}(idx)
-
     def _${Cls}(self, idx_t idx):
         return deref(self.thisptr).create(<Kind>${Cls}, idx)
 
@@ -321,9 +315,6 @@ cdef class PyNameSpace:
 
     # Binary:
 %for Cls, Parent, meth in types_nonatomic_binary:
-    # def _${Cls}(self, idx0, idx1):
-    #     return deref(self.thisptr).${meth}(idx0, idx1)
-
     def _${Cls}(self, idx_t idx0, idx_t idx1):
         return deref(self.thisptr).create(<Kind>${Cls}, idx0, idx1)
 
@@ -335,9 +326,6 @@ cdef class PyNameSpace:
 
     # Vector arguments
 %for Cls, Parent, meth in types_nonatomic_args_stack:
-    # def _${Cls}(self, vector[idx_t] idxs):
-    #     return deref(self.thisptr).${meth}(idxs)
-
     def _${Cls}(self, vector[idx_t] idxs):
         return deref(self.thisptr).create(<Kind>${Cls}, idxs)
 
