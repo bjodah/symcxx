@@ -17,10 +17,10 @@ SymCXX
    :target: http://hera.physchem.kth.se/~symcxx/branches/master/htmlcov
    :alt: coverage
 
-`SymCXX <https://github.com/bjodah/symcxx>`_ is an experimental
+`SymCXX <https://github.com/bjodah/symcxx>`_ is an *experimental*
 Python package for symbolic manipulation with limited scope (as in minimal).
 It tries to stay compatible with the API of `SymPy <http://www.sympy.org>`_.
-It's main goal is to off a faster version of SymPy's lambdify / SymEngine's Lambdify
+It's main goal is to explore designs of SymPy's lambdify / SymEngine's Lambdify functionality.
 
 The capabilities include:
 
@@ -30,6 +30,9 @@ The capabilities include:
 The above capabilities are exactly what is needed by
 `pyodesys <https://pypi.python.org/pypi/pyodesys>`_
 and `pyneqsys <https://pypi.python.org/pypi/pyneqsys>`_.
+
+Note that integers in symcxx may overflow, i.e. if correctness is important 
+please use SymPy/SymEngine.
 
 Documentation
 -------------

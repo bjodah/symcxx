@@ -466,26 +466,26 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
     std::cout << "Creating(unary) kind=" << kind_names[static_cast<int>(kind)] << ", with inst_idx=" << inst_idx << std::endl;
 #endif
     switch(kind){
-    case Kind::Exp:
-        if (is_zero(inst_idx))
-            return make_integer(1);
-        if (instances[inst_idx].kind == Kind::Log)
-            return instances[inst_idx].data.idx_pair.first;
-        return exp(inst_idx);
-    case Kind::Sin:
-        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
-            return make_integer(0);
-        return sin(inst_idx);
     case Kind::Cos:
         if (is_zero(inst_idx))
             return make_integer(1);
         if (inst_idx == pi_id || inst_idx == neg_pi_id)
             return make_integer(-1);
         return cos(inst_idx);
+    case Kind::Sin:
+        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
+            return make_integer(0);
+        return sin(inst_idx);
     case Kind::Tan:
         if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
             return make_integer(0);
         return tan(inst_idx);
+    case Kind::Acos:
+        return acos(inst_idx);
+    case Kind::Asin:
+        return asin(inst_idx);
+    case Kind::Atan:
+        return atan(inst_idx);
     case Kind::Cosh:
         if (is_zero(inst_idx))
             return make_integer(1);
@@ -510,6 +510,12 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
         if (is_zero(inst_idx))
             return make_integer(0);
         return atanh(inst_idx);
+    case Kind::Exp:
+        if (is_zero(inst_idx))
+            return make_integer(1);
+        if (instances[inst_idx].kind == Kind::Log)
+            return instances[inst_idx].data.idx_pair.first;
+        return exp(inst_idx);
     case Kind::Log:
         if (inst_idx == e_id)
             return make_integer(1);
@@ -518,6 +524,16 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
         if (instances[inst_idx].kind == Kind::Exp)
             return instances[inst_idx].data.idx_pair.first;
         return log(inst_idx);
+    case Kind::Log10:
+        return log10(inst_idx);
+    case Kind::Exp2:
+        return exp2(inst_idx);
+    case Kind::Expm1:
+        return expm1(inst_idx);
+    case Kind::Log1p:
+        return log1p(inst_idx);
+    case Kind::Log2:
+        return log2(inst_idx);
     case Kind::Sqrt:
         if (instances[inst_idx].kind == Kind::Pow)
             if (instances[inst_idx].data.idx_pair.second == make_integer(2))
@@ -528,6 +544,14 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
             if (instances[inst_idx].data.idx_pair.second == make_integer(3))
                 return instances[inst_idx].data.idx_pair.first;
         return cbrt(inst_idx);
+    case Kind::Erf:
+        return erf(inst_idx);
+    case Kind::Erfc:
+        return erfc(inst_idx);
+    case Kind::Tgamma:
+        return tgamma(inst_idx);
+    case Kind::Lgamma:
+        return lgamma(inst_idx);
     case Kind::Neg:
         if (inst_idx == pi_id)
             return neg_pi_id;
@@ -620,6 +644,11 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
             return hypot(inst_idx0, inst_idx1);
         else
             return hypot(inst_idx1, inst_idx0);
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_: \
+        return METH_(inst_idx0, inst_idx1);
+#include "symcxx/types_nonatomic_binary_relational.inc"
+#undef SYMCXX_TYPE
     default:
 #if !defined(NDEBUG)
         std::cout << "create(binary) does not support kind:" << kind_names[static_cast<int>(kind)] << std::endl;

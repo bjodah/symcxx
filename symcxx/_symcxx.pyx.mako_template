@@ -24,7 +24,17 @@ import numpy as np
 
 # TODO: use create(..., ) rather than raw methods. (will require C api)
 
-cdef int PY_MAJOR = sys.version_info[0] == 2
+# cdef int PY_MAJOR = sys.version_info[0] == 2
+
+cdef extern from "symcxx/core.hpp" namespace "symcxx":
+    cdef cppclass Kind:
+        pass
+
+cdef extern from "symcxx/core.hpp" namespace "symcxx::Kind":
+%for Cls, Parent, meth in types:
+    cdef Kind ${Cls}
+%endfor
+
 
 cdef extern from "symcxx/core.hpp" namespace "symcxx":
     cdef cppclass idx_pair_t:
@@ -69,8 +79,12 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
 
         unique_ptr[NameSpace] rebuild_from_matrix(const vector[idx_t]&, idx_t)
         idx_t get_instances_size()
-        bool evalb(idx_t, const double *) except +
+        idx_t create(Kind, vector[idx_t]) except +
+        idx_t create(Kind, idx_t) except +
+        idx_t create(Kind, idx_t, idx_t) except +
+
         double evalf(idx_t, const double *) except +
+        bool evalb(idx_t, const double *) except +
         idx_t diff(const idx_t, const idx_t) except +
 
 %for Cls, Parent, meth in types_nonatomic_unary:
@@ -294,8 +308,11 @@ cdef class PyNameSpace:
 
     # Unary:
 %for Cls, Parent, meth in types_nonatomic_unary:
-    def _${Cls}(self, idx):
-        return deref(self.thisptr).${meth}(idx)
+    # def _${Cls}(self, idx):
+    #     return deref(self.thisptr).${meth}(idx)
+
+    def _${Cls}(self, idx_t idx):
+        return deref(self.thisptr).create(<Kind>${Cls}, idx)
 
     def ${meth}(self, obj):
         obj = _implicit_conversion(self, obj)
@@ -304,8 +321,12 @@ cdef class PyNameSpace:
 
     # Binary:
 %for Cls, Parent, meth in types_nonatomic_binary:
-    def _${Cls}(self, idx0, idx1):
-        return deref(self.thisptr).${meth}(idx0, idx1)
+    # def _${Cls}(self, idx0, idx1):
+    #     return deref(self.thisptr).${meth}(idx0, idx1)
+
+    def _${Cls}(self, idx_t idx0, idx_t idx1):
+        print(<int>${Cls})
+        return deref(self.thisptr).create(<Kind>${Cls}, idx0, idx1)
 
     def ${meth}(self, obj0, obj1):
         obj0 = _implicit_conversion(self, obj0)
@@ -315,8 +336,11 @@ cdef class PyNameSpace:
 
     # Vector arguments
 %for Cls, Parent, meth in types_nonatomic_args_stack:
+    # def _${Cls}(self, vector[idx_t] idxs):
+    #     return deref(self.thisptr).${meth}(idxs)
+
     def _${Cls}(self, vector[idx_t] idxs):
-        return deref(self.thisptr).${meth}(idxs)
+        return deref(self.thisptr).create(<Kind>${Cls}, idxs)
 
     def ${meth}(self, *objs):
         return _IndexedObject(self._${Cls}([
