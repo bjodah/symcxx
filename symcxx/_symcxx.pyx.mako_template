@@ -325,7 +325,6 @@ cdef class PyNameSpace:
     #     return deref(self.thisptr).${meth}(idx0, idx1)
 
     def _${Cls}(self, idx_t idx0, idx_t idx1):
-        print(<int>${Cls})
         return deref(self.thisptr).create(<Kind>${Cls}, idx0, idx1)
 
     def ${meth}(self, obj0, obj1):

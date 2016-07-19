@@ -73,7 +73,7 @@ Differentiation
    >>> x, y = map(ns.Symbol, 'x y'.split())
    >>> expr = x*y**2 - ns.tan(2*x)
    >>> print(expr.diff(x))
-   Sub(Pow(Symbol(y), Integer(2)), Mul2(Integer(2), Add2(Integer(1), Pow(Tan(Mul2(Integer(2), Symbol(x))), Integer(2)))))
+   Sub(Pow(Symbol(y), Integer(2)), Mul2(Integer(2), Add2(Integer(1), Pow(Tan(Mul2(Symbol(x), Integer(2))), Integer(2)))))
 
 Lambdify
 

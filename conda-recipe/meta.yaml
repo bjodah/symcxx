@@ -13,6 +13,7 @@ requirements:
         - python
         - numpy
         - mako
+        - cython
     run:
         - python
         - numpy
