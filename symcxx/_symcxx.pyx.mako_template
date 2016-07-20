@@ -375,11 +375,11 @@ cdef class PyNameSpace:
             def callback(ri, ci):
                 try:
                     elem = source[ri, ci]
-                except TypeError:
+                except (TypeError, IndexError):
                     try:
                         elem = source[ri][ci]
                     except TypeError:
-                        elem = source[ri*nc + ci]
+                        elem = source[ri*nc + ci]  # row-major order
                 return _implicit_conversion(self, elem).idx
         data = [callback(ri, ci) for ri, ci
                 in itertools.product(range(nr), range(nc))]

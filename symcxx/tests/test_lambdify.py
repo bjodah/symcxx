@@ -287,3 +287,12 @@ def test_itertools_chain():
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
     A = l(tuple(inp))  # numpy 1.10 array failing for itertools chain
     check(A)
+
+
+def test_3args():
+    import numpy as np
+    lmb = se.Lambdify([s0, s1, s2], [s0 + (s0-s1)**s2/2 - 1, s1 + (s1 - s0)**s2/2])
+    inp = X, Y, Z = 7., 11., 13.
+    out = lmb(inp)
+    assert out.shape == (2,)
+    assert np.allclose(out, [X + (X-Y)**Z/2 - 1, Y + (Y - X)**Z/2])
