@@ -16,6 +16,8 @@ from libcpp.memory cimport unique_ptr
 
 ctypedef unsigned int idx_t
 
+from functools import reduce
+from operator import mul
 import itertools
 import sys
 
@@ -116,6 +118,11 @@ cdef class _Matrix(object):
                 self.ns.matrix_get_nc(self.idx))
 
     @property
+    def size(self):
+        return self.shape[0]*self.shape[1]
+
+
+    @property
     def flat(self):
         for ri in range(self.ns.matrix_get_nr(self.idx)):
             for ci in range(self.ns.matrix_get_nc(self.idx)):
@@ -133,15 +140,43 @@ cdef class _Matrix(object):
         return _Matrix(self.ns.matrix_jacobian(self.idx, other.idx), self.ns)
 
     def eval_float(self, inp, out=None):
-        if out is None:
-            out = np.empty(self.shape)
-        local_out = np.ravel(out)
-        inp = np.asarray(inp, dtype=np.float64)
-        self.ns.matrix_evalf(self.idx, inp, local_out)
-        if self.flat_output:
-            return local_out
+        inp = np.asarray(inp)
+        nx = self.ns.n_symbs
+        if inp.shape[-1] != nx:
+            raise TypeError("Incorrect last dimension of input.")
+        if inp.ndim == 1:
+            out_shape = self.shape
+            nbroadcast = 1
         else:
-            return local_out.reshape(self.shape)
+            out_shape = tuple(inp.shape[:-1]) + self.shape
+            nbroadcast = inp.size // self.ns.n_symbs
+        if out is None:
+            out = np.empty(out_shape)
+        else:
+            if out.size != reduce(mul, out_shape):
+                raise ValueError("Incompatibel shape of out")
+        local_out = np.ravel(out)
+        inp_shape = inp.shape
+        inp = np.ravel(np.ascontiguousarray(inp, dtype=np.float64))
+        if nbroadcast == 1:
+            self.ns.matrix_evalf(self.idx, inp, local_out)
+        else:
+            for ib in range(nbroadcast):
+                self.ns.matrix_evalf(self.idx, inp[ib*nx:(ib+1)*nx],
+                                     local_out[ib*self.size:(ib+1)*self.size])
+        if self.flat_output:
+            return local_out.reshape(out_shape[:-2] + (out_shape[-2]*out_shape[-1],))
+        else:
+            return local_out.reshape(out_shape)
+        # if out is None:
+        #     out = np.empty(self.shape)
+        # local_out = np.ravel(out)
+        # inp = np.ascontiguousarray(inp, dtype=np.float64)
+        # self.ns.matrix_evalf(self.idx, inp, local_out)
+        # if self.flat_output:
+        #     return local_out
+        # else:
+        #     return local_out.reshape(self.shape)
 
     def __str__(self):
         rows = ['[' + ', '.join(

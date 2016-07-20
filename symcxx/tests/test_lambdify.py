@@ -144,7 +144,7 @@ def test_Lambdify_out():
     args = x, y, z = se.symbols('x y z')
     exprs = [x+y+z, x**2, (x-y)/z, x*y*z]
     lmb = se.Lambdify(args, exprs)
-    inp = np.arange(n, n+6.)
+    inp = np.arange(n, n+len(args))
     out = np.empty(len(exprs))
     lmb(inp, out)
     assert allclose(out,
@@ -296,3 +296,15 @@ def test_3args():
     out = lmb(inp)
     assert out.shape == (2,)
     assert np.allclose(out, [X + (X-Y)**Z/2 - 1, Y + (Y - X)**Z/2])
+
+
+def test_broadcast():  # test is from symengine test suite
+    import numpy as np
+    a = np.linspace(-np.pi, np.pi)
+    inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
+    x, y = se.symbols('x y')
+    distance = se.Lambdify([x, y], [se.sqrt(x**2 + y**2)])
+    assert np.allclose(distance([inp[0, 0], inp[0, 1]]), [1])
+    dists = distance(inp)
+    assert dists.shape == (50, 1)
+    assert np.allclose(dists, 1)
