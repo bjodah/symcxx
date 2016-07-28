@@ -368,3 +368,22 @@ TEST_CASE( "rebuild_from_matrix", "[symcxx::NameSpace]" ) {
     ns5->matrix_evalf(ns5->instances.size() - 1, x, xout);
     REQUIRE( std::abs(xout[0] - (x[0] * x[0])) < 1e-15 );
 }
+
+TEST_CASE( "prime_sieve", "[symcxx::NameSpace]" ) {
+    auto ns = symcxx::NameSpace();
+    REQUIRE( ns.prime_sieve.is_prime(1) );
+    REQUIRE( ns.prime_sieve.is_prime(2) );
+    REQUIRE( ns.prime_sieve.is_prime(3) );
+    REQUIRE( ns.prime_sieve.is_prime(5) );
+    REQUIRE( ns.prime_sieve.is_prime(7) );
+    REQUIRE( ns.prime_sieve.is_prime(11) );
+    REQUIRE( ns.prime_sieve.is_prime(13) );
+
+    REQUIRE( !ns.prime_sieve.is_prime(4) );
+    REQUIRE( !ns.prime_sieve.is_prime(6) );
+    REQUIRE( !ns.prime_sieve.is_prime(8) );
+    REQUIRE( !ns.prime_sieve.is_prime(9) );
+    REQUIRE( !ns.prime_sieve.is_prime(10) );
+    REQUIRE( !ns.prime_sieve.is_prime(12) );
+    REQUIRE( !ns.prime_sieve.is_prime(14) );
+}

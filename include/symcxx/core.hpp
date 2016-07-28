@@ -92,6 +92,7 @@ namespace symcxx{
 }
 
 
+#include "symcxx/isprime.hpp"
 #include "symcxx/basic.hpp"
 #include "symcxx/namespace.hpp"
 #include "symcxx/derived.hpp"
