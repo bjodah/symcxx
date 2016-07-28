@@ -18,15 +18,9 @@ namespace symcxx{
         const static idx_t neg_e_id  = n_pre_intgrs + 3; // -exp(1)
         const static idx_t ln2_id    = n_pre_intgrs + 4; //  log(2)
         const static idx_t ln10_id   = n_pre_intgrs + 5; //  log(10)
-        // const static double special_val[n_special] = {
-        //     3.1415926535897932385,
-        //     -3.1415926535897932385, // -pi
-        //     2.7182818284590452354, // exp(1)
-        //     -2.7182818284590452354, // -exp(1)
-        //     0.69314718055994530942, // log(2)
-        //     2.3025850929940456840 // log(10)
-        // }
-        // order in NameSpace.instances: integers, special, pre-symbols, user-defined
+
+        const PrimeSieve<512> prime_sieve = PrimeSieve<512>();
+
     private:
         std::vector<Matrix> matrices;
     public:

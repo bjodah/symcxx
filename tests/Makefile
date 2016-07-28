@@ -34,7 +34,7 @@ test_%.o: test_%.cpp ../include/symcxx/*.hpp
 	$(CXX) $(CXXFLAGS) -c -o $@ $^
 
 
-TESTFILES=catch_symcxx.o test_namespace.o test_basic.o basic.o namespace.o
+TESTFILES=catch_symcxx.o test_isprime.o test_namespace.o test_basic.o basic.o namespace.o
 
 catch_symcxx: $(TESTFILES) ../include/symcxx/core.hpp
 	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
