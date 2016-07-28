@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+# -*- ${'mode: read-only'} -*-
 # distutils: language = c++
 # distutils: extra_compile_args = -std=c++11
-
 <%doc>
 # This is a templated source file.
 # Render template using Mako (Python templating engine)
@@ -141,22 +141,23 @@ cdef class _Matrix(object):
 
     def eval_float(self, inp, out=None):
         inp = np.asarray(inp)
+        inp_shape = inp.shape
+        inp_size = reduce(mul, inp_shape)
         nx = self.ns.n_symbs
-        if inp.shape[-1] != nx:
-            raise TypeError("Incorrect last dimension of input.")
-        if inp.ndim == 1:
-            out_shape = self.shape
-            nbroadcast = 1
-        else:
-            out_shape = tuple(inp.shape[:-1]) + self.shape
-            nbroadcast = inp.size // self.ns.n_symbs
+        if inp_size % nx != 0:
+            raise TypeError("Broadcasting failed")
+        nbroadcast = inp_size // nx
+        if nbroadcast > 1 and nx == 1 and inp_shape[-1] != 1:
+            inp_shape = inp_shape + (1,)  # Implicit reshape
+        out_shape = inp_shape[:-1] + self.shape
+        out_size = nbroadcast * reduce(mul, self.shape)
+
         if out is None:
             out = np.empty(out_shape)
         else:
             if out.size != reduce(mul, out_shape):
                 raise ValueError("Incompatibel shape of out")
         local_out = np.ravel(out)
-        inp_shape = inp.shape
         inp = np.ravel(np.ascontiguousarray(inp, dtype=np.float64))
         if nbroadcast == 1:
             self.ns.matrix_evalf(self.idx, inp, local_out)
@@ -165,18 +166,10 @@ cdef class _Matrix(object):
                 self.ns.matrix_evalf(self.idx, inp[ib*nx:(ib+1)*nx],
                                      local_out[ib*self.size:(ib+1)*self.size])
         if self.flat_output:
-            return local_out.reshape(out_shape[:-2] + (out_shape[-2]*out_shape[-1],))
+            return local_out.reshape(out_shape[:-2] +
+                                     (out_shape[-2]*out_shape[-1],))
         else:
             return local_out.reshape(out_shape)
-        # if out is None:
-        #     out = np.empty(self.shape)
-        # local_out = np.ravel(out)
-        # inp = np.ascontiguousarray(inp, dtype=np.float64)
-        # self.ns.matrix_evalf(self.idx, inp, local_out)
-        # if self.flat_output:
-        #     return local_out
-        # else:
-        #     return local_out.reshape(self.shape)
 
     def __str__(self):
         rows = ['[' + ', '.join(

@@ -298,7 +298,7 @@ def test_3args():
     assert np.allclose(out, [X + (X-Y)**Z/2 - 1, Y + (Y - X)**Z/2])
 
 
-def test_broadcast():  # test is from symengine test suite
+def test_broadcast():
     import numpy as np
     a = np.linspace(-np.pi, np.pi)
     inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
@@ -308,3 +308,27 @@ def test_broadcast():  # test is from symengine test suite
     dists = distance(inp)
     assert dists.shape == (50, 1)
     assert np.allclose(dists, 1)
+
+
+def test_broadcast_multiple_extra_dimensions():
+    import numpy as np
+    inp = np.arange(12.).reshape((4, 3, 1))
+    x = se.symbols('x')
+    cb = se.Lambdify([x], [x**2, x**3])
+    assert np.allclose(cb([inp[0, 2]]), [4, 8])
+    out = cb(inp)
+    assert out.shape == (4, 3, 2)
+    assert abs(out[2, 1, 0] - 7**2) < 1e-14
+    assert abs(out[2, 1, 1] - 7**3) < 1e-14
+    assert abs(out[-1, -1, 0] - 11**2) < 1e-14
+    assert abs(out[-1, -1, 1] - 11**3) < 1e-14
+
+
+def test_2dim_Matrix_broadcast_multiple_extra_dim():
+    import numpy as np
+    l, check = _get_1_to_2by3_matrix()
+    inp = np.arange(1, 4*5*6+1).reshape((4, 5, 6))
+    out = l(inp)
+    assert out.shape == (4, 5, 6, 2, 3)
+    for i, j, k in itertools.product(range(4), range(5), range(6)):
+        check(out[i, j, k, ...], (inp[i, j, k],))
