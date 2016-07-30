@@ -338,7 +338,7 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std
                          rebuild_idx_into_ns(inst.data.idx_pair.second, ns, symb_mapping));
 #include "symcxx/types_nonatomic_args_stack.inc"
 #undef SYMCXX_TYPE
-        for (idx_t inner : matrices[inst.data.idx_pair.first].data){
+        for (idx_t inner : args_stack[inst.data.idx_pair.first]){
             args.push_back(rebuild_idx_into_ns(inner, ns, symb_mapping));
         }
         return ns.create(inst.kind, args);

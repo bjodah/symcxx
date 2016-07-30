@@ -144,7 +144,7 @@ def test_Lambdify_out():
     args = x, y, z = se.symbols('x y z')
     exprs = [x+y+z, x**2, (x-y)/z, x*y*z]
     lmb = se.Lambdify(args, exprs)
-    inp = np.arange(n, n+6.)
+    inp = np.arange(n, n+len(args))
     out = np.empty(len(exprs))
     lmb(inp, out)
     assert allclose(out,
@@ -287,3 +287,48 @@ def test_itertools_chain():
     inp = itertools.chain([inp[0]], (inp[1],), [inp[2]])
     A = l(tuple(inp))  # numpy 1.10 array failing for itertools chain
     check(A)
+
+
+def test_3args():
+    import numpy as np
+    lmb = se.Lambdify([s0, s1, s2], [s0 + (s0-s1)**s2/2 - 1, s1 + (s1 - s0)**s2/2])
+    inp = X, Y, Z = 7., 11., 13.
+    out = lmb(inp)
+    assert out.shape == (2,)
+    assert np.allclose(out, [X + (X-Y)**Z/2 - 1, Y + (Y - X)**Z/2])
+
+
+def test_broadcast():
+    import numpy as np
+    a = np.linspace(-np.pi, np.pi)
+    inp = np.vstack((np.cos(a), np.sin(a))).T  # 50 rows 2 cols
+    x, y = se.symbols('x y')
+    distance = se.Lambdify([x, y], [se.sqrt(x**2 + y**2)])
+    assert np.allclose(distance([inp[0, 0], inp[0, 1]]), [1])
+    dists = distance(inp)
+    assert dists.shape == (50, 1)
+    assert np.allclose(dists, 1)
+
+
+def test_broadcast_multiple_extra_dimensions():
+    import numpy as np
+    inp = np.arange(12.).reshape((4, 3, 1))
+    x = se.symbols('x')
+    cb = se.Lambdify([x], [x**2, x**3])
+    assert np.allclose(cb([inp[0, 2]]), [4, 8])
+    out = cb(inp)
+    assert out.shape == (4, 3, 2)
+    assert abs(out[2, 1, 0] - 7**2) < 1e-14
+    assert abs(out[2, 1, 1] - 7**3) < 1e-14
+    assert abs(out[-1, -1, 0] - 11**2) < 1e-14
+    assert abs(out[-1, -1, 1] - 11**3) < 1e-14
+
+
+def test_2dim_Matrix_broadcast_multiple_extra_dim():
+    import numpy as np
+    l, check = _get_1_to_2by3_matrix()
+    inp = np.arange(1, 4*5*6+1).reshape((4, 5, 6))
+    out = l(inp)
+    assert out.shape == (4, 5, 6, 2, 3)
+    for i, j, k in itertools.product(range(4), range(5), range(6)):
+        check(out[i, j, k, ...], (inp[i, j, k],))

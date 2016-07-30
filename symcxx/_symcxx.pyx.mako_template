@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
+# -*- ${'mode: read-only'} -*-
 # distutils: language = c++
 # distutils: extra_compile_args = -std=c++11
-
 <%doc>
 # This is a templated source file.
 # Render template using Mako (Python templating engine)
@@ -16,6 +16,8 @@ from libcpp.memory cimport unique_ptr
 
 ctypedef unsigned int idx_t
 
+from functools import reduce
+from operator import mul
 import itertools
 import sys
 
@@ -116,6 +118,11 @@ cdef class _Matrix(object):
                 self.ns.matrix_get_nc(self.idx))
 
     @property
+    def size(self):
+        return self.shape[0]*self.shape[1]
+
+
+    @property
     def flat(self):
         for ri in range(self.ns.matrix_get_nr(self.idx)):
             for ci in range(self.ns.matrix_get_nc(self.idx)):
@@ -133,15 +140,36 @@ cdef class _Matrix(object):
         return _Matrix(self.ns.matrix_jacobian(self.idx, other.idx), self.ns)
 
     def eval_float(self, inp, out=None):
+        inp = np.asarray(inp)
+        inp_shape = inp.shape
+        inp_size = reduce(mul, inp_shape)
+        nx = self.ns.n_symbs
+        if inp_size % nx != 0:
+            raise TypeError("Broadcasting failed")
+        nbroadcast = inp_size // nx
+        if nbroadcast > 1 and nx == 1 and inp_shape[-1] != 1:
+            inp_shape = inp_shape + (1,)  # Implicit reshape
+        out_shape = inp_shape[:-1] + self.shape
+        out_size = nbroadcast * reduce(mul, self.shape)
+
         if out is None:
-            out = np.empty(self.shape)
-        local_out = np.ravel(out)
-        inp = np.asarray(inp, dtype=np.float64)
-        self.ns.matrix_evalf(self.idx, inp, local_out)
-        if self.flat_output:
-            return local_out
+            out = np.empty(out_shape)
         else:
-            return local_out.reshape(self.shape)
+            if out.size != reduce(mul, out_shape):
+                raise ValueError("Incompatibel shape of out")
+        local_out = np.ravel(out)
+        inp = np.ravel(np.ascontiguousarray(inp, dtype=np.float64))
+        if nbroadcast == 1:
+            self.ns.matrix_evalf(self.idx, inp, local_out)
+        else:
+            for ib in range(nbroadcast):
+                self.ns.matrix_evalf(self.idx, inp[ib*nx:(ib+1)*nx],
+                                     local_out[ib*self.size:(ib+1)*self.size])
+        if self.flat_output:
+            return local_out.reshape(out_shape[:-2] +
+                                     (out_shape[-2]*out_shape[-1],))
+        else:
+            return local_out.reshape(out_shape)
 
     def __str__(self):
         rows = ['[' + ', '.join(
@@ -375,11 +403,11 @@ cdef class PyNameSpace:
             def callback(ri, ci):
                 try:
                     elem = source[ri, ci]
-                except TypeError:
+                except (TypeError, IndexError):
                     try:
                         elem = source[ri][ci]
                     except TypeError:
-                        elem = source[ri*nc + ci]
+                        elem = source[ri*nc + ci]  # row-major order
                 return _implicit_conversion(self, elem).idx
         data = [callback(ri, ci) for ri, ci
                 in itertools.product(range(nr), range(nc))]
