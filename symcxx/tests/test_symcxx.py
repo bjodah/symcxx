@@ -67,6 +67,7 @@ def test_diff0():
     deriv = expr.diff(x)
     ref = ns.Number(3)
     assert (deriv == ref) is True
+    assert (-x).diff(x) == ns.Number(-1)
 
 
 def test_str():

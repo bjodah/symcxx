@@ -767,17 +767,8 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                                       exponent)),
                         wrt_id);
         }
-    case Kind::Exp:
-        return create(Kind::Mul,
-                      inst_id,
-                      diff(inst.data.idx_pair.first, wrt_id)
-                      );
-    case Kind::Sin:
-        return create(Kind::Mul,
-                      create(Kind::Cos,
-                             inst.data.idx_pair.first),
-                      diff(inst.data.idx_pair.first, wrt_id)
-                      );
+    case Kind::Neg:
+        return create(Kind::Neg, diff(inst.data.idx_pair.first, wrt_id));
     case Kind::Cos:
         return create(Kind::Mul, {{
                     make_integer(-1),
@@ -786,6 +777,12 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                         diff(inst.data.idx_pair.first, wrt_id)
                         }}
             );
+    case Kind::Sin:
+        return create(Kind::Mul,
+                      create(Kind::Cos,
+                             inst.data.idx_pair.first),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
     case Kind::Tan:
         return create(Kind::Mul,
                       create(Kind::Add,
@@ -873,6 +870,11 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
                                                   )
                                            )
                              ),
+                      diff(inst.data.idx_pair.first, wrt_id)
+                      );
+    case Kind::Exp:
+        return create(Kind::Mul,
+                      inst_id,
                       diff(inst.data.idx_pair.first, wrt_id)
                       );
     case Kind::Log:

@@ -81,6 +81,18 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
 
 }
 
+TEST_CASE( "diff_neg", "[symcxx::NameSpace]" ) {
+    const double x[1] = {3};
+    auto ns = symcxx::NameSpace();
+    auto ids = ns.make_symbols(1);
+    auto neg = ns.neg(ids[0]);
+    auto diff0_id = ns.diff(neg, ids[0]);
+    const double res0 = ns.evalf(diff0_id, x);
+    const double ref0 = -1;
+    REQUIRE (std::abs(res0 - ref0) < 1e-15);
+}
+
+
 TEST_CASE( "diff_add2", "[symcxx::NameSpace]" ) {
     const double x[2] = {3, 5};
     auto ns = symcxx::NameSpace();
