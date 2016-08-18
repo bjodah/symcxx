@@ -57,6 +57,21 @@ TEST_CASE( "create", "[symcxx::NameSpace]" ) {
 }
 
 
+TEST_CASE( "diff_symbol", "[symcxx::NameSpace]" ) {
+    const double * x = nullptr;
+    auto ns = symcxx::NameSpace();
+    auto ids = ns.make_symbols(2);
+    auto diff00_id = ns.diff(ids[0], ids[0]);
+    auto diff01_id = ns.diff(ids[0], ids[1]);
+    auto diff10_id = ns.diff(ids[1], ids[0]);
+    auto diff11_id = ns.diff(ids[1], ids[1]);
+    REQUIRE ( ns.evalf(diff00_id, x) == 1 );
+    REQUIRE ( ns.evalf(diff01_id, x) == 0 );
+    REQUIRE ( ns.evalf(diff10_id, x) == 0 );
+    REQUIRE ( ns.evalf(diff11_id, x) == 1 );
+}
+
+
 TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double x[2] = {3, 5};
     auto ns = symcxx::NameSpace();
@@ -78,7 +93,6 @@ TEST_CASE( "diff_add", "[symcxx::NameSpace]" ) {
     const double res1 = ns.evalf(diff1_id, x);
     const double ref1 = 2;
     REQUIRE (std::abs(res1 - ref1) < 1e-15);
-
 }
 
 TEST_CASE( "diff_neg", "[symcxx::NameSpace]" ) {
