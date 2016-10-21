@@ -60,6 +60,7 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
         const idx_t neg_e_id
 
         NameSpace(idx_t)
+        bool has(idx_t, idx_t)
         idx_t make_symbol(idx_t) except +
         idx_t make_integer(int)
         idx_t make_float(double)
@@ -243,6 +244,10 @@ class _IndexedObject(object):
     def diff(self, wrt):
         return _IndexedObject(self.ns.diff(self.idx, wrt.idx), self.ns)
 
+    def has(self, other):
+        other = _implicit_conversion(self.ns, other)
+        return self.ns.has(self.idx, other.idx)
+
 
 def _implicit_conversion(ns, other):
     if isinstance(other, _IndexedObject):  # or look for 'ns' and 'idx'?
@@ -276,6 +281,9 @@ cdef class PyNameSpace:
     property n_symbs:
         def __get__(self):
             return deref(self.thisptr).n_symbs
+
+    def has(self, inst_idx, looking_for_idx):
+        return deref(self.thisptr).has(inst_idx, looking_for_idx)
 
     def make_symbol(self, symb_idx):
         return deref(self.thisptr).make_symbol(symb_idx)

@@ -366,3 +366,18 @@ def test_Dummy():
     d = ns.Dummy()
     lmb = ns.Lambdify([d], [3*d, 8])
     assert np.allclose(lmb(np.array([7.0])), [21, 8])
+
+
+def test_has():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    add = x + y
+    assert add.has(x)
+    assert add.has(y)
+    mul = 2*y
+    assert mul.has(y)
+    assert not mul.has(x)
+    expr = (1 + 3/(1 + x))
+    assert expr.has(x)
+    assert not expr.has(y)
