@@ -3,8 +3,8 @@ build:
   commands:
     - cd tests; make; cd -
     - ./scripts/ci.sh symcxx
-    - cd tests; make -B CXX=clang++-3.7 DEFINES=-DNDEBUG; cd -
-    - cd tests; make -B CXX=clang++-3.7 RELEASE=1; cd -
+    - cd tests; make -B CXX=clang++-3.8 DEFINES=-DNDEBUG; cd -
+    - cd tests; make -B CXX=clang++-3.8 RELEASE=1; cd -
     - cd tests; make -B RELEASE=1; cd -
     - ./scripts/prepare_deploy.sh
 
