@@ -332,3 +332,11 @@ def test_2dim_Matrix_broadcast_multiple_extra_dim():
     assert out.shape == (4, 5, 6, 2, 3)
     for i, j, k in itertools.product(range(4), range(5), range(6)):
         check(out[i, j, k, ...], (inp[i, j, k],))
+
+
+def test_Lambdify_relational():
+    x, y = se.symbols('x y')
+    cb = se.Lambdify([x, y], [x >= 0, y >= 0])
+    res = cb([0.0, 3.0, 4.0, -5.0])
+    flat_res = np.asarray(res).flat
+    assert np.allclose(flat_res, [1.0, 1.0, 1.0, 0.0])

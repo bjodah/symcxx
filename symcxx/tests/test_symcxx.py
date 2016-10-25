@@ -42,6 +42,19 @@ def test_NameSpace_relational():
     assert gt.evalb(np.array([3., 5.])) is False
     assert gt.evalb(np.array([5., 5.])) is False
 
+    assert (x < y) == lt
+    assert (x < y) != le
+    assert (x <= y) == le
+    assert (x <= y) != eq
+    assert (x == y) == eq
+    assert (x == y) != ne
+    assert (x != y) == ne
+    assert (x != y) != ge
+    assert (x >= y) == ge
+    assert (x >= y) != gt
+    assert (x > y) == gt
+    assert (x > y) != lt
+
 
 def test_division():
     ns = NameSpace(2)
