@@ -61,6 +61,7 @@ cdef extern from "symcxx/core.hpp" namespace "symcxx":
 
         NameSpace(idx_t)
         bool has(idx_t, idx_t)
+        bool equal(idx_t, idx_t)
         idx_t make_symbol(idx_t) except +
         idx_t make_integer(int)
         idx_t make_float(double)
@@ -191,7 +192,8 @@ class _IndexedObject(object):
         if self.idx == other.idx and self.ns == other.ns:
             return True
         else:
-            return False
+            print("Running self.ns.equal")  # DO-NOT-MERGE!
+            return self.ns.equal(self.idx, other.idx)
 
     def __str__(self):
         return self.ns.print_ast(self.idx).decode('utf-8')
@@ -234,6 +236,23 @@ class _IndexedObject(object):
     def __pow__(self, exponent):
         exponent = _implicit_conversion(self.ns, exponent)
         return _IndexedObject(self.ns._Pow(self.idx, exponent.idx), self.ns)
+
+    def __richcmp__(x, y, int op):
+        y = _implicit_conversion(x.ns, y)
+        if op == 0:
+            return _IndexedObject(x.ns._Lt(x.idx, y.idx), x.ns)
+        elif op == 1:
+            return _IndexedObject(x.ns._Le(x.idx, y.idx), x.ns)
+        elif op == 2:
+            return _IndexedObject(x.ns._Eq(x.idx, y.idx), x.ns)
+        elif op == 3:
+            return _IndexedObject(x.ns._Ne(x.idx, y.idx), x.ns)
+        elif op == 4:
+            return _IndexedObject(x.ns._Gt(x.idx, y.idx), x.ns)
+        elif op == 5:
+            return _IndexedObject(x.ns._Ge(x.idx, y.idx), x.ns)
+        else:
+            raise NotImplementedError("Unknown richcmp op")
 
     def evalb(self, inp):
         return self.ns.evalb(self.idx, inp)
@@ -284,6 +303,9 @@ cdef class PyNameSpace:
 
     def has(self, inst_idx, looking_for_idx):
         return deref(self.thisptr).has(inst_idx, looking_for_idx)
+
+    def equal(self, idx_a, idx_b):
+        return deref(self.thisptr).equal(idx_a, idx_b)
 
     def make_symbol(self, symb_idx):
         return deref(self.thisptr).make_symbol(symb_idx)

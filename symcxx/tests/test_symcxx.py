@@ -83,6 +83,13 @@ def test_diff0():
     assert (-x).diff(x) == ns.Number(-1)
 
 
+def test_compare_numbers():
+    ns = NameSpace()
+    three, four = ns.Number(3), ns.Number(4)
+    lt = three < four
+    assert lt.evalb() is True
+
+
 def test_str():
     ns = NameSpace(0)
     x = ns.Symbol('x')

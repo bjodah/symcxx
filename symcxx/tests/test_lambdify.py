@@ -335,8 +335,10 @@ def test_2dim_Matrix_broadcast_multiple_extra_dim():
 
 
 def test_Lambdify_relational():
+    import numpy as np
     x, y = se.symbols('x y')
     cb = se.Lambdify([x, y], [x >= 0, y >= 0])
-    res = cb([0.0, 3.0, 4.0, -5.0])
-    flat_res = np.asarray(res).flat
-    assert np.allclose(flat_res, [1.0, 1.0, 1.0, 0.0])
+    assert np.allclose(cb([0.0, 3.0]), [1.0, 1.0])
+    inp_arr = np.array([[-0.1, -1.0], [4.0, -5.0]])
+    flat_res = np.asarray(cb(inp_arr)).flat
+    assert np.allclose(flat_res, [0.0, 0.0, 1.0, 0.0])
