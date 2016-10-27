@@ -192,7 +192,6 @@ class _IndexedObject(object):
         if self.idx == other.idx and self.ns == other.ns:
             return True
         else:
-            print("Running self.ns.equal")  # DO-NOT-MERGE!
             return self.ns.equal(self.idx, other.idx)
 
     def __str__(self):

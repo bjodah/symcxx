@@ -2,7 +2,10 @@
 from __future__ import absolute_import, division, print_function
 
 import math
+
 import numpy as np
+import pytest
+
 from symcxx import NameSpace
 
 
@@ -42,6 +45,18 @@ def test_NameSpace_relational():
     assert gt.evalb(np.array([3., 5.])) is False
     assert gt.evalb(np.array([5., 5.])) is False
 
+
+@pytest.mark.xfail(reason='to be implemented (not used yet)')
+def test_NameSpace_relational_equal():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    lt = ns.lt(x, y)
+    le = ns.le(x, y)
+    eq = ns.eq(x, y)
+    ne = ns.ne(x, y)
+    ge = ns.ge(x, y)
+    gt = ns.gt(x, y)
     assert (x < y) == lt
     assert (x < y) != le
     assert (x <= y) == le
@@ -83,6 +98,7 @@ def test_diff0():
     assert (-x).diff(x) == ns.Number(-1)
 
 
+@pytest.mark.xfail(reason='to be implemented (not used yet)')
 def test_compare_numbers():
     ns = NameSpace()
     three, four = ns.Number(3), ns.Number(4)

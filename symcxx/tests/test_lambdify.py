@@ -334,6 +334,7 @@ def test_2dim_Matrix_broadcast_multiple_extra_dim():
         check(out[i, j, k, ...], (inp[i, j, k],))
 
 
+@pytest.mark.xfail(reason='not yet implemented')
 def test_Lambdify_relational():
     import numpy as np
     x, y = se.symbols('x y')
