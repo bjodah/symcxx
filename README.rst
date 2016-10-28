@@ -18,7 +18,7 @@ SymCXX
    :alt: coverage
 
 `SymCXX <https://github.com/bjodah/symcxx>`_ is an *experimental*
-Python package (with its implemented in C++) for symbolic manipulation
+Python package (with its core implemented in C++) for symbolic manipulation
 with limited scope (as in minimal).
 It tries to stay compatible with the API of `SymPy <http://www.sympy.org>`_.
 Its main goal is to explore designs related to automatic differentiation and
