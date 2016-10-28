@@ -3,6 +3,11 @@
 #
 #    $ ./scripts/release.sh v1.2.3 ~/anaconda2/bin myserver.example.com GITHUB_USER GITHUB_REPO
 #
+# Note that it is recommended that you run:
+#
+#    $ git clean -xfd
+#
+# before running release.sh 
 
 if [[ $1 != v* ]]; then
     echo "Argument does not start with 'v'"
@@ -11,10 +16,6 @@ fi
 VERSION=${1#v}
 CONDA_PATH=$2
 SERVER=$3
-find . -type f -iname "*.pyc" -exec rm {} +
-find . -type f -iname "*.o" -exec rm {} +
-find . -type f -iname "*.so" -exec rm {} +
-find . -type d -name "__pycache__" -exec rmdir {} +
 ./scripts/check_clean_repo_on_master.sh
 cd $(dirname $0)/..
 # PKG will be name of the directory one level up containing "__init__.py" 
