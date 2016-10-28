@@ -69,6 +69,8 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
                 pass
             else:
                 open(pyx_path, 'wt').write(rendered_pyx)
+                if not os.path.exists('build'):
+                    os.makedirs('build')
                 open(hash_path, 'wt').write(sha256hex)
         ext_modules = cythonize(ext_modules,
                                 include_path=['./include'],
