@@ -2,7 +2,10 @@
 from __future__ import absolute_import, division, print_function
 
 import math
+
 import numpy as np
+import pytest
+
 from symcxx import NameSpace
 
 
@@ -43,6 +46,31 @@ def test_NameSpace_relational():
     assert gt.evalb(np.array([5., 5.])) is False
 
 
+@pytest.mark.xfail(reason='to be implemented (not used yet)')
+def test_NameSpace_relational_equal():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    lt = ns.lt(x, y)
+    le = ns.le(x, y)
+    eq = ns.eq(x, y)
+    ne = ns.ne(x, y)
+    ge = ns.ge(x, y)
+    gt = ns.gt(x, y)
+    assert (x < y) == lt
+    assert (x < y) != le
+    assert (x <= y) == le
+    assert (x <= y) != eq
+    assert (x == y) == eq
+    assert (x == y) != ne
+    assert (x != y) == ne
+    assert (x != y) != ge
+    assert (x >= y) == ge
+    assert (x >= y) != gt
+    assert (x > y) == gt
+    assert (x > y) != lt
+
+
 def test_division():
     ns = NameSpace(2)
     assert ns.symbol_names == []
@@ -68,6 +96,14 @@ def test_diff0():
     ref = ns.Number(3)
     assert (deriv == ref) is True
     assert (-x).diff(x) == ns.Number(-1)
+
+
+@pytest.mark.xfail(reason='to be implemented (not used yet)')
+def test_compare_numbers():
+    ns = NameSpace()
+    three, four = ns.Number(3), ns.Number(4)
+    lt = three < four
+    assert lt.evalb() is True
 
 
 def test_str():
@@ -366,3 +402,18 @@ def test_Dummy():
     d = ns.Dummy()
     lmb = ns.Lambdify([d], [3*d, 8])
     assert np.allclose(lmb(np.array([7.0])), [21, 8])
+
+
+def test_has():
+    ns = NameSpace(2)
+    x = ns.Symbol('x')
+    y = ns.Symbol('y')
+    add = x + y
+    assert add.has(x)
+    assert add.has(y)
+    mul = 2*y
+    assert mul.has(y)
+    assert not mul.has(x)
+    expr = (1 + 3/(1 + x))
+    assert expr.has(x)
+    assert not expr.has(y)

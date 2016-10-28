@@ -65,6 +65,12 @@ symcxx::NameSpace::has(const idx_t idx, const idx_t looking_for) const {
     }
 }
 
+bool
+symcxx::NameSpace::equal(const idx_t idx_a, const idx_t idx_b) const{
+    const auto& a = instances[idx_a];
+    const auto& b = instances[idx_b];
+    return a == b;
+}
 
 bool
 symcxx::NameSpace::is_zero(const idx_t idx) const {

@@ -56,6 +56,22 @@ TEST_CASE( "create", "[symcxx::NameSpace]" ) {
     REQUIRE (ns.instances[two_plus_two_id].data.idx_pair.second == two_id );
 }
 
+TEST_CASE( "equal", "[symcxx::NameSpace]" ) {
+    auto ns = symcxx::NameSpace();
+    auto two_id = ns.make_integer(2);
+    auto two_plus_two_id = ns.create(symcxx::Kind::Add, two_id, two_id);
+    auto other_two_plus_two_id = ns.create(symcxx::Kind::Add, two_id, two_id);
+    REQUIRE ( ns.equal(two_id, two_id) );
+    REQUIRE ( ns.equal(two_plus_two_id, other_two_plus_two_id) );
+
+    auto x0_id = ns.make_symbol();
+    auto x1_id = ns.make_symbol();
+    auto lt_id = ns.create(symcxx::Kind::Lt, x0_id, x1_id);
+    auto other_lt_id = ns.create(symcxx::Kind::Lt, x0_id, x1_id);
+
+    REQUIRE ( ns.equal(lt_id, other_lt_id) );
+    REQUIRE ( not ns.equal(lt_id, two_id) );
+}
 
 TEST_CASE( "diff_symbol", "[symcxx::NameSpace]" ) {
     const double * x = nullptr;

@@ -29,7 +29,8 @@ namespace symcxx{
         // idx_t idx(const Basic*) const;
         idx_t reg_args(const std::vector<idx_t>&);
         bool in_namespace(const Basic&, idx_t*) const;
-        bool has(idx_t, idx_t) const;
+        bool has(const idx_t, const idx_t) const;
+        bool equal(const idx_t, const idx_t) const;
         bool is_zero(idx_t) const;
         bool is_one(idx_t) const;
         bool apparently_negative(idx_t) const;

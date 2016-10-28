@@ -11,7 +11,7 @@ endif
 .PHONY: test debug clean
 
 test: catch_symcxx
-	ulimit -Sv 13500; ./catch_symcxx
+	ulimit -Sv 19500; ./catch_symcxx
 
 debug: debug_symcxx
 	ulimit -Sv 512000; valgrind ./debug_symcxx
