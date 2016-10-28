@@ -2,6 +2,7 @@
 # -*- ${'mode: read-only'} -*-
 # distutils: language = c++
 # distutils: extra_compile_args = -std=c++11
+# distutils: sources = ['src/basic.cpp', 'src/namespace.cpp']
 <%doc>
 # This is a templated source file.
 # Render template using Mako (Python templating engine)

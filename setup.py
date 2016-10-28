@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
+import hashlib
 import os
 import shutil
 import sys
@@ -57,19 +58,25 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
 
         subsd['_message_for_rendered'] = 'THIS IS A GENERATED FILE DO NOT EDIT'
         try:
-            rendered_pyx = Template(open(template_path, 'rt').read()).render(
-                **subsd)
+            rendered_pyx = Template(open(template_path, 'rt').read()).render(**subsd)
         except:
             print(text_error_template().render_unicode())
             raise
         else:
-            open(pyx_path, 'wt').write(rendered_pyx)
+            sha256hex = hashlib.sha256(rendered_pyx.encode('utf-8')).hexdigest()
+            hash_path = os.path.join('build', pyx_path.replace('/', '__')+'.sha256hex')
+            if os.path.exists(hash_path) and open(hash_path, 'rt').read(256//4) == sha256hex:
+                pass
+            else:
+                open(pyx_path, 'wt').write(rendered_pyx)
+                open(hash_path, 'wt').write(sha256hex)
         ext_modules = cythonize(ext_modules,
                                 include_path=['./include'],
                                 gdb_debug=True)
-    ext_modules[0].sources = [
-        'src/basic.cpp', 'src/namespace.cpp'
-    ] + ext_modules[0].sources
+    else:
+        ext_modules[0].sources = [
+            'src/basic.cpp', 'src/namespace.cpp'
+        ] + ext_modules[0].sources
     ext_modules[0].include_dirs += ['./include']
     ext_modules[0].language = 'c++'
     ext_modules[0].extra_compile_args = ['-std=c++11']
