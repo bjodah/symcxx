@@ -7,6 +7,9 @@ SymCXX
 .. image:: https://img.shields.io/pypi/v/symcxx.svg
    :target: https://pypi.python.org/pypi/symcxx
    :alt: PyPI version
+.. image:: https://img.shields.io/badge/python-2.7,3.4,3.5-blue.svg
+   :target: https://www.python.org/
+   :alt: Python version
 .. image:: https://img.shields.io/pypi/l/symcxx.svg
    :target: https://github.com/bjodah/symcxx/blob/master/LICENSE
    :alt: License
