@@ -22,9 +22,12 @@ sed -i -E \
     -e "s/\{\% set version(.+)/\{\% set version = \"$VERSION\" \%\}\n\{\% set sha256 = \"$SHA256\" \%\}/" \
     -e "s/git_url:(.+)/fn: \{\{ name \}\}-\{\{ version \}\}.tar.gz\n  url: https:\/\/pypi.io\/packages\/source\/\{\{ name\[0\] \}\}\/\{\{ name \}\}\/\{\{ name \}\}-\{\{ version \}\}.tar.gz\n  sha256: \{\{ sha256 \}\}/" \
     -e "/cython/d" \
+    -e "/mako/d" \
     dist/conda-recipe-$VERSION/meta.yaml
 
-./scripts/update-gh-pages.sh v$VERSION
+if [[ -e ./scripts/update-gh-pages.sh ]]; then
+    ./scripts/update-gh-pages.sh v$VERSION
+fi
 
 # Specific for this project:
 scp -r dist/conda-recipe-$VERSION/ $PKG@$SERVER:~/public_html/conda-recipes/

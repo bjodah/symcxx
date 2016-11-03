@@ -1,12 +1,16 @@
+{% set name = "symcxx" %}
+{% set version = "0.2.0.git" %}
+
 package:
-  name: symcxx
-  version: 0.2.0.git
+  name: {{ name }}
+  version: {{ version }}
 
 source:
-  path: ../
+  git_url: ../
 
 build:
   number: 0
+  script: python setup.py install --single-version-externally-managed --record record.txt
 
 requirements:
   build:
@@ -20,16 +24,22 @@ requirements:
 
 test:
   imports:
-    - symcxx
+    - {{ name }}
 
   requires:
     - pytest
     - numpy
 
-  # commands:
-  #   - py.test --pyargs symcxx
+  commands:
+    - py.test --pyargs {{ name }}
 
 about:
-  home: https://github.com/bjodah/symcxx
-  license: BSD
-  summary: fast symbolic manipulation in Python
+  home: https://github.com/bjodah/{{ name }}
+  license: BSD 2-Clause
+  license_file: LICENSE
+  summary: 'Fast symbolic manipulation in Python.'
+  doc_url: https://bjodah.github.io/{{ name }}/latest
+
+extra:
+  recipe-maintainers:
+    - bjodah

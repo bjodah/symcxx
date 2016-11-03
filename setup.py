@@ -29,6 +29,8 @@ def _read(path, macro='SYMCXX_TYPE', inc_dir='./'):
         l = ')'.join(l.split(macro + '(')[1].split(')')[:-1])
         yield tuple([_.strip() for _ in l.split(',')])
 
+USE_CYTHON = None
+
 if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
         '--help-commands', 'egg_info', 'clean', '--version'):
     try:
@@ -133,7 +135,7 @@ setup_kwargs = dict(
     url='https://github.com/bjodah/' + pkg_name,
     license='BSD',
     packages=[pkg_name] + tests,
-    setup_requires=['mako'],
+    setup_requires=['mako'] if USE_CYTHON else [],
     install_requires=['numpy'],
     ext_modules=ext_modules,
 )
