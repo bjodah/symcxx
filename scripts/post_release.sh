@@ -23,9 +23,8 @@ sed -i -E \
     -e "s/git_url:(.+)/fn: \{\{ name \}\}-\{\{ version \}\}.tar.gz\n  url: https:\/\/pypi.io\/packages\/source\/\{\{ name\[0\] \}\}\/\{\{ name \}\}\/\{\{ name \}\}-\{\{ version \}\}.tar.gz\n  sha256: \{\{ sha256 \}\}/" \
     -e "/cython/d" \
     dist/conda-recipe-$VERSION/meta.yaml
-# also -e "s/path:(.+)/fn: $PKG-$VERSION.tar.gz\n  url: https:\/\/github.com\/$GITHUBUSER\/$PKG\/releases\/download\/v$VERSION\/$PKG-$VERSION.tar.gz\n  sha256: $SHA256/" \
 
-#./scripts/update-gh-pages.sh v$VERSION
+./scripts/update-gh-pages.sh v$VERSION
 
 # Specific for this project:
 scp -r dist/conda-recipe-$VERSION/ $PKG@$SERVER:~/public_html/conda-recipes/
