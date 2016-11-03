@@ -371,7 +371,9 @@ cdef class PyNameSpace:
     def ${meth}(self, obj):
         obj = _implicit_conversion(self, obj)
         return _IndexedObject(self._${Cls}(obj.idx), self)
+
 %endfor
+    Abs = fabs
 
     # Binary:
 %for Cls, Parent, meth in types_nonatomic_binary:
@@ -382,8 +384,8 @@ cdef class PyNameSpace:
         obj0 = _implicit_conversion(self, obj0)
         obj1 = _implicit_conversion(self, obj1)
         return _IndexedObject(self._${Cls}(obj0.idx, obj1.idx), self)
-%endfor
 
+%endfor
     # Vector arguments
 %for Cls, Parent, meth in types_nonatomic_args_stack:
     def _${Cls}(self, vector[idx_t] idxs):

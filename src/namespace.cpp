@@ -472,6 +472,10 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
     std::cout << "Creating(unary) kind=" << kind_names[static_cast<int>(kind)] << ", with inst_idx=" << inst_idx << std::endl;
 #endif
     switch(kind){
+    case Kind::Abs:
+        if (instances[inst_idx].kind == Kind::Neg)
+            return fabs(instances[inst_idx].data.idx_pair.first);
+        return fabs(inst_idx);
     case Kind::Cos:
         if (is_zero(inst_idx))
             return make_integer(1);

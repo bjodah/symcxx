@@ -30,6 +30,11 @@ def test_sin():
     assert f(0) == 0.
 
 
+def test_Abs():
+    f = se.lambdify(s0, se.Abs(s0))
+    assert f(-3) == 3.
+
+
 def test_exponentiation():
     f = se.lambdify(s0, s0**2)
     assert f(-1) == 1
