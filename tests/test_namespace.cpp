@@ -45,6 +45,12 @@ TEST_CASE( "evalf", "[symcxx::NameSpace]" ) {
     for (int i=0; i<5; ++i){
         REQUIRE (std::abs(res[i] - std::sin(x[i])) < 1e-15);
     }
+
+    auto abs_idx = ns.fabs(x0_id);
+    for (int i=0; i<5; ++i){
+        res[i] = ns.evalf(abs_idx, x+i);
+        REQUIRE (std::fabs(res[i] - std::fabs(x[i])) < 1e-15);
+    }
 }
 
 TEST_CASE( "create", "[symcxx::NameSpace]" ) {
@@ -120,6 +126,9 @@ TEST_CASE( "diff_neg", "[symcxx::NameSpace]" ) {
     const double res0 = ns.evalf(diff0_id, x);
     const double ref0 = -1;
     REQUIRE (std::abs(res0 - ref0) < 1e-15);
+
+    auto abs_neg_id = ns.create(symcxx::Kind::Abs, neg);
+    REQUIRE (ns.instances[abs_neg_id].data.idx_pair.first == ids[0]);
 }
 
 

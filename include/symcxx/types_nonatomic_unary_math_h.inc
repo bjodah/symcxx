@@ -1,3 +1,4 @@
+SYMCXX_TYPE(Abs    , Unary    , fabs   )
 SYMCXX_TYPE(Cos    , Unary    , cos    )
 SYMCXX_TYPE(Sin    , Unary    , sin    )
 SYMCXX_TYPE(Tan    , Unary    , tan    )
