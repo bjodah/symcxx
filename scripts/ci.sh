@@ -3,8 +3,10 @@ if [[ "$CI_BRANCH" =~ ^v[0-9]+.[0-9]?* ]]; then
     eval export ${1^^}_RELEASE_VERSION=\$CI_BRANCH
     echo ${CI_BRANCH} | tail -c +2 > __conda_version__.txt
 fi
-python2 -m pip install --upgrade pip
-python2 -m pip install --ignore-installed https://github.com/cython/cython/archive/0.25.x.tar.gz --install-option="--no-cython-compile"
+for PY in python2 python3; do
+    $PY -m pip install --upgrade pip
+    $PY -m pip install --ignore-installed https://github.com/cython/cython/archive/966a296ac4e4862dee9a571ee412886ca3c61144.zip --install-option="--no-cython-compile"
+done
 python2 setup.py sdist
 pip install dist/*.tar.gz
 (cd /; python2 -m pytest --pyargs $1)
