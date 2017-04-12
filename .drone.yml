@@ -4,7 +4,7 @@ build:
     - bash -c '[[ $(python setup.py --version) =~ ^[0-9]+.* ]]'
     - cd tests; make; cd -
     - ./scripts/ci.sh symcxx
-    - cd tests; make -B CXX=clang++-3.8 DEFINES=-DNDEBUG; cd -
+    - cd tests; make -B CXX=clang++-3.8 CXXFLAGES=-fsanitize=address; cd -
     - cd tests; make -B CXX=clang++-3.8 RELEASE=1; cd -
     - cd tests; make -B RELEASE=1; cd -
     - ./scripts/prepare_deploy.sh
