@@ -408,7 +408,7 @@ cdef class PyNameSpace:
     def Symbol(self, name):
         cdef string _name = name.encode('utf-8')
         try:
-            symb_nr = self.symbol_names.index(_name)
+            symb_nr = list(self.symbol_names).index(_name)
         except ValueError:  # name not in list
             symb_nr = self.symbol_names.size()
             self.symbol_names.push_back(_name)
