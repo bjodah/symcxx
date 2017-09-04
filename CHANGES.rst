@@ -1,3 +1,7 @@
+v0.1.9
+======
+- Minor bugfix.
+
 v0.1.7
 ======
 - Added Abs
