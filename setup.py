@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import hashlib
+import io
 import os
 import re
 import shutil
@@ -20,7 +21,7 @@ ext_modules = []
 
 
 def _read(path, macro='SYMCXX_TYPE', inc_dir='./'):
-    for l in open(inc_dir + path, 'rt'):
+    for l in io.open(inc_dir + path, 'rt', encoding='utf-8'):
         if l.startswith('#include'):
             inner_path = l.split('#include')[1]
             inner_path = inner_path.strip().strip('<').strip('>').strip('"')
@@ -63,7 +64,7 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
 
         subsd['_message_for_rendered'] = 'THIS IS A GENERATED FILE DO NOT EDIT'
         try:
-            rendered_pyx = Template(open(template_path, 'rt').read()).render(**subsd)
+            rendered_pyx = Template(io.open(template_path, 'rt', encoding='utf-8').read()).render(**subsd)
         except:
             print(text_error_template().render_unicode())
             raise
@@ -133,8 +134,8 @@ tests = [
     'symcxx.tests',
 ]
 
-long_description = open('README.rst').read()
-with open(os.path.join(pkg_name, '__init__.py')) as f:
+long_description = io.open('README.rst', encoding='utf-8').read()
+with io.open(os.path.join(pkg_name, '__init__.py'), 'rt', encoding='utf-8') as f:
     short_description = f.read().split('"""')[1]
 
 setup_kwargs = dict(
