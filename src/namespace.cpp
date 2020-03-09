@@ -477,18 +477,22 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
             return fabs(instances[inst_idx].data.idx_pair.first);
         return fabs(inst_idx);
     case Kind::Cos:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx)) {
             return make_integer(1);
-        if (inst_idx == pi_id || inst_idx == neg_pi_id)
+        }
+        if (inst_idx == pi_id || inst_idx == neg_pi_id) {
             return make_integer(-1);
+        }
         return cos(inst_idx);
     case Kind::Sin:
-        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
+        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id) {
             return make_integer(0);
+        }
         return sin(inst_idx);
     case Kind::Tan:
-        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id)
+        if (is_zero(inst_idx) || inst_idx == pi_id || inst_idx == neg_pi_id) {
             return make_integer(0);
+        }
         return tan(inst_idx);
     case Kind::Acos:
         return acos(inst_idx);
@@ -501,38 +505,48 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
             return make_integer(1);
         return cosh(inst_idx);
     case Kind::Sinh:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx)) {
             return make_integer(0);
+        }
         return sinh(inst_idx);
     case Kind::Tanh:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx)) {
             return make_integer(0);
+        }
         return tanh(inst_idx);
     case Kind::Acosh:
-        if (is_one(inst_idx))
+        if (is_one(inst_idx)) {
             return make_integer(0);
+        }
         return acosh(inst_idx);
     case Kind::Asinh:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx)) {
             return make_integer(0);
+        }
         return asinh(inst_idx);
     case Kind::Atanh:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx)) {
             return make_integer(0);
+        }
         return atanh(inst_idx);
     case Kind::Exp:
-        if (is_zero(inst_idx))
+        if (is_zero(inst_idx)) {
             return make_integer(1);
-        if (instances[inst_idx].kind == Kind::Log)
+        }
+        if (instances[inst_idx].kind == Kind::Log) {
             return instances[inst_idx].data.idx_pair.first;
+        }
         return exp(inst_idx);
     case Kind::Log:
-        if (inst_idx == e_id)
+        if (inst_idx == e_id) {
             return make_integer(1);
-        else if (inst_idx == neg_e_id)
+        }
+        if (inst_idx == neg_e_id) {
             return make_integer(-1);
-        if (instances[inst_idx].kind == Kind::Exp)
+        }
+        if (instances[inst_idx].kind == Kind::Exp) {
             return instances[inst_idx].data.idx_pair.first;
+        }
         return log(inst_idx);
     case Kind::Log10:
         return log10(inst_idx);
@@ -545,14 +559,16 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
     case Kind::Log2:
         return log2(inst_idx);
     case Kind::Sqrt:
-        if (instances[inst_idx].kind == Kind::Pow)
-            if (instances[inst_idx].data.idx_pair.second == make_integer(2))
-                return instances[inst_idx].data.idx_pair.first;
+        if (instances[inst_idx].kind == Kind::Pow &&
+            instances[inst_idx].data.idx_pair.second == make_integer(2)) {
+            return instances[inst_idx].data.idx_pair.first;
+        }
         return sqrt(inst_idx);
     case Kind::Cbrt:
-        if (instances[inst_idx].kind == Kind::Pow)
-            if (instances[inst_idx].data.idx_pair.second == make_integer(3))
-                return instances[inst_idx].data.idx_pair.first;
+        if (instances[inst_idx].kind == Kind::Pow &&
+            instances[inst_idx].data.idx_pair.second == make_integer(3)) {
+            return instances[inst_idx].data.idx_pair.first;
+        }
         return cbrt(inst_idx);
     case Kind::Erf:
         return erf(inst_idx);
@@ -563,15 +579,18 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx){
     case Kind::Lgamma:
         return lgamma(inst_idx);
     case Kind::Neg:
-        if (inst_idx == pi_id)
+        if (inst_idx == pi_id) {
             return neg_pi_id;
-        else if (inst_idx == neg_pi_id)
+        }
+        if (inst_idx == neg_pi_id) {
             return pi_id;
-        else if (inst_idx == e_id)
+        }
+        if (inst_idx == e_id) {
             return neg_e_id;
-        else if (inst_idx == neg_e_id)
+        }
+        if (inst_idx == neg_e_id) {
             return e_id;
-
+        }
         switch(instances[inst_idx].kind){
         case Kind::Integer:
             return make_integer(-instances[inst_idx].data.intgr);
@@ -617,36 +636,38 @@ symcxx::NameSpace::create(const Kind kind, const idx_t inst_idx0, const idx_t in
     case Kind::Mul2:
         return create(Kind::Mul, std::vector<idx_t>{{inst_idx1, inst_idx0}});
     case Kind::Sub:
-        if (inst_idx0 == inst_idx1)
+        if (inst_idx0 == inst_idx1) {
             return make_integer(0);
-        else
-            if (is_zero(inst_idx0))
-                return neg(inst_idx1);
-            if (is_zero(inst_idx1))
-                return inst_idx0;
-            if (apparently_negative(inst_idx1))
-                return create(Kind::Add, inst_idx0, create(Kind::Neg, inst_idx1));
-            return sub(inst_idx0, inst_idx1);
-    case Kind::Div:
+        }
+        if (is_zero(inst_idx0))
+            return neg(inst_idx1);
         if (is_zero(inst_idx1))
-            return make_nan();
-        else
-            if (is_zero(inst_idx0))
-                return make_integer(0);
-            else
-                if (is_one(inst_idx1))
-                    return inst_idx0;
-                else
-                    return div(inst_idx0, inst_idx1);
-    case Kind::Pow:
-        if (is_zero(inst_idx1))
-            return make_integer(1);
-        else if (is_one(inst_idx1))
             return inst_idx0;
-        else if (is_zero(inst_idx0))
+        if (apparently_negative(inst_idx1))
+            return create(Kind::Add, inst_idx0, create(Kind::Neg, inst_idx1));
+        return sub(inst_idx0, inst_idx1);
+    case Kind::Div:
+        if (is_zero(inst_idx1)) {
+            return make_nan();
+        }
+        if (is_zero(inst_idx0)) {
             return make_integer(0);
-        else
-            return pow(inst_idx0, inst_idx1);
+        }
+        if (is_one(inst_idx1)) {
+            return inst_idx0;
+        }
+        return div(inst_idx0, inst_idx1);
+    case Kind::Pow:
+        if (is_zero(inst_idx1)) {
+            return make_integer(1);
+        }
+        if (is_one(inst_idx1)) {
+            return inst_idx0;
+        }
+        if (is_zero(inst_idx0)) {
+            return make_integer(0);
+        }
+        return pow(inst_idx0, inst_idx1);
     case Kind::Atan2:
             return atan2(inst_idx0, inst_idx1);
     case Kind::Hypot:
