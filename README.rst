@@ -85,8 +85,8 @@ Lambdify
 .. code:: python
 
    >>> lmb = ns.Lambdify([x, y], expr)
-   >>> lmb([1.3, 0.2])
-   array([[0.65359661]])
+   >>> lmb([1.3, 0.2])  # doctest: +NORMALIZE_WHITESPACE
+   array([[ 0.65359661]])
 
 
 License

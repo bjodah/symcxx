@@ -1,3 +1,7 @@
+v0.1.10
+=======
+- Avoid errors from newer compilers
+
 v0.1.9
 ======
 - Minor bugfix.
