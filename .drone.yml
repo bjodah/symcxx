@@ -2,7 +2,7 @@ pipeline:
   build:
     image: bjodah/bjodahimg20dev:v1.0.3
     commands:
-      - bash -c '[[ $(python setup.py --version) =~ ^[0-9]+.* ]]'
+      - bash -c '[[ $(python3 setup.py --version) =~ ^[0-9]+.* ]]'
       - cd tests; make -B CXX=g++-10; cd -
       - ./scripts/ci.sh symcxx
       - cd tests; make -B CXX=clang++-10 CXXFLAGES=-fsanitize=address; cd -
