@@ -86,7 +86,7 @@ Lambdify
 
    >>> lmb = ns.Lambdify([x, y], expr)
    >>> lmb([1.3, 0.2])
-   array([[ 0.65359661]])
+   array([[0.65359661]])
 
 
 License

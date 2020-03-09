@@ -11,3 +11,4 @@ cython_debug/
 symcxx/_symcxx.pyx
 dist/
 **.egg-info
+.pytest_cache/
