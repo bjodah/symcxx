@@ -1,22 +1,23 @@
-build:
-  image: bjodah/bjodahimg16dev:latest
-  commands:
-    - bash -c '[[ $(python setup.py --version) =~ ^[0-9]+.* ]]'
-    - cd tests; make; cd -
-    - ./scripts/ci.sh symcxx
-    - cd tests; make -B CXX=clang++-3.8 CXXFLAGES=-fsanitize=address; cd -
-    - cd tests; make -B CXX=clang++-3.8 RELEASE=1; cd -
-    - cd tests; make -B RELEASE=1; cd -
-    - ./scripts/prepare_deploy.sh
-    - if grep "DO-NOT-MERGE!" -R . --exclude ".drone.yml"; then exit 1; fi
-
-deploy:
-
-  rsync:
-    host: hera.physchem.kth.se
-    user: symcxx
+pipeline:
+  build:
+    image: bjodah/bjodahimg20dev:v1.0.3
+    commands:
+      - bash -c '[[ $(python setup.py --version) =~ ^[0-9]+.* ]]'
+      - cd tests; make -B CXX=g++-10; cd -
+      - ./scripts/ci.sh symcxx
+      - cd tests; make -B CXX=clang++-10 CXXFLAGES=-fsanitize=address; cd -
+      - cd tests; make -B CXX=clang++-10 RELEASE=1; cd -
+      - cd tests; make -B RELEASE=1; cd -
+      - ./scripts/prepare_deploy.sh
+      - if grep "DO-NOT-MERGE!" -R . --exclude ".drone.yml"; then exit 1; fi
+  
+  deploy:
+    image: drillster/drone-rsync
+    when:
+      event: [push]
+    hosts: [ "hera.physchem.kth.se" ]
     port: 22
-    source: deploy/
-    target: ~
-    recursive: true
-    delete: false
+    user: symcxx
+    secrets: [ rsync_key ]  # secret only set from event "push" not "pull_request"
+    source: ./deploy/public_html
+    target: ~/
