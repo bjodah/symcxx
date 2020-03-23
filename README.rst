@@ -85,6 +85,7 @@ Lambdify
 .. code:: python
 
    >>> lmb = ns.Lambdify([x, y], expr)
+   >>> import numpy as np
    >>> np.all(np.abs(lmb([1.3, 0.2]) - 0.65359661) < 1e-6)
    True
 
