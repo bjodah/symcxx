@@ -1,8 +1,8 @@
 SymCXX
 ======
 
-.. image:: http://hera.physchem.kth.se:9090/api/badges/bjodah/symcxx/status.svg
-   :target: http://hera.physchem.kth.se:9090/bjodah/symcxx
+.. image:: http://hera.physchem.kth.se:8080/api/badges/bjodah/symcxx/status.svg
+   :target: http://hera.physchem.kth.se:8080/bjodah/symcxx
    :alt: Build status
 .. image:: https://img.shields.io/pypi/v/symcxx.svg
    :target: https://pypi.python.org/pypi/symcxx
@@ -85,8 +85,8 @@ Lambdify
 .. code:: python
 
    >>> lmb = ns.Lambdify([x, y], expr)
-   >>> lmb([1.3, 0.2])  # doctest: +NORMALIZE_WHITESPACE
-   array([[ 0.65359661]])
+   >>> np.all(np.abs(lmb([1.3, 0.2]) - 0.65359661) < 1e-6)
+   True
 
 
 License
