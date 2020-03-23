@@ -5,12 +5,12 @@ pipeline:
       - bash -c '[[ $(python3 setup.py --version) =~ ^[0-9]+.* ]]'
       - cd tests; make -B CXX=g++-10; cd -
       - ./scripts/ci.sh symcxx
-      - cd tests; make -B CXX=g++-10     CXXFLAGS="-D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -Werror -Og -ggdb3 -UNDEBUG"; cd -
-      - cd tests; make -B CXX=clang++-10 CXXFLAGES=-fsanitize=address; cd -
-      - cd tests; make -B CXX=clang++-10 CXXFLAGES="-fsanitize=undefined  -g -fno-omit-frame-pointer -fsized-deallocation"; cd -
-      - cd tests; make -B CXX=clang++-10 CXXFLAGES="-fsanitize=MemoryWithOrigins -fno-omit-frame-pointer -fsized-deallocation -fno-optimize-sibling-calls -glldb -stdlib=libc++ -I/opt/libcxx10_msan/include -I/opt/libcxx10_msan/include/c++/v1" LDFLAGS="-Wl,-rpath,/opt/libcxx10_msan/lib -L/opt/libcxx10_msan/lib -lc++abi" test; cd -
-      - cd tests; make -B CXX=clang++-10 CXXFLAGS="-DNDEBUG -O2"; cd -
-      - cd tests; make -B RELEASE=1; cd -
+      - cd tests && make -B CXX=g++-10     CXXFLAGS="-D_GLIBCXX_DEBUG -D_GLIBCXX_DEBUG_PEDANTIC -Werror -Og -ggdb3 -UNDEBUG" && cd -
+      - cd tests && make -B CXX=clang++-10 CXXFLAGES=-fsanitize=address && cd -
+      - cd tests && make -B CXX=clang++-10 CXXFLAGES="-fsanitize=undefined  -g -fno-omit-frame-pointer -fsized-deallocation" && cd -
+      - cd tests && make -B CXX=clang++-10 CXXFLAGES="-fsanitize=MemoryWithOrigins -fno-omit-frame-pointer -fsized-deallocation -fno-optimize-sibling-calls -glldb -stdlib=libc++ -I/opt/libcxx10_msan/include -I/opt/libcxx10_msan/include/c++/v1" LDFLAGS="-Wl,-rpath,/opt/libcxx10_msan/lib -L/opt/libcxx10_msan/lib -lc++abi" test && cd -
+      - cd tests && make -B CXX=clang++-10 CXXFLAGS="-DNDEBUG -O2" && cd -
+      - cd tests && make -B RELEASE=1 && cd -
       - ./scripts/prepare_deploy.sh
       - if grep "DO-NOT-MERGE!" -R . --exclude ".drone.yml"; then exit 1; fi
   
