@@ -1,6 +1,6 @@
-CXX := g++
-#CXX := clang++-3.7
-CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -I../include -fno-omit-frame-pointer $(DEFINES)
+CXX ?= g++
+CXXFLAGS ?= -I../include
+override CXXFLAGS += -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -fno-omit-frame-pointer
 
 .PHONY: test debug clean
 
