@@ -706,7 +706,7 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
     const Basic& wrt = instances[wrt_id];
     std::vector<idx_t> args;
     std::vector<idx_t> inner_args;
-    const std::vector<idx_t> * args_from_stack;
+    const std::vector<idx_t> * args_from_stack = nullptr;
     switch(inst.kind) {
 #define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
     case Kind::CLS_:
