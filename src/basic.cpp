@@ -1,8 +1,8 @@
 #include "symcxx/core.hpp"
 
-const std::vector<symcxx::idx_t>&
+const std::vector<symcxx::idx_t> *
 symcxx::Basic::args_from_stack() const {
-    return ns->args_stack[data.idx_pair.first];
+    return &ns->args_stack[data.idx_pair.first];
 }
 bool
 symcxx::Basic::operator < (const Basic& other) const {
@@ -81,19 +81,19 @@ symcxx::Basic::evalf(const double inp[]) const {
         result = data.intgr; break;
     case Kind::Add:
         result = 0;
-        for (const auto idx: args_from_stack())
+        for (const auto idx: *args_from_stack())
             result += ns->instances[idx].evalf(inp);
         break;
 // With args stack
     case Kind::Mul:
         result = 1;
-        for (const auto idx: args_from_stack())
+        for (const auto idx: *args_from_stack())
             result *= ns->instances[idx].evalf(inp);
         break;
     case Kind::ITE:
-        result = (ns->instances[args_from_stack()[0]].evalb(inp)) ?
-            ns->instances[args_from_stack()[1]].evalf(inp) :
-            ns->instances[args_from_stack()[2]].evalf(inp); break;
+        result = (ns->instances[(*args_from_stack())[0]].evalb(inp)) ?
+            ns->instances[(*args_from_stack())[1]].evalf(inp) :
+            ns->instances[(*args_from_stack())[2]].evalf(inp); break;
 // Unary
     case Kind::Neg:
         result = -evalf_arg0(); break;

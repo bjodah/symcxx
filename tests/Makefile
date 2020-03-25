@@ -1,17 +1,11 @@
-CXX := g++
-#CXX := clang++-3.7
-CXXFLAGS ?= -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -I../include -fno-omit-frame-pointer $(DEFINES)
-ifeq ($(RELEASE),1)
-  CXXFLAGS+=-DNDEBUG -O2
-else
-  CXXFLAGS+=-g -O0
-# -ggdb
-endif
+CXX ?= g++
+CXXFLAGS ?= -I../include
+override CXXFLAGS += -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -fno-omit-frame-pointer
 
 .PHONY: test debug clean
 
 test: catch_symcxx
-	ulimit -Sv 19500; ./catch_symcxx
+	ulimit -Sv 64000; ./catch_symcxx
 
 debug: debug_symcxx
 	ulimit -Sv 512000; valgrind ./debug_symcxx
@@ -37,8 +31,8 @@ test_%.o: test_%.cpp ../include/symcxx/*.hpp
 TESTFILES=catch_symcxx.o test_isprime.o test_namespace.o test_basic.o basic.o namespace.o
 
 catch_symcxx: $(TESTFILES) ../include/symcxx/core.hpp
-	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES)
+	$(CXX) $(CXXFLAGS) -o $@ $(TESTFILES) $(LDFLAGS)
 
 debug_symcxx: debug_symcxx.cpp basic.o namespace.o
-	$(CXX) $(CXXFLAGS) -o $@ $^
+	$(CXX) $(CXXFLAGS) -o $@ $^ $(LDFLAGS)
 
