@@ -12,7 +12,7 @@ namespace symcxx{
         // Basic(Basic const&) = delete;
         // Basic& operator=(Basic const&) = delete;
 
-        const std::vector<idx_t>& args_from_stack() const;
+        const std::vector<idx_t> * args_from_stack() const;
         bool operator < (const Basic& other) const;
         bool operator == (const Basic& other) const;
 

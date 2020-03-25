@@ -5,7 +5,7 @@ override CXXFLAGS += -std=c++11 -Wall -Wextra -Werror -Wpadded -pedantic -fno-om
 .PHONY: test debug clean
 
 test: catch_symcxx
-	ulimit -Sv 19500; ./catch_symcxx
+	ulimit -Sv 64000; ./catch_symcxx
 
 debug: debug_symcxx
 	ulimit -Sv 512000; valgrind ./debug_symcxx

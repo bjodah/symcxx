@@ -322,8 +322,8 @@ symcxx::NameSpace::rebuild_idx_into_ns(const idx_t idx, NameSpace& ns, const std
     std::vector<idx_t> args;
     switch(inst.kind){
     case Kind::Symbol:
-        return ns.n_pre_intgrs + ns.n_special + std::find(symb_mapping.begin(), symb_mapping.end(),
-                                                          idx) - symb_mapping.begin();
+        return ns.n_pre_intgrs + ns.n_special + static_cast<unsigned>(std::find(symb_mapping.begin(), symb_mapping.end(),
+                                                                                idx) - symb_mapping.begin());
     case Kind::Integer:
         return ns.make_integer(inst.data.intgr);
     case Kind::MatProx:
@@ -706,7 +706,17 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
     const Basic& wrt = instances[wrt_id];
     std::vector<idx_t> args;
     std::vector<idx_t> inner_args;
-    const std::vector<idx_t>& args_from_stack = inst.args_from_stack();
+    const std::vector<idx_t> * args_from_stack;
+    switch(inst.kind) {
+#define SYMCXX_TYPE(CLS_, PARENT_, METH_) \
+    case Kind::CLS_:
+#include "symcxx/types_nonatomic_args_stack.inc"
+        args_from_stack = inst.args_from_stack();
+        break;
+    default:
+        ;
+#undef SYMCXX_TYPE
+    }
 #if !defined(NDEBUG)
     std::cout << "Diff on inst=" << inst_id << "(kind=" << kind_names[static_cast<int>(inst.kind)] << ")";
     std::cout << ", wrt to " << wrt_id << std::endl; // << ", idx=" << idx(&inst) << ", wrt=" << idx(&wrt) << std::endl;
@@ -722,18 +732,18 @@ symcxx::NameSpace::diff(const idx_t inst_id, const idx_t wrt_id)
     case Kind::Float:
         return make_float(0);
     case Kind::Add:
-        for (const auto idx : args_from_stack){
+        for (const auto idx : *args_from_stack){
             args.push_back(diff(idx, wrt_id));
         }
         return create(Kind::Add, args);
     case Kind::Mul:
-        for (const auto idx : args_from_stack){
+        for (const auto idx : *args_from_stack){
             inner_args = {{}};
-            for (idx_t inner_idx=0; inner_idx < args_from_stack.size(); ++inner_idx){
+            for (idx_t inner_idx=0; inner_idx < (*args_from_stack).size(); ++inner_idx){
                 if (inner_idx == idx)
-                    inner_args.push_back(diff(args_from_stack[inner_idx], wrt_id));
+                    inner_args.push_back(diff((*args_from_stack)[inner_idx], wrt_id));
                 else
-                    inner_args.push_back(args_from_stack[inner_idx]);
+                    inner_args.push_back((*args_from_stack)[inner_idx]);
             }
             args.push_back(create(Kind::Mul, inner_args));
         }
@@ -1017,7 +1027,7 @@ symcxx::NameSpace::merge(const Kind kind, const std::vector<idx_t>& sorted_args)
     for (const auto idx : sorted_args){
         if (instances[idx].kind == kind){
             merged = true;
-            for (const auto inner_idx : instances[idx].args_from_stack())
+            for (const auto inner_idx : *instances[idx].args_from_stack())
                 new_args.push_back(inner_idx);
         }else{
             new_args.push_back(idx);
