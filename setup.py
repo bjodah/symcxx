@@ -41,8 +41,10 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
         from mako.template import Template
         from mako.exceptions import text_error_template
         from Cython.Build import cythonize
-    except ImportError:
+    except ImportError as e:
         USE_CYTHON = False
+        if not os.path.exists('symcxx/_symcxx.cpp'):
+            raise e
     else:
         pyx_path = 'symcxx/_symcxx.pyx'
         template_path = pyx_path + '.mako_template'
