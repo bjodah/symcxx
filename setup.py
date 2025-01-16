@@ -92,14 +92,6 @@ if len(sys.argv) > 1 and '--help' not in sys.argv[1:] and sys.argv[1] not in (
     ext_modules[0].extra_compile_args = ['-std=c++11']
 
 
-# http://conda.pydata.org/docs/build.html#environment-variables-set-during-the-build-process
-if os.environ.get('CONDA_BUILD', '0') == '1':
-    try:
-        SYMCXX_RELEASE_VERSION = 'v' + open(
-            '__conda_version__.txt', 'rt').readline().rstrip()
-    except IOError:
-        pass
-
 release_py_path = os.path.join(pkg_name, '_release.py')
 
 if len(SYMCXX_RELEASE_VERSION) > 0:
@@ -151,7 +143,7 @@ setup_kwargs = dict(
     url='https://github.com/bjodah/' + pkg_name,
     license='BSD',
     packages=[pkg_name] + tests,
-    setup_requires=['mako'] if USE_CYTHON else [],
+    setup_requires=['mako'], # if USE_CYTHON else [],
     install_requires=['numpy'],
     ext_modules=ext_modules,
 )
